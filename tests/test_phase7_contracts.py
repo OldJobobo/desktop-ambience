@@ -64,6 +64,12 @@ def test_aurora_secondary_glows_start_at_their_animated_floor():
     assert "to: glow.glowPeak" in aurora
     assert "from: glow.glowPeak" in aurora
     assert "to: glow.glowFloor" in aurora
+    assert "function restartStartupReveal()" in aurora
+    assert "startupOpacity = reducedMotion ? 1 : 0.06" in aurora
+    assert "opacity: root.effectiveIntensity * root.startupOpacity" in aurora
+    assert 'property: "startupOpacity"' in aurora
+    assert "to: 0.12" in aurora
+    assert "to: 1" in aurora
 
 
 def test_rainfall_seeds_full_length_loops_at_distributed_startup_phases():

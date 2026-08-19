@@ -10,6 +10,7 @@ Item {
   property var theme: null
   property bool runtimeEnabled: true
   property real runtimeIntensity: -1
+  property real startupOpacity: 1
 
   readonly property var overlaySettings: effectSettings
   readonly property bool configuredEnabled: overlaySettings.enabled === true
@@ -95,6 +96,38 @@ Item {
     runtimeEnabled = false
   }
 
+  function restartStartupReveal() {
+    startupReveal.stop()
+    startupOpacity = reducedMotion ? 1 : 0.06
+    if (effectVisible && !reducedMotion) startupReveal.restart()
+  }
+
+  onEffectVisibleChanged: restartStartupReveal()
+  onReducedMotionChanged: restartStartupReveal()
+  Component.onCompleted: restartStartupReveal()
+
+  SequentialAnimation {
+    id: startupReveal
+
+    NumberAnimation {
+      target: root
+      property: "startupOpacity"
+      from: 0.06
+      to: 0.12
+      duration: 1400
+      easing.type: Easing.InOutSine
+    }
+
+    NumberAnimation {
+      target: root
+      property: "startupOpacity"
+      from: 0.12
+      to: 1
+      duration: 900
+      easing.type: Easing.OutCubic
+    }
+  }
+
   Item {
     id: auroraWindow
 
@@ -107,7 +140,7 @@ Item {
 
       anchors.fill: parent
       enabled: false
-      opacity: root.effectiveIntensity
+      opacity: root.effectiveIntensity * root.startupOpacity
 
       Repeater {
         model: root.ribbonCount
