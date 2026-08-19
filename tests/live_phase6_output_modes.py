@@ -74,8 +74,20 @@ def configure(item: dict, mode: str, scale: float, transform: int) -> None:
     run(["hyprctl", "eval", expression])
 
 
-def status() -> dict:
-    return json.loads(run(["omarchy-shell", "jobo-desktop-ambience", "status"]).stdout)
+def status(timeout: float = 15) -> dict:
+    deadline = time.monotonic() + timeout
+    last_error: Exception | None = None
+    while time.monotonic() < deadline:
+        try:
+            value = json.loads(
+                run(["omarchy-shell", "jobo-desktop-ambience", "status"]).stdout
+            )
+            if value.get("surfaceCount") == value.get("expectedSurfaceCount"):
+                return value
+        except Exception as error:
+            last_error = error
+        time.sleep(0.15)
+    raise AssertionError(f"plugin status did not settle: {last_error}")
 
 
 originals = [item for item in monitors() if not item.get("disabled")]
