@@ -39,12 +39,12 @@ Dust Motes was repeated five times for each output count using a two-second stea
 
 | Measurement | `v0.4.0`, 1 output | Shared tracker, 1 output | `v0.4.0`, 3 outputs | Shared tracker, 3 outputs |
 | --- | ---: | ---: | ---: | ---: |
-| Median CPU | 4.99% | 4.99% | 8.97% | 6.82% |
-| Median peak RSS | 287.0 MiB | 286.8 MiB | 304.1 MiB | 304.2 MiB |
-| Median frame callback | 16.61 ms | 16.66 ms | 16.95 ms | 16.55 ms |
+| Median CPU | 4.99% | 4.99% | 8.97% | 6.65% |
+| Median peak RSS | 287.0 MiB | 286.9 MiB | 304.1 MiB | 304.4 MiB |
+| Median frame callback | 16.61 ms | 16.64 ms | 16.95 ms | 16.61 ms |
 | Cursor launches in each sample | estimated 17 | 17 exact | estimated 50 | 17 exact |
 
-The three-output median CPU fell by approximately 24%. More importantly, cursor process launches no longer multiply by output count: all five candidate runs launched exactly 17 samplers for both one and three outputs. The released design would schedule approximately 50 launches across three independent 120 ms timers during the same two-second interval.
+The three-output median CPU fell by approximately 26%. More importantly, cursor process launches no longer multiply by output count: all five candidate runs launched exactly 17 samplers for both one and three outputs. The released design would schedule approximately 50 launches across three independent 120 ms timers during the same two-second interval.
 
 ## Activation and ownership
 

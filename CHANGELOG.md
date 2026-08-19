@@ -4,7 +4,7 @@ All notable changes are recorded here. This project follows [Semantic Versioning
 
 ## [Unreleased]
 
-## [0.5.0-rc.1] - 2026-08-19
+## [0.5.0] - 2026-08-19
 
 ### Added
 

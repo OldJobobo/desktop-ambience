@@ -396,8 +396,10 @@ clean-profile install passes, and all documented acceptance criteria are met.
 
 ### Phase 7 — Performance characterization and runtime consolidation
 
-**Status:** approved for execution after `v0.4.0`. Preserve the released renderer
-output and settings contract while measuring and reducing inherited runtime cost.
+**Status:** complete for `v0.5.0`. Per-effect measurements, before/after
+findings, and the shared cursor result are recorded in
+[`docs/performance/phase7.md`](docs/performance/phase7.md). Preserve the released
+renderer output and settings contract while measuring and reducing inherited runtime cost.
 Do not combine several visual renderer rewrites in one change.
 
 1. Establish per-effect and three-effect-stack steady-state baselines on one and
