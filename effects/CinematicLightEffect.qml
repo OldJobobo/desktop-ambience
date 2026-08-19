@@ -1,44 +1,31 @@
-import Quickshell
-import Quickshell.Io
 import QtQuick
 import QtQuick.Effects
-import qs.Commons
 
 Item {
   id: root
 
-  property string omarchyPath: ""
-  property var shell: null
-  property var manifest: null
-  property var defaultSettings: ({})
+  property var effectSettings: ({})
+  property real globalOpacity: 1
+  property bool reducedMotion: false
+  property var theme: null
   property bool runtimeEnabled: true
   property real runtimeIntensity: -1
-  property var lacunaSettings: ({})
-  readonly property bool reducedMotion: lacunaSettings && lacunaSettings.reduceMotion === true
-  property var palette: ({})
 
-  readonly property string configHome: Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config")
-  readonly property string stateHome: Quickshell.env("XDG_STATE_HOME") || (Quickshell.env("HOME") + "/.local/state")
-  readonly property string configDir: configHome + "/omarchy/lacuna"
-  readonly property string settingsFile: configDir + "/settings.json"
-  readonly property string colorsPath: stateHome + "/omarchy/current/theme/colors.toml"
-  readonly property var overlaySettings: pluginSettings()
-  readonly property bool configuredEnabled: boolSetting("effectEnabled", true)
-  readonly property bool foregroundOverlay: backgroundForegroundOverlayEnabled()
-  readonly property bool lacunaCinematicLightEnabled: backgroundEffectEnabled("cinematicLight", true)
-  readonly property bool effectVisible: configuredEnabled && lacunaCinematicLightEnabled && runtimeEnabled && effectiveIntensity > 0.001
-  readonly property real configuredIntensity: clamp(numberSetting("intensity", 1), 0, 1)
-  readonly property real effectiveIntensity: (runtimeIntensity >= 0 ? clamp(runtimeIntensity, 0, 1) : configuredIntensity) * backgroundAnimationOpacity()
-  readonly property real speed: clamp(numberSetting("speed", 1), 0.15, 4)
-  readonly property string stylePreset: normalizeStylePreset(settingValue("stylePreset", "lightLeak"))
+  readonly property var overlaySettings: effectSettings
+  readonly property bool configuredEnabled: overlaySettings.enabled === true
+  readonly property bool effectVisible: configuredEnabled && runtimeEnabled && effectiveIntensity > 0.001
+  readonly property real configuredIntensity: Number(overlaySettings.intensity)
+  readonly property real effectiveIntensity: (runtimeIntensity >= 0 ? clamp(runtimeIntensity, 0, 1) : configuredIntensity) * clamp(globalOpacity, 0, 1)
+  readonly property real speed: Number(overlaySettings.speed)
+  readonly property string stylePreset: String(overlaySettings.stylePreset)
   readonly property var motionModes: normalizedMotionModes()
   readonly property bool slowDriftEnabled: motionModes.slowDrift === true
   readonly property bool occasionalSweepsEnabled: motionModes.occasionalSweeps === true
   readonly property bool activeShimmerEnabled: motionModes.activeShimmer === true
   readonly property string motionMode: motionModeSummary()
-  readonly property int flareCount: Math.max(1, Math.min(9, Math.round(numberSetting("flareCount", 4))))
-  readonly property real accentBlend: clamp(numberSetting("accentBlend", 0.5), 0, 1)
-  readonly property bool vignette: boolSetting("vignette", true)
+  readonly property int flareCount: Math.round(Number(overlaySettings.flareCount))
+  readonly property real accentBlend: Number(overlaySettings.accentBlend)
+  readonly property bool vignette: overlaySettings.vignette === true
   readonly property real motionFactor: activeShimmerEnabled ? 1.75 : occasionalSweepsEnabled && !slowDriftEnabled ? 0.78 : 0.45
   readonly property real shimmerAmount: activeShimmerEnabled ? 1 : occasionalSweepsEnabled ? 0.38 : 0.16
   readonly property real sweepAmount: occasionalSweepsEnabled ? 0.86 : 0
@@ -64,79 +51,13 @@ Item {
     return Math.max(minimum, Math.min(maximum, numeric))
   }
 
-  function pluginSettings() {
-    var merged = {}
-    var defaults = defaultSettings && typeof defaultSettings === "object"
-      ? defaultSettings : (manifest && manifest.defaults ? manifest.defaults : {})
-
-    for (var key in defaults) merged[key] = defaults[key]
-
-    var config = shell && shell.shellConfig ? shell.shellConfig : null
-    var plugins = config && config.plugins && Array.isArray(config.plugins) ? config.plugins : []
-
-    for (var i = 0; i < plugins.length; i++) {
-      var entry = plugins[i]
-      if (!entry || entry.id !== "lacuna.cinematic-light-overlay") continue
-      for (var entryKey in entry) {
-        if (entryKey !== "id") merged[entryKey] = entry[entryKey]
-      }
-      if (!entryHasMotionToggles(entry) && entry.motionMode !== undefined) {
-        var legacyMode = normalizeMotionMode(entry.motionMode)
-        merged.slowDrift = legacyMode === "slowDrift"
-        merged.occasionalSweeps = legacyMode === "occasionalSweeps"
-        merged.activeShimmer = legacyMode === "activeShimmer"
-      }
-      break
-    }
-
-    return merged
-  }
-
-  function settingValue(key, fallbackValue) {
-    return overlaySettings && overlaySettings[key] !== undefined ? overlaySettings[key] : fallbackValue
-  }
-
-  function numberSetting(key, fallbackValue) {
-    var value = Number(settingValue(key, fallbackValue))
-    return isNaN(value) ? fallbackValue : value
-  }
-
-  function boolSetting(key, fallbackValue) {
-    var value = settingValue(key, fallbackValue)
-    if (value === true || value === false) return value
-
-    var normalized = String(value || "").toLowerCase()
-    if (normalized === "true" || normalized === "1" || normalized === "yes" || normalized === "on") return true
-    if (normalized === "false" || normalized === "0" || normalized === "no" || normalized === "off") return false
-    return fallbackValue
-  }
-
-  function entryHasMotionToggles(entry) {
-    return entry
-      && (entry.slowDrift !== undefined || entry.occasionalSweeps !== undefined || entry.activeShimmer !== undefined)
-  }
-
-  function normalizeStylePreset(value) {
-    var preset = String(value || "").trim()
-    if (preset === "cinematicFlare" || preset === "anamorphicGlow") return preset
-    return "lightLeak"
-  }
-
-  function normalizeMotionMode(value) {
-    var mode = String(value || "").trim()
-    if (mode === "occasionalSweeps" || mode === "activeShimmer") return mode
-    return "slowDrift"
-  }
 
   function normalizedMotionModes() {
-    var modes = {
-      slowDrift: boolSetting("slowDrift", true),
-      occasionalSweeps: boolSetting("occasionalSweeps", false),
-      activeShimmer: boolSetting("activeShimmer", false)
+    return {
+      slowDrift: overlaySettings.slowDrift === true,
+      occasionalSweeps: overlaySettings.occasionalSweeps === true,
+      activeShimmer: overlaySettings.activeShimmer === true
     }
-
-    if (!modes.slowDrift && !modes.occasionalSweeps && !modes.activeShimmer) modes.slowDrift = true
-    return modes
   }
 
   function motionModeSummary() {
@@ -147,75 +68,8 @@ Item {
     return selected.join(",")
   }
 
-  function backgroundEffectEnabled(effectId, fallbackValue) {
-    var settings = lacunaSettings && typeof lacunaSettings === "object" ? lacunaSettings : {}
-    var backgroundEffects = settings.backgroundEffects && typeof settings.backgroundEffects === "object" ? settings.backgroundEffects : null
-    var id = String(effectId || "")
-    if (!backgroundEffects) return fallbackValue
-    if (backgroundEffects.enabled === false) return false
-
-    var effects = backgroundEffects.effects && typeof backgroundEffects.effects === "object" ? backgroundEffects.effects : {}
-    var effect = effects[id]
-    if (effect && typeof effect === "object" && effect.enabled === false) return false
-
-    if (Array.isArray(backgroundEffects.activeEffects)) {
-      for (var i = 0; i < backgroundEffects.activeEffects.length; i++) {
-        if (String(backgroundEffects.activeEffects[i] || "") === id) return true
-      }
-      return false
-    }
-
-    if (backgroundEffects.activeEffect !== undefined || backgroundEffects.selectedEffect !== undefined || backgroundEffects.currentEffect !== undefined) {
-      var activeEffect = String(backgroundEffects.activeEffect || backgroundEffects.selectedEffect || backgroundEffects.currentEffect || "trackingLines")
-      return activeEffect === id
-    }
-
-    if (!effect || typeof effect !== "object") return fallbackValue
-    return effect.enabled !== false
-  }
-
-  function backgroundAnimationOpacity() {
-    var settings = lacunaSettings && typeof lacunaSettings === "object" ? lacunaSettings : {}
-    var backgroundEffects = settings.backgroundEffects && typeof settings.backgroundEffects === "object" ? settings.backgroundEffects : null
-    if (!backgroundEffects || backgroundEffects.opacity === undefined) return 1
-    return clamp(Number(backgroundEffects.opacity), 0, 1)
-  }
-
-  function backgroundForegroundOverlayEnabled() {
-    var settings = lacunaSettings && typeof lacunaSettings === "object" ? lacunaSettings : {}
-    var backgroundEffects = settings.backgroundEffects && typeof settings.backgroundEffects === "object" ? settings.backgroundEffects : null
-    return backgroundEffects && backgroundEffects.foregroundOverlay === true
-  }
-
-  function loadLacunaSettings(raw) {
-    try {
-      lacunaSettings = JSON.parse(raw || "{}")
-    } catch (error) {
-      lacunaSettings = {}
-    }
-  }
-
-  function loadTheme(raw) {
-    var next = {}
-    var lines = String(raw || "").split(/\n/)
-    for (var i = 0; i < lines.length; i++) {
-      var match = lines[i].match(/^\s*([A-Za-z0-9_-]+)\s*=\s*["']?([^"'\s]+)["']?/)
-      if (match) next[match[1]] = match[2].trim()
-    }
-    if (Object.keys(next).length === 0) return false
-    palette = next
-    return true
-  }
-
-  function scheduleThemeReload() {
-    themeReloadTimer.restart()
-  }
-
   function themeColor(name, fallbackColor) {
-    if (name === "background" || name === "bg") return Color.background
-    if (name === "foreground" || name === "fg") return Color.foreground
-    if (name === "accent") return Color.accent
-    return palette[name] || fallbackColor
+    return theme && theme.colorFor ? theme.colorFor(name, fallbackColor) : fallbackColor
   }
 
   function resolvedColor(value) {
@@ -258,49 +112,6 @@ Item {
 
   function close() {
     runtimeEnabled = false
-  }
-
-  FileView {
-    id: lacunaSettingsWatcher
-
-    path: root.settingsFile
-    watchChanges: true
-    printErrors: false
-    onLoaded: root.loadLacunaSettings(text())
-    onFileChanged: reload()
-    onLoadFailed: root.lacunaSettings = {}
-  }
-
-  Connections {
-    target: Color
-    function onBackgroundChanged() { root.scheduleThemeReload() }
-    function onForegroundChanged() { root.scheduleThemeReload() }
-    function onAccentChanged() { root.scheduleThemeReload() }
-    function onUrgentChanged() { root.scheduleThemeReload() }
-    function onShellValuesChanged() { root.scheduleThemeReload() }
-  }
-
-  Timer {
-    id: themeReloadTimer
-    interval: 40
-    repeat: false
-    onTriggered: colorsFile.reload()
-  }
-
-  Timer {
-    id: themeRetryTimer
-    interval: 120
-    repeat: false
-    onTriggered: colorsFile.reload()
-  }
-
-  FileView {
-    id: colorsFile
-    path: root.colorsPath
-    watchChanges: false
-    printErrors: false
-    onLoaded: root.loadTheme(text())
-    onLoadFailed: themeRetryTimer.restart()
   }
 
   Item {

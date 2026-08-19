@@ -1,9 +1,9 @@
 # Desktop Ambience
 
 A standalone Omarchy Shell plugin for an ordered stack of desktop ambience
-effects. Phase 1 of the extraction described in [`PLAN.md`](PLAN.md) is now
-present: the owned renderers, ordered lazy stack, full-output foreground host,
-and dedicated vignette are copied into the standalone plugin boundary.
+effects. Phases 1 and 2 of [`PLAN.md`](PLAN.md) are present: the owned
+renderers, ordered lazy stack, foreground host, dedicated vignette, standalone
+settings owner, and shared theme adapter now live inside the plugin boundary.
 
 ## Planned effects
 
@@ -19,17 +19,17 @@ and dedicated vignette are copied into the standalone plugin boundary.
 
 ## Current status
 
-The renderer baseline and in-memory host are present. Settings persistence, the
-settings window, centralized theme integration, and removal of effect-local
-legacy settings readers remain later phases. Phase 1 defaults to background
-presentation with VHS (`trackingLines`) selected and the dedicated vignette
-disabled. The vignette has separate enable/intensity state and is not part of
-the reorderable effect list. The eight renderer bodies remain byte-identical to
-the pinned source except for one
-Phase 1 host-boundary injection in `CrtEffect.qml`: its legacy-derived
-`foregroundOverlay` readonly property is now an injected boolean property so
-CRT foreground-only distortion follows the standalone host presentation. Its
-visual math is unchanged.
+The plugin now owns normalized, atomic, retryable settings at
+`$XDG_CONFIG_HOME/omarchy/jobo/desktop-ambience/settings.json`. One shared theme
+adapter supplies native Omarchy colors and extended Base16 roles to every
+renderer. Effects no longer read external plugin settings or own file watchers.
+VHS uses the canonical `trackingLines` ID; the dedicated vignette has separate
+state and never enters the reorderable effect list.
+
+Renderer scene bodies remain byte-identical to the pinned source after their
+injected adapter seams. The settings window remains Phase 4 work, and Phase 3
+will replace the source-derived dual window trees with one dynamically selected
+surface per output.
 
 The 1.0 product boundary is approved: a persistent panel root with background
 and explicit click-through foreground presentation, including the dedicated
@@ -38,7 +38,7 @@ per output for fullscreen applications.
 
 ## Development
 
-Validate the Phase 1 extraction with:
+Validate the Phase 2 extraction with an active Wayland session:
 
 ```bash
 ./scripts/check.sh

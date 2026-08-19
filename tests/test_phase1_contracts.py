@@ -106,12 +106,12 @@ def test_registry_separates_ordered_effects_from_dedicated_vignette():
         assert f'root.productionEffectActive("{effect_id}")' in stack
         assert f'id: "{effect_id}"' in registry
 
-    assert "const orderedEffects = [" in registry
-    assert '{ id: "trackingLines", label: "VHS" }' in registry
+    assert "var orderedEffects = [" in registry
+    assert 'id: "trackingLines", label: "VHS",' in registry
     assert '{ id: "vhs", label: "VHS" }' not in registry
-    assert "const dedicatedVignette = {" in registry
+    assert "var dedicatedVignette = {" in registry
     assert 'id: "backgroundVignette"' in registry
-    ordered_block = registry.split("const orderedEffects = [", 1)[1].split("]", 1)[0]
+    ordered_block = registry.split("var orderedEffects = [", 1)[1].split("]", 1)[0]
     assert "backgroundVignette" not in ordered_block
     assert 'VHS (`trackingLines`)' in plan
     assert '"activeEffects": ["trackingLines"]' in plan

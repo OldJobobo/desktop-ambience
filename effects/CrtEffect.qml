@@ -1,5 +1,3 @@
-import Quickshell
-import Quickshell.Io
 import QtQuick
 import QtQuick.Effects
 import QtQuick.Shapes
@@ -7,40 +5,34 @@ import QtQuick.Shapes
 Item {
   id: root
 
-  property string omarchyPath: ""
-  property var shell: null
-  property var manifest: null
-  property var defaultSettings: ({})
+  property var effectSettings: ({})
+  property real globalOpacity: 1
+  property bool reducedMotion: false
   property bool runtimeEnabled: true
   property real runtimeIntensity: -1
+  property bool foregroundOverlay: false
   property int noiseTick: 0
   property real bloomPulse: 0
   property int bloomPulseCycle: 0
   property int bloomPulseDelay: 14000
-  property var lacunaSettings: ({})
-  readonly property bool reducedMotion: lacunaSettings && lacunaSettings.reduceMotion === true
 
-  readonly property string configDir: (Quickshell.env("XDG_CONFIG_HOME") || Quickshell.env("HOME") + "/.config") + "/omarchy/lacuna"
-  readonly property string settingsFile: configDir + "/settings.json"
-  readonly property var overlaySettings: pluginSettings()
-  readonly property bool configuredEnabled: boolSetting("effectEnabled", true)
-  property bool foregroundOverlay: false
-  readonly property bool lacunaCrtEnabled: backgroundEffectEnabled("crt", true)
-  readonly property bool effectVisible: configuredEnabled && lacunaCrtEnabled && runtimeEnabled && effectiveIntensity > 0.001
-  readonly property real configuredIntensity: clamp(numberSetting("intensity", 0.58), 0, 1)
-  readonly property real effectiveIntensity: (runtimeIntensity >= 0 ? clamp(runtimeIntensity, 0, 1) : configuredIntensity) * backgroundAnimationOpacity()
-  readonly property real speed: clamp(numberSetting("speed", 1), 0.15, 4)
-  readonly property int scanlineSpacing: Math.max(2, Math.min(9, Math.round(numberSetting("scanlineSpacing", 3))))
-  readonly property int staticBandHeight: Math.max(60, Math.min(320, Math.round(numberSetting("staticBandHeight", 150))))
-  readonly property real staticAmount: clamp(numberSetting("staticAmount", 0.24), 0, 1)
-  readonly property real glowAmount: clamp(numberSetting("glowAmount", 0.22), 0, 1)
-  readonly property bool bloomPulseEnabled: boolSetting("bloomPulse", true)
-  readonly property real bloomPulseAmount: clamp(numberSetting("bloomPulseAmount", 0.52), 0, 1)
-  readonly property int bloomPulseInterval: Math.max(7000, Math.min(60000, Math.round(numberSetting("bloomPulseInterval", 18000))))
+  readonly property var overlaySettings: effectSettings
+  readonly property bool configuredEnabled: overlaySettings.enabled === true
+  readonly property bool effectVisible: configuredEnabled && runtimeEnabled && effectiveIntensity > 0.001
+  readonly property real configuredIntensity: Number(overlaySettings.intensity)
+  readonly property real effectiveIntensity: (runtimeIntensity >= 0 ? clamp(runtimeIntensity, 0, 1) : configuredIntensity) * clamp(globalOpacity, 0, 1)
+  readonly property real speed: Number(overlaySettings.speed)
+  readonly property int scanlineSpacing: Math.round(Number(overlaySettings.scanlineSpacing))
+  readonly property int staticBandHeight: Math.round(Number(overlaySettings.staticBandHeight))
+  readonly property real staticAmount: Number(overlaySettings.staticAmount)
+  readonly property real glowAmount: Number(overlaySettings.glowAmount)
+  readonly property bool bloomPulseEnabled: overlaySettings.bloomPulse === true
+  readonly property real bloomPulseAmount: Number(overlaySettings.bloomPulseAmount)
+  readonly property int bloomPulseInterval: Math.round(Number(overlaySettings.bloomPulseInterval))
   readonly property real bloomPulseOpacity: bloomPulseEnabled ? bloomPulse * bloomPulseAmount : 0
-  readonly property bool distortion: boolSetting("distortion", true)
-  readonly property real distortionAmount: clamp(numberSetting("distortionAmount", 0.45), 0, 1)
-  readonly property bool vignette: boolSetting("vignette", true)
+  readonly property bool distortion: overlaySettings.distortion === true
+  readonly property real distortionAmount: Number(overlaySettings.distortionAmount)
+  readonly property bool vignette: overlaySettings.vignette === true
 
   function clamp(value, minimum, maximum) {
     var numeric = Number(value)
@@ -48,94 +40,6 @@ Item {
     return Math.max(minimum, Math.min(maximum, numeric))
   }
 
-  function pluginSettings() {
-    var merged = {}
-    var defaults = defaultSettings && typeof defaultSettings === "object"
-      ? defaultSettings : (manifest && manifest.defaults ? manifest.defaults : {})
-
-    for (var key in defaults) merged[key] = defaults[key]
-
-    var config = shell && shell.shellConfig ? shell.shellConfig : null
-    var plugins = config && config.plugins && Array.isArray(config.plugins) ? config.plugins : []
-
-    for (var i = 0; i < plugins.length; i++) {
-      var entry = plugins[i]
-      if (!entry || entry.id !== "lacuna.crt-overlay") continue
-      for (var entryKey in entry) {
-        if (entryKey !== "id") merged[entryKey] = entry[entryKey]
-      }
-      break
-    }
-
-    return merged
-  }
-
-  function settingValue(key, fallbackValue) {
-    return overlaySettings && overlaySettings[key] !== undefined ? overlaySettings[key] : fallbackValue
-  }
-
-  function numberSetting(key, fallbackValue) {
-    var value = Number(settingValue(key, fallbackValue))
-    return isNaN(value) ? fallbackValue : value
-  }
-
-  function boolSetting(key, fallbackValue) {
-    var value = settingValue(key, fallbackValue)
-    if (value === true || value === false) return value
-
-    var normalized = String(value || "").toLowerCase()
-    if (normalized === "true" || normalized === "1" || normalized === "yes" || normalized === "on") return true
-    if (normalized === "false" || normalized === "0" || normalized === "no" || normalized === "off") return false
-    return fallbackValue
-  }
-
-  function backgroundEffectEnabled(effectId, fallbackValue) {
-    var settings = lacunaSettings && typeof lacunaSettings === "object" ? lacunaSettings : {}
-    var backgroundEffects = settings.backgroundEffects && typeof settings.backgroundEffects === "object" ? settings.backgroundEffects : null
-    var id = String(effectId || "")
-    if (!backgroundEffects) return fallbackValue
-    if (backgroundEffects.enabled === false) return false
-
-    var effects = backgroundEffects.effects && typeof backgroundEffects.effects === "object" ? backgroundEffects.effects : {}
-    var effect = effects[id]
-    if (effect && typeof effect === "object" && effect.enabled === false) return false
-
-    if (Array.isArray(backgroundEffects.activeEffects)) {
-      for (var i = 0; i < backgroundEffects.activeEffects.length; i++) {
-        if (String(backgroundEffects.activeEffects[i] || "") === id) return true
-      }
-      return false
-    }
-
-    if (backgroundEffects.activeEffect !== undefined || backgroundEffects.selectedEffect !== undefined || backgroundEffects.currentEffect !== undefined) {
-      var activeEffect = String(backgroundEffects.activeEffect || backgroundEffects.selectedEffect || backgroundEffects.currentEffect || "trackingLines")
-      return activeEffect === id
-    }
-
-    if (!effect || typeof effect !== "object") return fallbackValue
-    return effect.enabled !== false
-  }
-
-  function backgroundAnimationOpacity() {
-    var settings = lacunaSettings && typeof lacunaSettings === "object" ? lacunaSettings : {}
-    var backgroundEffects = settings.backgroundEffects && typeof settings.backgroundEffects === "object" ? settings.backgroundEffects : null
-    if (!backgroundEffects || backgroundEffects.opacity === undefined) return 1
-    return clamp(Number(backgroundEffects.opacity), 0, 1)
-  }
-
-  function backgroundForegroundOverlayEnabled() {
-    var settings = lacunaSettings && typeof lacunaSettings === "object" ? lacunaSettings : {}
-    var backgroundEffects = settings.backgroundEffects && typeof settings.backgroundEffects === "object" ? settings.backgroundEffects : null
-    return backgroundEffects && backgroundEffects.foregroundOverlay === true
-  }
-
-  function loadLacunaSettings(raw) {
-    try {
-      lacunaSettings = JSON.parse(raw || "{}")
-    } catch (error) {
-      lacunaSettings = {}
-    }
-  }
 
   function parsePayload(payloadJson) {
     try {
@@ -220,17 +124,6 @@ Item {
         root.bloomPulseDelay = root.bloomPulseDelayForCycle(root.bloomPulseCycle)
       }
     }
-  }
-
-  FileView {
-    id: lacunaSettingsWatcher
-
-    path: root.settingsFile
-    watchChanges: true
-    printErrors: false
-    onLoaded: root.loadLacunaSettings(text())
-    onFileChanged: reload()
-    onLoadFailed: root.lacunaSettings = {}
   }
 
   Item {

@@ -1,16 +1,18 @@
 import QtQuick
 
-// Dedicated vignette renderer extracted from the original persistent overlay.
-// Surface ownership and settings persistence belong to the host and Phase 2.
+// Dedicated vignette renderer. Surface ownership and normalized persistence
+// belong to the host; this renderer never participates in ordered effects.
 Item {
   id: root
 
   property var targetScreen: null
-  property bool vignetteEnabled: false
-  property real vignetteIntensity: 0.85
+  property var settings: ({})
   property bool paintEnabled: true
 
-  readonly property real clampedIntensity: Math.max(0, Math.min(1, Number(vignetteIntensity) || 0))
+  readonly property bool vignetteEnabled: settings.enabled === true
+  readonly property real vignetteIntensity: Number(settings.intensity)
+  readonly property bool ignoreBackgroundAnimationLayer: settings.ignoreBackgroundAnimationLayer === true
+  readonly property real clampedIntensity: vignetteIntensity
   readonly property real outputScale: targetScreen && targetScreen.devicePixelRatio !== undefined
     ? Math.max(1, Number(targetScreen.devicePixelRatio) || 1) : 1
 

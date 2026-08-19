@@ -4,22 +4,24 @@ import Quickshell.Wayland
 import QtQuick
 import "components"
 import "effects"
+import "services"
 
-// Persistent Phase 1 host. Phase 2 replaces these in-memory defaults with the
-// standalone settings owner; the renderer and surface lifecycle stay here.
+// Persistent host. One settings owner and one theme adapter feed every output;
+// the interim dual-surface lifecycle remains until Phase 3.
 Item {
   id: root
   objectName: "joboDesktopAmbienceRoot"
 
   property string omarchyPath: ""
-  property var shell: null
   property var manifest: null
 
-  property bool ambienceEnabled: true
-  property string presentation: "background"
-  property var activeEffects: ["trackingLines"]
-  property bool vignetteEnabled: false
-  property real vignetteIntensity: 0.85
+  readonly property bool ambienceEnabled: ambienceSettings.enabled
+  readonly property string presentation: ambienceSettings.presentation
+  readonly property var activeEffects: ambienceSettings.activeEffects
+  readonly property var backgroundVignette: ambienceSettings.backgroundVignette
+  readonly property bool vignetteEnabled: backgroundVignette.enabled === true
+  readonly property real vignetteIntensity: Number(backgroundVignette.intensity)
+  readonly property bool vignetteBehindEffects: backgroundVignette.ignoreBackgroundAnimationLayer === true
 
   // Panel lifecycle seam reserved for the on-demand Phase 4 settings window.
   property bool opened: false
@@ -62,6 +64,8 @@ Item {
     return result
   }
 
+  AmbienceSettings { id: ambienceSettings }
+  ThemeAdapter { id: themeAdapter }
   FullscreenGuard { id: fullscreenGuard }
 
   AmbienceStack {
@@ -69,6 +73,8 @@ Item {
     visible: false
     width: 0
     height: 0
+    settings: ambienceSettings
+    theme: themeAdapter
     activeEffects: root.activeEffects
     paintEnabled: false
     productionEffectsEnabled: false
@@ -100,8 +106,9 @@ Item {
 
       AmbienceStack {
         anchors.fill: parent
-        shell: root.shell
         targetScreen: bottomWindow.modelData
+        settings: ambienceSettings
+        theme: themeAdapter
         activeEffects: root.activeEffects
         foregroundOverlay: root.foregroundOverlay
         paintEnabled: root.ambienceEnabled && root.mappingMode === "bottom"
@@ -111,10 +118,9 @@ Item {
 
       VignetteEffect {
         anchors.fill: parent
-        z: 10000
+        z: root.vignetteBehindEffects ? -10000 : 10000
         targetScreen: bottomWindow.modelData
-        vignetteEnabled: root.vignetteEnabled
-        vignetteIntensity: root.vignetteIntensity
+        settings: root.backgroundVignette
         paintEnabled: root.mappingMode === "bottom"
       }
     }
@@ -148,8 +154,9 @@ Item {
 
       AmbienceStack {
         anchors.fill: parent
-        shell: root.shell
         targetScreen: overlayWindow.modelData
+        settings: ambienceSettings
+        theme: themeAdapter
         activeEffects: root.activeEffects
         foregroundOverlay: root.foregroundOverlay
         paintEnabled: root.ambienceEnabled && root.mappingMode === "overlay"
@@ -160,10 +167,9 @@ Item {
 
       VignetteEffect {
         anchors.fill: parent
-        z: 10000
+        z: root.vignetteBehindEffects ? -10000 : 10000
         targetScreen: overlayWindow.modelData
-        vignetteEnabled: root.vignetteEnabled
-        vignetteIntensity: root.vignetteIntensity
+        settings: root.backgroundVignette
         paintEnabled: root.mappingMode === "overlay" && !overlayWindow.fullscreenSuppressed
       }
     }
@@ -184,7 +190,19 @@ Item {
         mappedSurfaceCount: root.mappingMode === "none" ? 0 : Quickshell.screens.length,
         z: root.zMap(),
         bottomRenderable: root.mappingMode === "bottom",
-        overlayRenderable: root.mappingMode === "overlay"
+        overlayRenderable: root.mappingMode === "overlay",
+        persistence: {
+          ready: ambienceSettings.persistenceReady,
+          state: ambienceSettings.persistenceState,
+          error: ambienceSettings.persistenceError,
+          loadError: ambienceSettings.loadError,
+          diskDiverged: ambienceSettings.diskDiverged,
+          recoveredFromMalformedEdit: ambienceSettings.recoveredFromMalformedEdit,
+          retryAvailable: ambienceSettings.retryAvailable,
+          requestedRevision: ambienceSettings.requestedSaveRevision,
+          confirmedRevision: ambienceSettings.confirmedSaveRevision
+        },
+        theme: themeAdapter.status()
       })
     }
   }

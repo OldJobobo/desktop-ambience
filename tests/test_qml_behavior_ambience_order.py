@@ -71,6 +71,15 @@ import Quickshell
 import QtQuick
 
 ShellRoot {{
+  QtObject {{
+    id: state
+    property real opacity: 1
+    property bool reduceMotion: true
+    property var effects: ({{
+      auroraDrift: {{ enabled: true, intensity: 0.95, speed: 1.35, ribbonCount: 6, blurSoftness: 0.9, accentBlend: 0.88, vignette: true }},
+      filmGrain: {{ enabled: true, intensity: 0.28, speed: 1, grainCount: 32, grainSize: 1.35, accentBlend: 0.18 }}
+    }})
+  }}
   Item {{
     id: host
     width: 32
@@ -81,6 +90,7 @@ ShellRoot {{
       anchors.fill: parent
       source: "{qml_url('components/AmbienceStack.qml')}"
       onLoaded: {{
+        item.settings = state
         item.activeEffects = ["auroraDrift", "filmGrain"]
         item.paintEnabled = false
         disabledProbe.restart()

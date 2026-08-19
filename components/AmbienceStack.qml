@@ -4,9 +4,10 @@ import "../effects"
 Item {
   id: root
 
-  property var shell: null
   property var targetScreen: null
-  property var activeEffects: []
+  property var settings: null
+  property var theme: null
+  property var activeEffects: settings && settings.activeEffects ? settings.activeEffects : []
   property bool foregroundOverlay: false
   property bool paintEnabled: true
   property bool productionEffectsEnabled: true
@@ -59,7 +60,16 @@ Item {
   }
 
   function productionEffectActive(effectId) {
+    var effect = settingsFor(effectId)
     return paintEnabled && productionEffectsEnabled && stackIndex(effectId) >= 0
+      && effect.enabled === true
+  }
+
+  function settingsFor(effectId) {
+    var effects = settings && settings.effects && typeof settings.effects === "object"
+      ? settings.effects : ({})
+    var value = effects[String(effectId || "")]
+    return value && typeof value === "object" ? value : ({})
   }
 
   function productionEffectObject(effectId) {
@@ -82,8 +92,10 @@ Item {
     AuroraDriftEffect {
       objectName: "auroraDriftEffect"
       anchors.fill: parent
-      shell: root.shell
-      defaultSettings: ({ effectEnabled: true, intensity: 0.95, speed: 1.35, ribbonCount: 6, blurSoftness: 0.9, accentBlend: 0.88, vignette: true })
+      effectSettings: root.settingsFor("auroraDrift")
+      globalOpacity: root.settings ? root.settings.opacity : 1
+      reducedMotion: root.settings ? root.settings.reduceMotion : false
+      theme: root.theme
       runtimeEnabled: root.paintEnabled && root.productionEffectsEnabled
     }
   }
@@ -93,8 +105,10 @@ Item {
     CinematicLightEffect {
       objectName: "cinematicLightEffect"
       anchors.fill: parent
-      shell: root.shell
-      defaultSettings: ({ effectEnabled: true, intensity: 1, speed: 1, stylePreset: "lightLeak", slowDrift: true, occasionalSweeps: false, activeShimmer: false, flareCount: 4, accentBlend: 0.5, vignette: true })
+      effectSettings: root.settingsFor("cinematicLight")
+      globalOpacity: root.settings ? root.settings.opacity : 1
+      reducedMotion: root.settings ? root.settings.reduceMotion : false
+      theme: root.theme
       runtimeEnabled: root.paintEnabled && root.productionEffectsEnabled
     }
   }
@@ -104,9 +118,10 @@ Item {
     CrtEffect {
       objectName: "crtEffect"
       anchors.fill: parent
-      shell: root.shell
       foregroundOverlay: root.foregroundOverlay
-      defaultSettings: ({ effectEnabled: true, foregroundOverlay: false, intensity: 0.58, speed: 1, scanlineSpacing: 3, staticBandHeight: 150, staticAmount: 0.24, glowAmount: 0.22, bloomPulse: true, bloomPulseAmount: 0.52, bloomPulseInterval: 18000, distortion: true, distortionAmount: 0.45, vignette: true })
+      effectSettings: root.settingsFor("crt")
+      globalOpacity: root.settings ? root.settings.opacity : 1
+      reducedMotion: root.settings ? root.settings.reduceMotion : false
       runtimeEnabled: root.paintEnabled && root.productionEffectsEnabled
     }
   }
@@ -116,9 +131,11 @@ Item {
     DustMotesEffect {
       objectName: "dustMotesEffect"
       anchors.fill: parent
-      shell: root.shell
       targetScreen: root.targetScreen
-      defaultSettings: ({ effectEnabled: true, intensity: 0.5, speed: 0.7, moteCount: 72, moteSize: 2.6, accentBlend: 0.42, mouseReactive: true, mouseInfluence: 0.28 })
+      effectSettings: root.settingsFor("dustMotes")
+      globalOpacity: root.settings ? root.settings.opacity : 1
+      reducedMotion: root.settings ? root.settings.reduceMotion : false
+      theme: root.theme
       runtimeEnabled: root.paintEnabled && root.productionEffectsEnabled
     }
   }
@@ -128,8 +145,10 @@ Item {
     FilmGrainEffect {
       objectName: "filmGrainEffect"
       anchors.fill: parent
-      shell: root.shell
-      defaultSettings: ({ effectEnabled: true, intensity: 0.28, speed: 1, grainCount: 180, grainSize: 1.35, accentBlend: 0.18 })
+      effectSettings: root.settingsFor("filmGrain")
+      globalOpacity: root.settings ? root.settings.opacity : 1
+      reducedMotion: root.settings ? root.settings.reduceMotion : false
+      theme: root.theme
       runtimeEnabled: root.paintEnabled && root.productionEffectsEnabled
     }
   }
@@ -139,8 +158,10 @@ Item {
     GodRaysEffect {
       objectName: "godRaysEffect"
       anchors.fill: parent
-      shell: root.shell
-      defaultSettings: ({ effectEnabled: true, intensity: 0.82, speed: 0.85, rayCount: 7, raySpread: 0.72, blurSoftness: 0.88, accentBlend: 0.58, shimmer: true, vignette: true, origin: "top-left" })
+      effectSettings: root.settingsFor("godRays")
+      globalOpacity: root.settings ? root.settings.opacity : 1
+      reducedMotion: root.settings ? root.settings.reduceMotion : false
+      theme: root.theme
       runtimeEnabled: root.paintEnabled && root.productionEffectsEnabled
     }
   }
@@ -150,8 +171,10 @@ Item {
     RainfallEffect {
       objectName: "rainfallEffect"
       anchors.fill: parent
-      shell: root.shell
-      defaultSettings: ({ effectEnabled: true, intensity: 0.72, speed: 0.62, dropCount: 180, slant: 0.08, mistAmount: 0.34, splashAmount: 0.38, accentBlend: 0.42, vignette: true })
+      effectSettings: root.settingsFor("rainfall")
+      globalOpacity: root.settings ? root.settings.opacity : 1
+      reducedMotion: root.settings ? root.settings.reduceMotion : false
+      theme: root.theme
       runtimeEnabled: root.paintEnabled && root.productionEffectsEnabled
     }
   }
@@ -161,8 +184,9 @@ Item {
     VhsEffect {
       objectName: "vhsEffect"
       anchors.fill: parent
-      shell: root.shell
-      defaultSettings: ({ effectEnabled: true, foregroundOverlay: false, intensity: 0.68, speed: 1, lineSpacing: 4, trackingBands: 4, noiseAmount: 0.42, glitchAmount: 0.34, chromaBleed: true, vignette: true })
+      effectSettings: root.settingsFor("trackingLines")
+      globalOpacity: root.settings ? root.settings.opacity : 1
+      reducedMotion: root.settings ? root.settings.reduceMotion : false
       runtimeEnabled: root.paintEnabled && root.productionEffectsEnabled
     }
   }
