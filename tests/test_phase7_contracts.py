@@ -70,6 +70,8 @@ def test_aurora_secondary_glows_start_at_their_animated_floor():
     assert 'property: "startupOpacity"' in aurora
     assert "to: 0.12" in aurora
     assert "to: 1" in aurora
+    assert "initialDelay" not in aurora
+    assert "PauseAnimation" not in aurora
 
 
 def test_rainfall_seeds_full_length_loops_at_distributed_startup_phases():

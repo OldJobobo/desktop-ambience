@@ -155,7 +155,6 @@ Item {
           readonly property real heightScale: 1.08 + root.seededNoise(seed + 5) * 0.28
           readonly property real xSwing: 0.055 + root.seededNoise(seed + 7) * 0.07
           readonly property real ySwing: 0.04 + root.seededNoise(seed + 11) * 0.035
-          readonly property int initialDelay: Math.round(root.seededNoise(seed + 13) * 7600)
           readonly property bool reverseDrift: root.seededNoise(seed + 17) > 0.5
           readonly property int xA: Math.round(auroraWindow.width * (-0.08 + phase * 0.9 - xSwing * 0.5))
           readonly property int xB: Math.round(auroraWindow.width * (-0.08 + phase * 0.9 + xSwing))
@@ -189,10 +188,6 @@ Item {
             loops: Animation.Infinite
             running: root.effectVisible && !root.reducedMotion
 
-            PauseAnimation {
-              duration: ribbon.initialDelay
-            }
-
             NumberAnimation {
               from: ribbon.reverseDrift ? ribbon.xB : ribbon.xA
               to: ribbon.reverseDrift ? ribbon.xA : ribbon.xB
@@ -211,10 +206,6 @@ Item {
           SequentialAnimation on y {
             loops: Animation.Infinite
             running: root.effectVisible && !root.reducedMotion
-
-            PauseAnimation {
-              duration: Math.round(ribbon.initialDelay * 0.47)
-            }
 
             NumberAnimation {
               from: ribbon.yA
@@ -296,7 +287,6 @@ Item {
           readonly property color glowColor: root.colorForRibbon(index + 2)
           readonly property real seed: index + 401
           readonly property real lane: (index + root.seededNoise(seed + 1) * 0.9) / Math.max(1, Math.round(root.ribbonCount * 0.75))
-          readonly property int initialDelay: Math.round(root.seededNoise(seed + 3) * 6800)
           readonly property real driftSpeed: 0.62 + root.seededNoise(seed + 5) * 0.7
           readonly property real xSwing: 0.052 + root.seededNoise(seed + 7) * 0.064
           readonly property real ySwing: 0.032 + root.seededNoise(seed + 11) * 0.031
@@ -339,10 +329,6 @@ Item {
             loops: Animation.Infinite
             running: root.effectVisible && !root.reducedMotion
 
-            PauseAnimation {
-              duration: glow.initialDelay
-            }
-
             NumberAnimation {
               from: glow.xA
               to: glow.xB
@@ -362,10 +348,6 @@ Item {
             loops: Animation.Infinite
             running: root.effectVisible && !root.reducedMotion
 
-            PauseAnimation {
-              duration: Math.round(glow.initialDelay * 0.56)
-            }
-
             NumberAnimation {
               from: glow.yA
               to: glow.yB
@@ -384,10 +366,6 @@ Item {
           SequentialAnimation on opacity {
             loops: Animation.Infinite
             running: root.effectVisible && !root.reducedMotion
-
-            PauseAnimation {
-              duration: Math.round(glow.initialDelay * 0.32)
-            }
 
             NumberAnimation {
               from: glow.glowFloor
