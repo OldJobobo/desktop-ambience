@@ -368,6 +368,11 @@ remove the plugin without this Lacuna repository present.
 
 ### Phase 6 — Live validation and release
 
+**Status:** complete for `v0.4.0`. The repeatable matrix and release findings are
+recorded in [`docs/release/v0.4.0.md`](docs/release/v0.4.0.md); machine-readable
+evidence and the visual contact sheet live under
+[`docs/release/evidence/0.4.0/`](docs/release/evidence/0.4.0/).
+
 Test at minimum:
 
 - one and multiple monitors;
