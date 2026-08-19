@@ -411,8 +411,12 @@ Item {
             borderSpec: Border.controlSpec("normal", Color.foreground, Color.accent)
 
             Flickable {
-              anchors.fill: parent
+              anchors.top: parent.top
+              anchors.left: parent.left
+              anchors.right: parent.right
+              anchors.bottom: iconFooter.top
               anchors.margins: Style.space(14)
+              anchors.bottomMargin: Style.space(10)
               contentWidth: width
               contentHeight: compositionColumn.implicitHeight
               clip: true
@@ -536,38 +540,38 @@ Item {
                   }
                 }
 
-                Rectangle { width: parent.width; height: 1; color: root.faint }
-                PanelSectionHeader { text: "BAR ICON" }
+              }
+            }
 
-                Text {
-                  width: parent.width
-                  text: "Choose the launcher symbol shown in the Omarchy bar."
-                  color: root.muted
-                  font.family: Style.font.family
-                  font.pixelSize: Style.font.bodySmall
-                  wrapMode: Text.WordWrap
-                }
+            Column {
+              id: iconFooter
+              anchors.left: parent.left
+              anchors.right: parent.right
+              anchors.bottom: parent.bottom
+              anchors.margins: Style.space(14)
+              spacing: Style.space(7)
 
-                Grid {
-                  id: iconGrid
-                  width: parent.width
-                  columns: 2
-                  spacing: Style.space(6)
+              Rectangle { width: parent.width; height: 1; color: root.faint }
+              PanelSectionHeader { text: "BAR ICON · " + LauncherIcons.labelFor(root.barIconId).toUpperCase() }
 
-                  Repeater {
-                    model: root.launcherIcons
+              Grid {
+                id: iconGrid
+                width: parent.width
+                columns: 4
+                spacing: Style.space(6)
 
-                    Button {
-                      required property var modelData
-                      width: (iconGrid.width - iconGrid.spacing) / 2
-                      text: modelData.glyph + "  " + modelData.label
-                      tooltipText: modelData.label
-                      selected: root.barIconId === modelData.id
-                      leftAlign: true
-                      bordered: true
-                      focusable: true
-                      onClicked: root.setBarIcon(modelData.id)
-                    }
+                Repeater {
+                  model: root.launcherIcons
+
+                  Button {
+                    required property var modelData
+                    width: (iconGrid.width - iconGrid.spacing * 3) / 4
+                    text: modelData.glyph
+                    tooltipText: modelData.label
+                    selected: root.barIconId === modelData.id
+                    bordered: true
+                    focusable: true
+                    onClicked: root.setBarIcon(modelData.id)
                   }
                 }
               }
