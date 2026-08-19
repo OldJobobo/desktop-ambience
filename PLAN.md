@@ -1,6 +1,6 @@
 # Desktop Ambience Standalone Plugin Extraction
 
-Status: proposed; architecture ready, foreground policy requires approval
+Status: approved for execution; persistent panel root, foreground mode, and dedicated vignette are in 1.0 scope
 
 ## Goal
 
@@ -61,7 +61,7 @@ can be installed through the normal Omarchy repository-source workflow.
 ## Version-One Scope
 
 Include the eight effects already composed by
-`lacuna.ambience-host/AmbienceStack.qml`:
+`lacuna.ambience-host/AmbienceStack.qml` plus the dedicated background vignette:
 
 1. Aurora Drift (`auroraDrift`)
 2. Cinematic Light (`cinematicLight`)
@@ -71,25 +71,30 @@ Include the eight effects already composed by
 6. God Rays (`godRays`)
 7. Rainfall (`rainfall`)
 8. VHS (`vhs`)
+9. Background Vignette (copy its canonical ID from the extraction source)
 
-Preserve ordered composition: index 0 is frontmost, invalid IDs are ignored,
-and duplicates collapse to the first occurrence.
+Preserve ordered composition for the existing ambience stack: index 0 is
+frontmost, invalid IDs are ignored, and duplicates collapse to the first
+occurrence. Preserve the dedicated vignette's existing independent lifecycle
+until its source contract is pinned; do not force it into the ordered list as
+part of scaffolding.
 
 Do not include these in version one:
 
-- `lacuna.background-vignette`, which has Lacuna frame-content geometry and a
-  separate non-animation lifecycle;
 - `lacuna.desktop-clock`;
 - media-player background video;
 - Lacuna frame-border repainting; or
 - a shader/particle performance rewrite.
 
-A simple per-effect vignette remains part of effects that already own one.
+Foreground presentation and the dedicated vignette are required 1.0 features.
+A simple per-effect vignette also remains part of effects that already own one.
 
 ## Current Extraction Baseline
 
-The implementation baseline is `lacuna.ambience-host/`, not the eight fallback
-plugin windows. It already gives the extraction:
+The ambience-stack implementation baseline is `lacuna.ambience-host/`, not the
+eight fallback plugin windows. The dedicated vignette baseline is
+`lacuna.background-vignette/`; Phase 0 must pin and test both sources. Together
+they give the extraction:
 
 - one deterministic `AmbienceStack` with lazy per-effect loaders;
 - one Bottom or Overlay host surface per output;
@@ -113,8 +118,9 @@ The host is not standalone today:
 - the host and effect files contain duplicated settings, theme, and file-watch
   adapters.
 
-The rendering baseline is approximately 5,365 lines of QML. Preserve its visual
-output during extraction; optimization is a separate project because the
+The ambience-host rendering baseline is approximately 5,365 lines of QML;
+Phase 0 must record the additional vignette baseline separately. Preserve their
+visual output during extraction. Optimization is a separate project because the
 archived animation-pipeline experiment documents prior visual-parity failures.
 
 ## Target Layout
@@ -135,7 +141,8 @@ jobo.desktop-ambience/
 │   ├── FilmGrainEffect.qml
 │   ├── GodRaysEffect.qml
 │   ├── RainfallEffect.qml
-│   └── VhsEffect.qml
+│   ├── VhsEffect.qml
+│   └── VignetteEffect.qml
 ├── services/
 │   ├── AmbienceSettings.qml
 │   ├── EffectRegistry.js
@@ -209,25 +216,21 @@ Use `WlrLayer.Bottom`, an empty input mask, no keyboard focus, and
 `ExclusionMode.Ignore`. This is the version-one default and must work without
 any Lacuna geometry or services.
 
-### Foreground mode decision
+### Foreground mode
 
-Stock Omarchy does not expose Lacuna's authoritative frame-border bridge.
-An Overlay ambience surface can also paint above the stock bar, menus, and
-other Overlay UI depending on mapping order.
+Foreground presentation is required in 1.0. Ship it as an explicit
+"above shell UI" option using a click-through `WlrLayer.Overlay` surface.
+Document that it may cover the stock bar, menus, and other Overlay UI depending
+on mapping order.
 
-Choose one policy before implementation:
+Stock Omarchy does not expose Lacuna's authoritative frame-border bridge. Do
+not couple the standalone plugin to Lacuna frame APIs, private map order, or
+invented stock-bar exclusion geometry. If a stable public host API is identified
+before release, its geometry may be adopted through a host adapter without
+rewriting effect bodies.
 
-1. **Recommended for 1.0:** ship background mode only and hold foreground mode
-   behind an experimental setting until bar/menu behavior is accepted live.
-2. Ship foreground mode as an explicit "above shell UI" option, document that
-   it is click-through but may cover shell chrome, and suppress it on fullscreen
-   outputs.
-3. Add stock-bar exclusion geometry only after identifying a stable public host
-   API. Do not couple the standalone plugin to Lacuna frame APIs or private map
-   order.
-
-Regardless of the choice, fullscreen applications must suppress all foreground
-paint on their own output without reserving space or accepting input.
+Fullscreen applications must suppress all foreground paint on their own output
+without reserving space or accepting input.
 
 ## Independence Contract
 
@@ -244,9 +247,10 @@ effect systems simultaneously, but it must not name or inspect Lacuna plugins.
 
 ### Phase 0 — Pin the extraction source
 
-- Record the exact source commit, Omarchy package revision, and Quickshell
-  revision.
-- Run the existing ambience ordering, contract, and live visual tests.
+- Record the exact source commit for both `lacuna.ambience-host/` and
+  `lacuna.background-vignette/`, plus the Omarchy package revision and
+  Quickshell revision.
+- Run the existing ambience ordering, vignette contract, and live visual tests.
 - Save the passing test output and current live configuration as extraction
   evidence.
 - Optionally retain screenshots as regression evidence; they are not a recipe
@@ -258,14 +262,16 @@ effect systems simultaneously, but it must not name or inspect Lacuna plugins.
 
 - Duplicate `lacuna.ambience-host/` as `jobo.desktop-ambience/` without changing
   the original Lacuna plugin.
-- Preserve `AmbienceStack.qml`, `FullscreenGuard.qml`, and all eight effect files
-  intact in the first copy commit so provenance and later diffs are obvious.
+- Preserve `AmbienceStack.qml`, `FullscreenGuard.qml`, all eight ordered effect
+  files, and the dedicated vignette renderer intact in the first copy commit so
+  provenance and later diffs are obvious.
 - In a second mechanical commit, rename the manifest ID, IPC target, layer
   namespaces, and object names to the `jobo` namespace.
-- Remove `ForegroundFrameBorder.qml` only because stock Omarchy has no Lacuna
-  frame bridge; do not replace it with newly invented geometry.
-- Keep rendering code byte-for-byte except where a renamed injected property is
-  required to sever a Lacuna dependency.
+- Remove the Lacuna-specific `ForegroundFrameBorder.qml` bridge because stock
+  Omarchy has no matching public frame API; host foreground and vignette paint
+  on the selected full-output surface instead of newly invented frame geometry.
+- Keep rendering code byte-for-byte except where a renamed injected property or
+  full-output geometry adapter is required to sever a Lacuna dependency.
 
 **Gate:** the copied renderer still passes the existing ordering and lazy-load
 behavior tests before settings or UI extraction begins.
@@ -297,7 +303,7 @@ behavior tests before settings or UI extraction begins.
   output and one on-demand settings window.
 - Preserve lazy effect loading and sibling-z ordering.
 - Keep all surfaces input-transparent and non-exclusive.
-- Add per-output fullscreen suppression for any accepted foreground mode.
+- Add required per-output fullscreen suppression for foreground mode.
 - Add an IPC `status()` method reporting mode, active order, loaded effect
   count, mapped surfaces, and persistence health.
 
@@ -340,7 +346,8 @@ Test at minimum:
 
 - one and multiple monitors;
 - mixed resolution, scale, orientation, and refresh rate;
-- every effect alone and a three-effect stack;
+- every ordered effect alone, the dedicated vignette alone, and a three-effect
+  stack with the vignette enabled;
 - reorder without effect object recreation;
 - theme switch while effects are active;
 - malformed settings and interrupted-save recovery;
@@ -376,7 +383,8 @@ clean-profile install passes, and all documented acceptance criteria are met.
 
 The extraction is complete when:
 
-- one Omarchy plugin ID owns all eight effects and their settings;
+- one Omarchy plugin ID owns all eight ordered effects, the dedicated vignette,
+  and their settings;
 - stock Omarchy is the only runtime dependency;
 - installation does not require Lacuna files, services, menu, bar, or scripts;
 - one selected host surface exists per output, not one surface per effect;
@@ -384,17 +392,21 @@ The extraction is complete when:
   effect objects;
 - settings persist atomically and failures are visible and retryable;
 - theme changes propagate through one shared adapter;
-- foreground behavior follows the approved explicit policy and real fullscreen
-  suppression works per output;
+- explicit foreground presentation works, remains click-through, documents its
+  shell-chrome overlap behavior, and suppresses paint per output for real
+  fullscreen applications;
+- the dedicated vignette preserves its source behavior in both background and
+  foreground presentation;
 - current effect screenshots remain visually equivalent; and
 - install, update, disable, and uninstall are documented and tested on a clean
   base Omarchy profile.
 
-## Decisions Needed Before Phase 1
+## Resolved Decisions
 
-1. Approve the persistent panel-root architecture.
-2. Choose the version-one foreground policy; background-only is recommended.
-3. Confirm that the dedicated background vignette remains out of version one.
+1. The persistent panel-root architecture is approved.
+2. Version 1.0 includes background and explicit click-through foreground
+   presentation.
+3. Version 1.0 includes the dedicated background vignette.
 
 ## Follow-On Work
 

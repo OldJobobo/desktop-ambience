@@ -1,4 +1,5 @@
 *.qmlc
 *.jsc
+.pi/
 __pycache__/
 .pytest_cache/

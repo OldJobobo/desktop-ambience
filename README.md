@@ -14,6 +14,7 @@ in [`PLAN.md`](PLAN.md); renderer extraction has not started.
 - God Rays
 - Rainfall
 - VHS
+- Dedicated vignette
 
 ## Current status
 
@@ -21,9 +22,10 @@ The manifest and plugin lifecycle shell are present, but rendering, settings
 persistence, the settings window, and theme integration are placeholders. Do
 not install this revision expecting visible effects.
 
-Before Phase 1, the decisions listed in `PLAN.md` still need approval. The
-recommended 1.0 policy is a persistent panel root with background-only
-presentation; the dedicated background vignette remains out of scope.
+The 1.0 product boundary is approved: a persistent panel root with background
+and explicit click-through foreground presentation, including the dedicated
+vignette. Foreground mode may cover stock shell chrome and must suppress paint
+per output for fullscreen applications.
 
 ## Development
 
