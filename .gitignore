@@ -3,3 +3,5 @@
 .pi/
 __pycache__/
 .pytest_cache/
+docs/release/evidence/**/*.png
+docs/release/evidence/**/*.log

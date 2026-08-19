@@ -258,6 +258,15 @@ Run the reversible monitor lifecycle check when validating Hyprland hotplug:
 JOBO_AMBIENCE_LIVE_HOTPLUG=1 python tests/live_phase3_hotplug.py
 ```
 
+Run the complete Phase 6 release matrix only from a live Omarchy session. It
+uses temporary XDG homes and headless outputs, briefly tests an advertised
+alternate refresh rate, restores the original mode, and writes evidence under
+`docs/release/evidence/<version>/`:
+
+```bash
+JOBO_AMBIENCE_LIVE_PHASE6=1 ./scripts/check-phase6.sh
+```
+
 Versioning, pull-request checks, and the release process are defined in
 [`CONTRIBUTING.md`](CONTRIBUTING.md). Release notes are kept in
 [`CHANGELOG.md`](CHANGELOG.md). Validate a clean release candidate with:

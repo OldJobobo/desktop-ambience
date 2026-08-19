@@ -48,7 +48,13 @@ Release metadata and clean-tree check:
 ./scripts/release-check.sh
 ```
 
-Phase 6 live validation remains required before a stable tag. Record its hardware, visual, lifecycle, and performance evidence under `docs/release/`.
+Phase 6 live validation remains required before a stable tag. Run the complete reversible matrix with:
+
+```bash
+JOBO_AMBIENCE_LIVE_PHASE6=1 ./scripts/check-phase6.sh
+```
+
+It records hardware, visual, lifecycle, fullscreen, theme-switch, and performance evidence under `docs/release/evidence/<version>/`.
 
 ## Release process
 
