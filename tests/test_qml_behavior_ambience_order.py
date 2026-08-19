@@ -65,7 +65,7 @@ def center_rgb(path: Path) -> tuple[int, int, int]:
 
 @unittest.skipUnless(HAVE_SESSION, "needs a quickshell binary and a Wayland session")
 class QmlAmbienceOrderBehaviorTests(unittest.TestCase):
-    def test_production_effects_load_only_for_painting_selected_stack(self):
+    def test_production_effects_load_only_for_enabled_selected_stack_and_survive_paint_suppression(self):
         qml = f'''
 import Quickshell
 import QtQuick
@@ -93,6 +93,7 @@ ShellRoot {{
         item.settings = state
         item.activeEffects = ["auroraDrift", "filmGrain"]
         item.paintEnabled = false
+        item.productionEffectsEnabled = false
         disabledProbe.restart()
       }}
     }}
@@ -103,7 +104,7 @@ ShellRoot {{
       onTriggered: {{
         var stack = stackLoader.item
         host.propertyA = stack.activeProductionEffectCount
-        stack.paintEnabled = true
+        stack.productionEffectsEnabled = true
         enabledProbe.restart()
       }}
     }}
@@ -119,6 +120,7 @@ ShellRoot {{
         host.firstIdentity = stack.productionEffectObject("auroraDrift")
         host.secondIdentity = stack.productionEffectObject("filmGrain")
         var enabledCount = stack.activeProductionEffectCount
+        stack.paintEnabled = true
         stack.activeEffects = ["filmGrain", "auroraDrift"]
         Qt.callLater(function() {{
           console.log("BEHAVE " + JSON.stringify({{

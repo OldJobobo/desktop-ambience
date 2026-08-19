@@ -1,0 +1,16 @@
+Phase 3 live headless-output lifecycle validation
+2026-08-19T12:09:49-07:00
+Hyprland 0.56.2 built from branch v0.56.2 at commit efb50993780079460b0cbed1363e2166a2de1d9f clean ([gha] Nix: update inputs).
+Command: JOBO_AMBIENCE_LIVE_HOTPLUG=1 python tests/live_phase3_hotplug.py
+{
+  "baseline": 3,
+  "observedAdd": true,
+  "finalScreens": 3,
+  "finalSurfaces": 3,
+  "finalMapped": 3,
+  "names": [
+    "DP-1",
+    "DP-2",
+    "DP-3"
+  ]
+}

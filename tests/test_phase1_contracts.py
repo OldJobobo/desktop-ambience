@@ -19,22 +19,22 @@ def test_manifest_uses_persistent_panel_boundary():
     assert "lacuna" not in manifest
 
 
-def test_phase1_host_preserves_source_dual_window_layer_contract():
-    # Interim extraction baseline only. Phase 3 replaces both window trees with
-    # one dynamically selected surface per output and must revise this test.
+def test_phase3_host_owns_one_dynamic_surface_per_output():
     panel = read("Panel.qml")
     assert 'target: "jobo-desktop-ambience"' in panel
-    assert 'WlrLayershell.namespace: "jobo-desktop-ambience-bottom"' in panel
-    assert 'WlrLayershell.namespace: "jobo-desktop-ambience-overlay"' in panel
-    assert panel.count("mask: Region {}") == 2
-    assert panel.count("WlrLayershell.keyboardFocus: WlrKeyboardFocus.None") == 2
-    assert panel.count("exclusionMode: ExclusionMode.Ignore") == 2
-    assert 'WlrLayershell.layer: WlrLayer.Bottom' in panel
-    assert 'WlrLayershell.layer: WlrLayer.Overlay' in panel
+    assert panel.count("Variants {") == 1
+    assert panel.count("PanelWindow {") == 1
+    assert panel.count("AmbienceStack {") == 2  # one order probe plus one production stack
+    assert panel.count("VignetteEffect {") == 1
+    assert 'WlrLayershell.namespace: "jobo-desktop-ambience"' in panel
+    assert panel.count("mask: Region {}") == 1
+    assert panel.count("WlrLayershell.keyboardFocus: WlrKeyboardFocus.None") == 1
+    assert panel.count("exclusionMode: ExclusionMode.Ignore") == 1
+    assert "root.foregroundOverlay ? WlrLayer.Overlay : WlrLayer.Bottom" in panel
     assert "fullscreenGuard.activeOnScreen(modelData)" in panel
-    assert "paintEnabled: root.ambienceEnabled && root.mappingMode === \"overlay\"" in panel
-    assert "&& !overlayWindow.fullscreenSuppressed" in panel
-    assert panel.count("VignetteEffect {") == 2
+    assert "ScreenMoveRemap {" in panel
+    assert "paintEnabled: ambienceSurface.paintAllowed" in panel
+    assert "productionEffectsEnabled: root.ambienceEnabled" in panel
     assert "ForegroundFrameBorder" not in panel
     assert "foregroundFrameSource" not in panel
     assert not re.search(r"(?:/omarchy/lacuna|lacuna\.|lacuna-|lacunaState)", panel)
@@ -44,10 +44,9 @@ def test_vignette_maps_independently_without_enabling_ambience_paint():
     panel = read("Panel.qml")
     assert "readonly property bool visualSurfaceEnabled: ambienceEnabled || vignetteEnabled" in panel
     assert "readonly property string mappingMode: !visualSurfaceEnabled" in panel
-    assert 'paintEnabled: root.ambienceEnabled && root.mappingMode === "bottom"' in panel
-    assert 'paintEnabled: root.mappingMode === "bottom"' in panel
-    assert "paintEnabled: root.ambienceEnabled && root.mappingMode === \"overlay\"" in panel
-    assert 'paintEnabled: root.mappingMode === "overlay" && !overlayWindow.fullscreenSuppressed' in panel
+    assert "productionEffectsEnabled: root.ambienceEnabled" in panel
+    assert "settings: root.backgroundVignette" in panel
+    assert panel.count("paintEnabled: ambienceSurface.paintAllowed") == 2
 
 
 def test_vignette_is_a_hosted_full_output_renderer():
@@ -77,7 +76,7 @@ def test_crt_foreground_mode_is_injected_from_the_host():
     stack = read("components/AmbienceStack.qml")
     crt = read("effects/CrtEffect.qml")
 
-    assert panel.count("foregroundOverlay: root.foregroundOverlay") == 2
+    assert panel.count("foregroundOverlay: root.foregroundOverlay") == 1
     assert "property bool foregroundOverlay: false" in stack
     assert "foregroundOverlay: root.foregroundOverlay" in stack
     assert "property bool foregroundOverlay: false" in crt

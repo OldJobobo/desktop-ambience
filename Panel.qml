@@ -2,19 +2,24 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
 import QtQuick
+import qs.Ui
 import "components"
 import "effects"
 import "services"
 
-// Persistent host. One settings owner and one theme adapter feed every output;
-// the interim dual-surface lifecycle remains until Phase 3.
+// Persistent host. One settings owner and one theme adapter feed one
+// dynamically layered, click-through ambience surface per output.
 Item {
   id: root
   objectName: "joboDesktopAmbienceRoot"
 
   property string omarchyPath: ""
   property var manifest: null
+  property var shell: null
 
+  readonly property var settingsService: ambienceSettings
+  readonly property var themeService: themeAdapter
+  readonly property var fullscreenService: fullscreenGuard
   readonly property bool ambienceEnabled: ambienceSettings.enabled
   readonly property string presentation: ambienceSettings.presentation
   readonly property var activeEffects: ambienceSettings.activeEffects
@@ -22,39 +27,79 @@ Item {
   readonly property bool vignetteEnabled: backgroundVignette.enabled === true
   readonly property real vignetteIntensity: Number(backgroundVignette.intensity)
   readonly property bool vignetteBehindEffects: backgroundVignette.ignoreBackgroundAnimationLayer === true
-
-  // Panel lifecycle seam reserved for the on-demand Phase 4 settings window.
-  property bool opened: false
-  function open(payloadJson) { opened = true }
-  function close() { opened = false }
-
-  property var productionStacks: []
+  readonly property bool opened: settingsWindow.opened
   readonly property bool hostReady: true
   readonly property bool foregroundOverlay: presentation === "foreground"
   readonly property bool visualSurfaceEnabled: ambienceEnabled || vignetteEnabled
   readonly property string mappingMode: !visualSurfaceEnabled
     ? "none" : (foregroundOverlay ? "overlay" : "bottom")
 
+  property var productionSurfaces: []
+
+  function open(payloadJson) {
+    settingsWindow.open(payloadJson)
+  }
+
+  function close() {
+    settingsWindow.close()
+  }
+
   function normalizedOrder() {
     return orderProbe.normalizeActiveEffects(activeEffects)
   }
 
-  function registerProductionStack(stack) {
-    if (productionStacks.indexOf(stack) < 0) productionStacks.push(stack)
+  function registerProductionSurface(surface) {
+    if (!surface || productionSurfaces.indexOf(surface) >= 0) return
+    var next = productionSurfaces.slice()
+    next.push(surface)
+    productionSurfaces = next
   }
 
-  function unregisterProductionStack(stack) {
-    var index = productionStacks.indexOf(stack)
-    if (index >= 0) productionStacks.splice(index, 1)
+  function unregisterProductionSurface(surface) {
+    var index = productionSurfaces.indexOf(surface)
+    if (index < 0) return
+    var next = productionSurfaces.slice()
+    next.splice(index, 1)
+    productionSurfaces = next
+  }
+
+  function surfaceAt(index) {
+    return index >= 0 && index < productionSurfaces.length ? productionSurfaces[index] : null
   }
 
   function loadedEffectCount() {
     var count = 0
-    for (var i = 0; i < productionStacks.length; i++) {
-      var stack = productionStacks[i]
+    for (var i = 0; i < productionSurfaces.length; i++) {
+      var surface = productionSurfaces[i]
+      var stack = surface ? surface.stackObject : null
       if (stack) count += Number(stack.activeProductionEffectCount || 0)
     }
     return count
+  }
+
+  function mappedSurfaceCount() {
+    var count = 0
+    for (var i = 0; i < productionSurfaces.length; i++)
+      if (productionSurfaces[i] && productionSurfaces[i].visible) count += 1
+    return count
+  }
+
+  function surfaceStatus() {
+    var result = []
+    for (var i = 0; i < productionSurfaces.length; i++) {
+      var surface = productionSurfaces[i]
+      if (!surface) continue
+      result.push({
+        output: surface.outputName,
+        mapped: surface.visible,
+        mode: surface.layerName,
+        fullscreenSuppressed: surface.fullscreenSuppressed,
+        paintAllowed: surface.paintAllowed,
+        loadedEffectCount: surface.stackObject
+          ? Number(surface.stackObject.activeProductionEffectCount || 0) : 0
+      })
+    }
+    return result
   }
 
   function zMap() {
@@ -64,9 +109,54 @@ Item {
     return result
   }
 
+  function statusObject() {
+    return {
+      enabled: root.ambienceEnabled,
+      presentation: root.presentation,
+      mode: root.mappingMode,
+      activeEffects: root.normalizedOrder(),
+      activeOrder: root.normalizedOrder(),
+      vignetteEnabled: root.vignetteEnabled,
+      vignetteIntensity: root.vignetteIntensity,
+      loadedEffectCount: root.loadedEffectCount(),
+      surfaceCount: root.productionSurfaces.length,
+      expectedSurfaceCount: Quickshell.screens.length,
+      mappedSurfaceCount: root.mappedSurfaceCount(),
+      surfaces: root.surfaceStatus(),
+      settingsOpened: root.opened,
+      z: root.zMap(),
+      persistence: {
+        healthy: ambienceSettings.persistenceReady
+          && ambienceSettings.persistenceState !== "failed"
+          && !ambienceSettings.diskDiverged,
+        ready: ambienceSettings.persistenceReady,
+        state: ambienceSettings.persistenceState,
+        error: ambienceSettings.persistenceError,
+        loadError: ambienceSettings.loadError,
+        diskDiverged: ambienceSettings.diskDiverged,
+        recoveredFromMalformedEdit: ambienceSettings.recoveredFromMalformedEdit,
+        retryAvailable: ambienceSettings.retryAvailable,
+        requestedRevision: ambienceSettings.requestedSaveRevision,
+        confirmedRevision: ambienceSettings.confirmedSaveRevision
+      },
+      theme: themeAdapter.status()
+    }
+  }
+
+  function statusJson() {
+    return JSON.stringify(statusObject())
+  }
+
   AmbienceSettings { id: ambienceSettings }
   ThemeAdapter { id: themeAdapter }
   FullscreenGuard { id: fullscreenGuard }
+
+  SettingsWindow {
+    id: settingsWindow
+    settings: ambienceSettings
+    shell: root.shell
+    pluginId: "jobo.desktop-ambience"
+  }
 
   AmbienceStack {
     id: orderProbe
@@ -84,15 +174,23 @@ Item {
     model: Quickshell.screens
 
     PanelWindow {
-      id: bottomWindow
-      objectName: "joboDesktopAmbienceBottomSurface"
+      id: ambienceSurface
+      objectName: "joboDesktopAmbienceSurface"
       required property var modelData
+      readonly property string outputName: String(modelData && modelData.name || "")
+      readonly property string layerName: root.foregroundOverlay ? "overlay" : "bottom"
+      readonly property bool fullscreenSuppressed: root.foregroundOverlay
+        && fullscreenGuard.activeOnScreen(modelData)
+      readonly property bool paintAllowed: visible && !fullscreenSuppressed
+      readonly property var stackObject: productionStack
+      readonly property int effectiveLayer: WlrLayershell.layer
 
       screen: modelData
-      visible: root.mappingMode === "bottom"
+      visible: root.visualSurfaceEnabled && !remapGuard.remapping
       color: "transparent"
-      WlrLayershell.namespace: "jobo-desktop-ambience-bottom"
-      WlrLayershell.layer: WlrLayer.Bottom
+      updatesEnabled: true
+      WlrLayershell.namespace: "jobo-desktop-ambience"
+      WlrLayershell.layer: root.foregroundOverlay ? WlrLayer.Overlay : WlrLayer.Bottom
       WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
       exclusionMode: ExclusionMode.Ignore
       mask: Region {}
@@ -104,74 +202,33 @@ Item {
         right: true
       }
 
+      ScreenMoveRemap {
+        id: remapGuard
+        window: ambienceSurface
+      }
+
       AmbienceStack {
+        id: productionStack
         anchors.fill: parent
-        targetScreen: bottomWindow.modelData
+        targetScreen: ambienceSurface.modelData
         settings: ambienceSettings
         theme: themeAdapter
         activeEffects: root.activeEffects
         foregroundOverlay: root.foregroundOverlay
-        paintEnabled: root.ambienceEnabled && root.mappingMode === "bottom"
-        Component.onCompleted: root.registerProductionStack(this)
-        Component.onDestruction: root.unregisterProductionStack(this)
+        paintEnabled: ambienceSurface.paintAllowed
+        productionEffectsEnabled: root.ambienceEnabled
       }
 
       VignetteEffect {
         anchors.fill: parent
         z: root.vignetteBehindEffects ? -10000 : 10000
-        targetScreen: bottomWindow.modelData
+        targetScreen: ambienceSurface.modelData
         settings: root.backgroundVignette
-        paintEnabled: root.mappingMode === "bottom"
-      }
-    }
-  }
-
-  Variants {
-    model: Quickshell.screens
-
-    PanelWindow {
-      id: overlayWindow
-      objectName: "joboDesktopAmbienceOverlaySurface"
-      required property var modelData
-      readonly property bool fullscreenSuppressed: fullscreenGuard.activeOnScreen(modelData)
-
-      screen: modelData
-      // Foreground presentation is visual-only and may paint above shell UI.
-      visible: root.mappingMode === "overlay"
-      color: "transparent"
-      WlrLayershell.namespace: "jobo-desktop-ambience-overlay"
-      WlrLayershell.layer: WlrLayer.Overlay
-      WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-      exclusionMode: ExclusionMode.Ignore
-      mask: Region {}
-
-      anchors {
-        top: true
-        bottom: true
-        left: true
-        right: true
+        paintEnabled: ambienceSurface.paintAllowed
       }
 
-      AmbienceStack {
-        anchors.fill: parent
-        targetScreen: overlayWindow.modelData
-        settings: ambienceSettings
-        theme: themeAdapter
-        activeEffects: root.activeEffects
-        foregroundOverlay: root.foregroundOverlay
-        paintEnabled: root.ambienceEnabled && root.mappingMode === "overlay"
-          && !overlayWindow.fullscreenSuppressed
-        Component.onCompleted: root.registerProductionStack(this)
-        Component.onDestruction: root.unregisterProductionStack(this)
-      }
-
-      VignetteEffect {
-        anchors.fill: parent
-        z: root.vignetteBehindEffects ? -10000 : 10000
-        targetScreen: overlayWindow.modelData
-        settings: root.backgroundVignette
-        paintEnabled: root.mappingMode === "overlay" && !overlayWindow.fullscreenSuppressed
-      }
+      Component.onCompleted: root.registerProductionSurface(this)
+      Component.onDestruction: root.unregisterProductionSurface(this)
     }
   }
 
@@ -179,31 +236,7 @@ Item {
     target: "jobo-desktop-ambience"
 
     function status(): string {
-      return JSON.stringify({
-        enabled: root.ambienceEnabled,
-        presentation: root.presentation,
-        activeEffects: root.normalizedOrder(),
-        vignetteEnabled: root.vignetteEnabled,
-        vignetteIntensity: root.vignetteIntensity,
-        loadedEffectCount: root.loadedEffectCount(),
-        mappingMode: root.mappingMode,
-        mappedSurfaceCount: root.mappingMode === "none" ? 0 : Quickshell.screens.length,
-        z: root.zMap(),
-        bottomRenderable: root.mappingMode === "bottom",
-        overlayRenderable: root.mappingMode === "overlay",
-        persistence: {
-          ready: ambienceSettings.persistenceReady,
-          state: ambienceSettings.persistenceState,
-          error: ambienceSettings.persistenceError,
-          loadError: ambienceSettings.loadError,
-          diskDiverged: ambienceSettings.diskDiverged,
-          recoveredFromMalformedEdit: ambienceSettings.recoveredFromMalformedEdit,
-          retryAvailable: ambienceSettings.retryAvailable,
-          requestedRevision: ambienceSettings.requestedSaveRevision,
-          confirmedRevision: ambienceSettings.confirmedSaveRevision
-        },
-        theme: themeAdapter.status()
-      })
+      return root.statusJson()
     }
   }
 }

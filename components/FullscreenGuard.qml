@@ -4,6 +4,9 @@ import QtQuick
 Item {
   id: root
 
+  // Injectable for deterministic per-output behavior tests; production uses
+  // Quickshell's Hyprland singleton.
+  property var backend: Hyprland
   property int revision: 0
 
   visible: false
@@ -21,9 +24,10 @@ Item {
 
   function activeWorkspaceForScreen(screen) {
     root.revision
-    var monitor = screen && Hyprland.monitorFor ? Hyprland.monitorFor(screen) : null
+    var service = root.backend
+    var monitor = service && service.monitorFor ? service.monitorFor(screen) : null
     if (monitor && monitor.activeWorkspace) return monitor.activeWorkspace
-    return screen ? null : (Hyprland.focusedWorkspace || null)
+    return !screen && service ? (service.focusedWorkspace || null) : null
   }
 
   function activeOnScreen(screen) {
@@ -31,8 +35,9 @@ Item {
   }
 
   function refresh() {
-    if (Hyprland.refreshWorkspaces) Hyprland.refreshWorkspaces()
-    if (Hyprland.refreshToplevels) Hyprland.refreshToplevels()
+    var service = root.backend
+    if (service && service.refreshWorkspaces) service.refreshWorkspaces()
+    if (service && service.refreshToplevels) service.refreshToplevels()
     root.revision += 1
   }
 
@@ -44,7 +49,8 @@ Item {
   }
 
   Connections {
-    target: Hyprland
+    target: root.backend
+    ignoreUnknownSignals: true
 
     function onRawEvent(event) {
       var name = String(event && event.name || "")
@@ -59,7 +65,8 @@ Item {
   }
 
   Connections {
-    target: Hyprland.workspaces
+    target: root.backend && root.backend.workspaces ? root.backend.workspaces : null
+    ignoreUnknownSignals: true
 
     function onValuesChanged() {
       root.revision += 1

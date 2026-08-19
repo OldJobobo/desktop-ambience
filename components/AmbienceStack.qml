@@ -61,7 +61,7 @@ Item {
 
   function productionEffectActive(effectId) {
     var effect = settingsFor(effectId)
-    return paintEnabled && productionEffectsEnabled && stackIndex(effectId) >= 0
+    return productionEffectsEnabled && stackIndex(effectId) >= 0
       && effect.enabled === true
   }
 

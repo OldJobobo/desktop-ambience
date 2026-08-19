@@ -31,8 +31,8 @@ def test_panel_owns_one_settings_service_and_one_theme_adapter():
     panel = read("Panel.qml")
     assert panel.count("AmbienceSettings { id: ambienceSettings }") == 1
     assert panel.count("ThemeAdapter { id: themeAdapter }") == 1
-    assert panel.count("settings: ambienceSettings") == 3
-    assert len(re.findall(r"^\s+theme: themeAdapter$", panel, re.MULTILINE)) == 3
+    assert panel.count("settings: ambienceSettings") == 3  # settings window, order probe, production stack
+    assert len(re.findall(r"^\s+theme: themeAdapter$", panel, re.MULTILINE)) == 2
     assert "readonly property bool ambienceEnabled: ambienceSettings.enabled" in panel
     assert "readonly property var activeEffects: ambienceSettings.activeEffects" in panel
     assert "persistenceState" in panel
@@ -100,8 +100,8 @@ def test_dedicated_vignette_stays_separate_and_changes_sibling_z():
     vignette = read("effects/VignetteEffect.qml")
     registry = read("services/EffectRegistry.js")
 
-    assert panel.count("settings: root.backgroundVignette") == 2
-    assert panel.count("z: root.vignetteBehindEffects ? -10000 : 10000") == 2
+    assert panel.count("settings: root.backgroundVignette") == 1
+    assert panel.count("z: root.vignetteBehindEffects ? -10000 : 10000") == 1
     assert "ignoreBackgroundAnimationLayer" in vignette
     assert "backgroundVignette" not in stack
     ordered_block = registry.split("var orderedEffects = [", 1)[1].split("]", 1)[0]
