@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -41,6 +42,22 @@ def test_global_stack_vignette_and_persistence_actions_are_owned_by_window():
     assert "DEDICATED VIGNETTE" in window
     assert "Place Behind Animations" in window
     assert "Confirm reset" in window
+
+
+def test_every_effect_setting_has_a_specific_description():
+    registry = read("services/EffectRegistry.js")
+    schema = registry.split("var fieldLabels", 1)[0]
+    hints = registry.split("var fieldHints = {", 1)[1].split("\n}", 1)[0]
+    field_keys = set(re.findall(r"(\w+): (?:bool|real|int|enum)Field\(", schema))
+    hint_keys = set(re.findall(r'^  (\w+): "', hints, re.MULTILINE))
+    assert field_keys <= hint_keys
+    for vague in (
+        "Controls how many source elements are rendered.",
+        "Controls the renderer's source geometry.",
+        "Tunes this part of the visual treatment.",
+        "Adjusts the source renderer setting.",
+    ):
+        assert vague not in hints
 
 
 def test_effect_editor_is_driven_by_registry_metadata_for_every_field_type():

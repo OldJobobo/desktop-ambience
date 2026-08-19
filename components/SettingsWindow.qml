@@ -443,7 +443,7 @@ Item {
                 ToggleSetting {
                   width: parent.width
                   label: "Ambience"
-                  hint: checked ? "The selected stack is mapped." : "All ordered effects are hidden."
+                  hint: checked ? "Shows the effects in the active stack." : "Hides all stacked effects."
                   checked: root.settings ? root.settings.enabled : false
                   onToggledTo: function(value) { root.setEnabled(value) }
                 }
@@ -466,6 +466,7 @@ Item {
                     selected: root.settings && root.settings.presentation === "background"
                     bordered: true
                     focusable: true
+                    tooltipText: "Draws effects behind windows and shell controls"
                     onClicked: root.setPresentation("background")
                   }
 
@@ -475,7 +476,7 @@ Item {
                     selected: root.settings && root.settings.presentation === "foreground"
                     bordered: true
                     focusable: true
-                    tooltipText: "Click-through overlay; may cover shell chrome"
+                    tooltipText: "Draws above windows without blocking clicks; may cover shell controls"
                     onClicked: root.setPresentation("foreground")
                   }
                 }
@@ -483,7 +484,7 @@ Item {
                 SliderSetting {
                   width: parent.width
                   label: "Global Opacity"
-                  hint: "Scales every ordered effect together."
+                  hint: "Sets the opacity of every stacked effect."
                   value: root.settings ? root.settings.opacity : 1
                   minimum: 0
                   maximum: 1
@@ -495,7 +496,7 @@ Item {
                 ToggleSetting {
                   width: parent.width
                   label: "Reduced Motion"
-                  hint: "Uses the calmer source timing where supported."
+                  hint: "Slows supported animations."
                   checked: root.settings ? root.settings.reduceMotion : false
                   onToggledTo: function(value) { root.setReduceMotion(value) }
                 }
@@ -506,7 +507,7 @@ Item {
                 Text {
                   visible: root.activeOrder.length === 0
                   width: parent.width
-                  text: "No effects selected. Add one below to begin."
+                  text: "The stack is empty. Add an effect below."
                   color: root.muted
                   font.family: Style.font.family
                   font.pixelSize: Style.font.bodySmall
@@ -637,8 +638,8 @@ Item {
 
                     Text {
                       text: root.effectIsActive(root.selectedEffectId)
-                        ? "Active renderer · changes save immediately"
-                        : "Not in the active stack"
+                        ? "In stack · Changes save automatically"
+                        : "Not in stack"
                       color: root.muted
                       font.family: Style.font.family
                       font.pixelSize: Style.font.bodySmall
@@ -725,7 +726,7 @@ Item {
 
                 Text {
                   width: parent.width
-                  text: "Independent from the ordered stack and never reorderable."
+                  text: "Runs separately from the effect stack and cannot be reordered."
                   color: root.muted
                   font.family: Style.font.family
                   font.pixelSize: Style.font.bodySmall
@@ -735,7 +736,7 @@ Item {
                 ToggleSetting {
                   width: parent.width
                   label: "Background Vignette"
-                  hint: "Darkens the outer edges of the full output."
+                  hint: "Darkens the outer edges of each display."
                   checked: root.vignetteValue("enabled") === true
                   onToggledTo: function(value) { root.setVignetteField("enabled", value) }
                 }
@@ -743,7 +744,7 @@ Item {
                 SliderSetting {
                   width: parent.width
                   label: "Vignette Intensity"
-                  hint: "Controls the dedicated edge treatment."
+                  hint: "Sets how dark the display edges become."
                   value: Number(root.vignetteValue("intensity"))
                   minimum: 0
                   maximum: 1
@@ -755,7 +756,7 @@ Item {
                 ToggleSetting {
                   width: parent.width
                   label: "Place Behind Animations"
-                  hint: "Moves the vignette below the ordered renderer stack."
+                  hint: "Draws the vignette behind all stacked effects."
                   checked: root.vignetteValue("ignoreBackgroundAnimationLayer") === true
                   onToggledTo: function(value) {
                     root.setVignetteField("ignoreBackgroundAnimationLayer", value)
