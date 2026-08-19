@@ -67,6 +67,95 @@ ShellRoot {{
             output[-2000:],
         )
 
+    def test_stack_waits_for_nonzero_stable_geometry_before_painting(self):
+        settings = json.dumps({
+            "enabled": True,
+            "intensity": 1,
+            "speed": 1,
+            "dropCount": 4,
+            "slant": 0,
+            "mistAmount": 0,
+            "splashAmount": 0,
+            "accentBlend": 0,
+            "vignette": False,
+        }).lower()
+        qml = f'''
+import Quickshell
+import QtQuick
+ShellRoot {{
+  id: root
+  QtObject {{
+    id: state
+    property real opacity: 1
+    property bool reduceMotion: false
+    property var effects: ({{rainfall: {settings}}})
+  }}
+  Item {{
+    id: host
+    width: 0
+    height: 0
+    Loader {{
+      id: stackLoader
+      anchors.fill: parent
+      source: "{qml_url('components/AmbienceStack.qml')}"
+      onLoaded: {{
+        item.settings = state
+        item.activeEffects = ["rainfall"]
+        item.productionEffectsEnabled = true
+        zeroProbe.start()
+      }}
+    }}
+  }}
+  Timer {{
+    id: zeroProbe
+    interval: 30
+    onTriggered: {{
+      var stack = stackLoader.item
+      root.zeroReady = stack.animationGeometryReady
+      root.zeroRuntime = stack.productionEffectObject("rainfall").runtimeEnabled
+      host.width = 320
+      host.height = 180
+      settlingProbe.start()
+      readyProbe.start()
+    }}
+  }}
+  property bool zeroReady: true
+  property bool zeroRuntime: true
+  property bool settlingReady: true
+  Timer {{
+    id: settlingProbe
+    interval: 25
+    onTriggered: root.settlingReady = stackLoader.item.animationGeometryReady
+  }}
+  Timer {{
+    id: readyProbe
+    interval: 130
+    onTriggered: {{
+      var stack = stackLoader.item
+      console.log("BEHAVE " + JSON.stringify({{
+        zeroReady: root.zeroReady,
+        zeroRuntime: root.zeroRuntime,
+        settlingReady: root.settlingReady,
+        ready: stack.animationGeometryReady,
+        runtime: stack.productionEffectObject("rainfall").runtimeEnabled
+      }}))
+      Qt.quit()
+    }}
+  }}
+}}
+'''
+        with tempfile.TemporaryDirectory() as config_home:
+            output = run_quickshell(qml, config_home=Path(config_home), timeout=10)
+        require_no_qml_errors(output)
+        payload = parse_behave(output)[-1]
+        self.assertEqual(payload, {
+            "zeroReady": False,
+            "zeroRuntime": False,
+            "settlingReady": False,
+            "ready": True,
+            "runtime": True,
+        }, output[-2000:])
+
     def test_cursor_tracker_stays_idle_until_activated(self):
         qml = f'''
 import Quickshell

@@ -166,7 +166,7 @@ ShellRoot {{
       if (caseId === "dustMotes") settings.mouseReactive = false
       item.effectSettings = settings
       item.globalOpacity = 1
-      item.reducedMotion = true
+      item.reducedMotion = caseId !== "rainfall"
       if ("theme" in item) item.theme = theme
     }}
     if ("targetScreen" in item) item.targetScreen = root.renderScreen
@@ -326,6 +326,14 @@ def process_cpu_ticks(pid: int) -> int:
     return int(fields[13]) + int(fields[14])
 
 
+def bright_fraction(path: Path, geometry: str) -> float:
+    proc = run([
+        "magick", str(path), "-crop", geometry, "+repage", "-colorspace", "gray",
+        "-threshold", "18%", "-format", "%[fx:mean]", "info:",
+    ])
+    return float(proc.stdout.strip())
+
+
 def image_metrics(path: Path) -> dict[str, object]:
     proc = run(
         [
@@ -427,6 +435,14 @@ try:
     if stack_hash == switched_hash:
         raise AssertionError("active stack pixels did not change after the theme switch")
 
+    rainfall_path = ARTIFACT_DIR / "rainfall.png"
+    rainfall_top = bright_fraction(rainfall_path, "1920x540+0+0")
+    rainfall_bottom = bright_fraction(rainfall_path, "1920x540+0+540")
+    if rainfall_top <= 0.01 or rainfall_bottom <= 0.01:
+        raise AssertionError(
+            f"rainfall startup did not populate the full output: top={rainfall_top} bottom={rainfall_bottom}"
+        )
+
     contact_sheet = ARTIFACT_DIR / "contact-sheet.webp"
     run([
         "magick", "montage",
@@ -444,6 +460,10 @@ try:
         "liveSettingsModified": False,
         "renderCases": image_case_ids,
         "themeSwitchChangedPixels": stack_hash != switched_hash,
+        "rainfallStartupCoverage": {
+            "topBrightFraction": rainfall_top,
+            "bottomBrightFraction": rainfall_bottom,
+        },
         "qmlFrameCadence": {
             "sampleFrames": runtime["frameCount"],
             "meanMs": runtime["meanFrameMs"],

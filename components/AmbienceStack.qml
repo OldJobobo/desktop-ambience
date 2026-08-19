@@ -12,6 +12,8 @@ Item {
   property bool foregroundOverlay: false
   property bool paintEnabled: true
   property bool productionEffectsEnabled: true
+  property bool animationGeometryReady: false
+  readonly property bool rendererPaintEnabled: paintEnabled && animationGeometryReady
   property Component testFrontComponent: null
   property Component testBackComponent: null
   readonly property var supportedEffects: [
@@ -37,6 +39,23 @@ Item {
     rainfallLoader,
     vhsLoader
   ].filter(function(loader) { return loader.active && loader.item !== null }).length
+
+  function scheduleGeometryReady() {
+    animationGeometryReady = false
+    geometrySettle.restart()
+  }
+
+  onWidthChanged: scheduleGeometryReady()
+  onHeightChanged: scheduleGeometryReady()
+  Component.onCompleted: scheduleGeometryReady()
+
+  Timer {
+    id: geometrySettle
+    interval: 80
+    onTriggered: {
+      if (root.width > 0 && root.height > 0) root.animationGeometryReady = true
+    }
+  }
 
   function normalizeActiveEffects(source) {
     var result = []
@@ -97,7 +116,7 @@ Item {
       globalOpacity: root.settings ? root.settings.opacity : 1
       reducedMotion: root.settings ? root.settings.reduceMotion : false
       theme: root.theme
-      runtimeEnabled: root.paintEnabled && root.productionEffectsEnabled
+      runtimeEnabled: root.rendererPaintEnabled && root.productionEffectsEnabled
     }
   }
 
@@ -110,7 +129,7 @@ Item {
       globalOpacity: root.settings ? root.settings.opacity : 1
       reducedMotion: root.settings ? root.settings.reduceMotion : false
       theme: root.theme
-      runtimeEnabled: root.paintEnabled && root.productionEffectsEnabled
+      runtimeEnabled: root.rendererPaintEnabled && root.productionEffectsEnabled
     }
   }
 
@@ -123,7 +142,7 @@ Item {
       effectSettings: root.settingsFor("crt")
       globalOpacity: root.settings ? root.settings.opacity : 1
       reducedMotion: root.settings ? root.settings.reduceMotion : false
-      runtimeEnabled: root.paintEnabled && root.productionEffectsEnabled
+      runtimeEnabled: root.rendererPaintEnabled && root.productionEffectsEnabled
     }
   }
 
@@ -138,7 +157,7 @@ Item {
       globalOpacity: root.settings ? root.settings.opacity : 1
       reducedMotion: root.settings ? root.settings.reduceMotion : false
       theme: root.theme
-      runtimeEnabled: root.paintEnabled && root.productionEffectsEnabled
+      runtimeEnabled: root.rendererPaintEnabled && root.productionEffectsEnabled
     }
   }
 
@@ -151,7 +170,7 @@ Item {
       globalOpacity: root.settings ? root.settings.opacity : 1
       reducedMotion: root.settings ? root.settings.reduceMotion : false
       theme: root.theme
-      runtimeEnabled: root.paintEnabled && root.productionEffectsEnabled
+      runtimeEnabled: root.rendererPaintEnabled && root.productionEffectsEnabled
     }
   }
 
@@ -164,7 +183,7 @@ Item {
       globalOpacity: root.settings ? root.settings.opacity : 1
       reducedMotion: root.settings ? root.settings.reduceMotion : false
       theme: root.theme
-      runtimeEnabled: root.paintEnabled && root.productionEffectsEnabled
+      runtimeEnabled: root.rendererPaintEnabled && root.productionEffectsEnabled
     }
   }
 
@@ -177,7 +196,7 @@ Item {
       globalOpacity: root.settings ? root.settings.opacity : 1
       reducedMotion: root.settings ? root.settings.reduceMotion : false
       theme: root.theme
-      runtimeEnabled: root.paintEnabled && root.productionEffectsEnabled
+      runtimeEnabled: root.rendererPaintEnabled && root.productionEffectsEnabled
     }
   }
 
@@ -189,7 +208,7 @@ Item {
       effectSettings: root.settingsFor("trackingLines")
       globalOpacity: root.settings ? root.settings.opacity : 1
       reducedMotion: root.settings ? root.settings.reduceMotion : false
-      runtimeEnabled: root.paintEnabled && root.productionEffectsEnabled
+      runtimeEnabled: root.rendererPaintEnabled && root.productionEffectsEnabled
     }
   }
 

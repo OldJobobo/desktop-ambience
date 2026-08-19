@@ -158,32 +158,38 @@ Item {
           readonly property int dropLength: Math.round(26 + root.seededNoise(seed + 3) * 56)
           readonly property int dropWidth: root.seededNoise(seed + 5) > 0.86 ? 2 : 1
           readonly property int baseX: Math.round(root.seededNoise(seed + 7) * (rainWindow.width + 420)) - 210
-          readonly property int phaseOffset: Math.round(root.seededNoise(seed + 11) * rainWindow.height)
           readonly property real dropSpeed: 0.72 + root.seededNoise(seed + 13) * 0.72
           readonly property real dropOpacity: 0.22 + root.seededNoise(seed + 17) * 0.32
+          readonly property int cycleDelay: Math.round(root.seededNoise(seed + 19) * 900)
+          readonly property int fallDuration: Math.max(1500, (2600 + root.seededNoise(seed + 23) * 1200) / (root.speed * dropSpeed))
+          readonly property real initialProgress: root.seededNoise(seed + 11)
+          readonly property real initialY: -dropLength + initialProgress * (rainWindow.height + dropLength * 2)
+          readonly property int startupDuration: Math.max(80, Math.round(fallDuration * (1 - initialProgress)))
+          property bool startupComplete: false
 
           x: Math.round(baseX + y * root.windDrift)
-          y: -dropLength - phaseOffset
+          y: initialY
           width: dropWidth
           height: dropLength
           opacity: dropOpacity
           rotation: root.dropRotation
           transformOrigin: Item.Center
 
-          SequentialAnimation on y {
+          SequentialAnimation {
             loops: Animation.Infinite
             running: root.effectVisible && !root.reducedMotion
 
-            PauseAnimation {
-              duration: Math.round(root.seededNoise(drop.seed + 19) * 900)
-            }
-
             NumberAnimation {
-              from: -drop.dropLength - drop.phaseOffset
+              target: drop
+              property: "y"
+              from: drop.startupComplete ? -drop.dropLength : drop.initialY
               to: rainWindow.height + drop.dropLength
-              duration: Math.max(1500, (2600 + root.seededNoise(drop.seed + 23) * 1200) / (root.speed * drop.dropSpeed))
+              duration: drop.startupComplete ? drop.fallDuration : drop.startupDuration
               easing.type: Easing.Linear
             }
+
+            ScriptAction { script: drop.startupComplete = true }
+            PauseAnimation { duration: drop.cycleDelay }
           }
 
           Rectangle {
@@ -238,22 +244,32 @@ Item {
           readonly property int sheetLength: Math.round(68 + root.seededNoise(seed + 3) * 104)
           readonly property int baseX: Math.round(index * 34 + root.seededNoise(seed + 5) * 46) - 80
           readonly property real sheetSpeed: 0.72 + root.seededNoise(seed + 7) * 0.5
+          readonly property int fallDuration: Math.max(1900, (3600 + root.seededNoise(seed + 17) * 1500) / (root.speed * sheetSpeed))
+          readonly property real initialProgress: root.seededNoise(seed + 19)
+          readonly property real initialY: -sheetLength + initialProgress * (rainWindow.height + sheetLength * 2)
+          readonly property int startupDuration: Math.max(80, Math.round(fallDuration * (1 - initialProgress)))
+          property bool startupComplete: false
 
           x: Math.round(baseX + y * root.windDrift * 0.55)
-          y: -sheetLength
+          y: initialY
           width: root.seededNoise(seed + 11) > 0.82 ? 2 : 1
           height: sheetLength
           opacity: 0.1 + root.seededNoise(seed + 13) * 0.1
           rotation: root.dropRotation
           transformOrigin: Item.Center
 
-          NumberAnimation on y {
-            from: -rainSheet.sheetLength
-            to: rainWindow.height + rainSheet.sheetLength
-            duration: Math.max(1900, (3600 + root.seededNoise(rainSheet.seed + 17) * 1500) / (root.speed * rainSheet.sheetSpeed))
+          SequentialAnimation {
             loops: Animation.Infinite
             running: root.effectVisible && !root.reducedMotion
-            easing.type: Easing.Linear
+            NumberAnimation {
+              target: rainSheet
+              property: "y"
+              from: rainSheet.startupComplete ? -rainSheet.sheetLength : rainSheet.initialY
+              to: rainWindow.height + rainSheet.sheetLength
+              duration: rainSheet.startupComplete ? rainSheet.fallDuration : rainSheet.startupDuration
+              easing.type: Easing.Linear
+            }
+            ScriptAction { script: rainSheet.startupComplete = true }
           }
 
           Rectangle {
@@ -273,31 +289,37 @@ Item {
           readonly property real seed: index + 1301
           readonly property int dropLength: Math.round(42 + root.seededNoise(seed + 3) * 72)
           readonly property int baseX: Math.round(root.seededNoise(seed + 7) * (rainWindow.width + 520)) - 260
-          readonly property int phaseOffset: Math.round(root.seededNoise(seed + 11) * rainWindow.height)
           readonly property real dropSpeed: 1.08 + root.seededNoise(seed + 13) * 0.82
+          readonly property int cycleDelay: Math.round(root.seededNoise(seed + 19) * 650)
+          readonly property int fallDuration: Math.max(1300, (2200 + root.seededNoise(seed + 23) * 900) / (root.speed * dropSpeed))
+          readonly property real initialProgress: root.seededNoise(seed + 11)
+          readonly property real initialY: -dropLength + initialProgress * (rainWindow.height + dropLength * 2)
+          readonly property int startupDuration: Math.max(80, Math.round(fallDuration * (1 - initialProgress)))
+          property bool startupComplete: false
 
           x: Math.round(baseX + y * root.windDrift)
-          y: -dropLength - phaseOffset
+          y: initialY
           width: 2
           height: dropLength
           opacity: 0.46
           rotation: root.dropRotation
           transformOrigin: Item.Center
 
-          SequentialAnimation on y {
+          SequentialAnimation {
             loops: Animation.Infinite
             running: root.effectVisible && !root.reducedMotion
 
-            PauseAnimation {
-              duration: Math.round(root.seededNoise(foregroundDrop.seed + 19) * 650)
-            }
-
             NumberAnimation {
-              from: -foregroundDrop.dropLength - foregroundDrop.phaseOffset
+              target: foregroundDrop
+              property: "y"
+              from: foregroundDrop.startupComplete ? -foregroundDrop.dropLength : foregroundDrop.initialY
               to: rainWindow.height + foregroundDrop.dropLength
-              duration: Math.max(1300, (2200 + root.seededNoise(foregroundDrop.seed + 23) * 900) / (root.speed * foregroundDrop.dropSpeed))
+              duration: foregroundDrop.startupComplete ? foregroundDrop.fallDuration : foregroundDrop.startupDuration
               easing.type: Easing.Linear
             }
+
+            ScriptAction { script: foregroundDrop.startupComplete = true }
+            PauseAnimation { duration: foregroundDrop.cycleDelay }
           }
 
           Rectangle {

@@ -15,6 +15,8 @@ All notable changes are recorded here. This project follows [Semantic Versioning
 
 - Consolidated Dust Motes cursor sampling into one panel-owned service instead of one polling subprocess per output.
 - Suspended cursor sampling when Dust Motes is inactive, reduced motion is enabled, or every ambience output is unable to paint.
+- Delayed renderer animation startup until the host geometry is stable so first loops use the full output dimensions.
+- Seeded Rainfall drops across their complete travel path on startup instead of cascading from partial first cycles.
 
 ## [0.4.0] - 2026-08-19
 

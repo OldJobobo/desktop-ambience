@@ -45,6 +45,31 @@ def test_status_exposes_shared_cursor_tracker_health():
         assert f"{field}:" in tracker
 
 
+def test_renderers_wait_for_stable_geometry_before_first_animation_cycle():
+    stack = read("components/AmbienceStack.qml")
+    assert "property bool animationGeometryReady: false" in stack
+    assert "readonly property bool rendererPaintEnabled: paintEnabled && animationGeometryReady" in stack
+    assert "onWidthChanged: scheduleGeometryReady()" in stack
+    assert "onHeightChanged: scheduleGeometryReady()" in stack
+    assert "interval: 80" in stack
+    assert stack.count("runtimeEnabled: root.rendererPaintEnabled && root.productionEffectsEnabled") == 8
+
+
+def test_rainfall_seeds_full_length_loops_at_distributed_startup_phases():
+    rain = read("effects/RainfallEffect.qml")
+    assert "phaseOffset" not in rain
+    assert rain.count("readonly property real initialProgress:") == 3
+    assert rain.count("readonly property real initialY:") == 3
+    assert rain.count("property bool startupComplete: false") == 3
+    assert "drop.startupComplete ? -drop.dropLength : drop.initialY" in rain
+    assert "rainSheet.startupComplete ? -rainSheet.sheetLength : rainSheet.initialY" in rain
+    assert "foregroundDrop.startupComplete ? -foregroundDrop.dropLength : foregroundDrop.initialY" in rain
+    visual = read("tests/live_phase6_visual.py")
+    assert 'item.reducedMotion = caseId !== "rainfall"' in visual
+    assert '"rainfallStartupCoverage"' in visual
+    assert "rainfall_top <= 0.01 or rainfall_bottom <= 0.01" in visual
+
+
 def test_phase7_orchestrator_requires_performance_and_full_parity_matrices():
     script = read("scripts/check-phase7.sh")
     assert "JOBO_AMBIENCE_LIVE_PHASE7" in script
