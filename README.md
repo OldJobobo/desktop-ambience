@@ -80,9 +80,10 @@ The equivalent shell command is:
 omarchy-shell shell summon jobo.desktop-ambience '{}'
 ```
 
-The window controls global enable, background/foreground presentation, opacity,
-reduced motion, stack membership and order, every effect setting, the dedicated
-vignette, save retry, and reset.
+The window shows the installed plugin version and controls global enable,
+background/foreground presentation, opacity, reduced motion, stack membership
+and order, every effect setting, the dedicated vignette, save retry, and reset.
+The **Donate** button opens [OldJobobo's Ko-fi](https://ko-fi.com/oldjobobo).
 
 Inspect runtime state without opening the window:
 
@@ -234,25 +235,35 @@ This is the documented Overlay policy. Switch **Presentation** to
 
 ## Development
 
-The repository root is the installable plugin root. Run the complete Phase 5
-check from an active Wayland session:
+The repository root is the installable plugin root. Run host-independent checks
+while developing:
+
+```bash
+./scripts/check-contracts.sh
+```
+
+Before merging, run the complete suite from an active Omarchy Wayland session:
 
 ```bash
 ./scripts/check.sh
 ```
 
-It validates JSON and manifest entry points, runs Omarchy manifest validation,
-lints every QML file (including the bar widget), checks both shell helpers,
-compiles the Python test suite, rejects forbidden runtime dependencies and
-effect-local file readers, runs all behavior tests with zero skips, and checks
-the Git diff for whitespace errors.
+The complete suite validates the manifest, lints every QML file, checks shell
+scripts, rejects forbidden runtime dependencies and extra file owners, runs all
+behavior tests with zero skips, and checks the Git diff.
 
-Run the reversible live monitor lifecycle check explicitly when validating
-Hyprland hotplug behavior. It creates and removes one temporary headless output
-and uses isolated temporary configuration and state homes:
+Run the reversible monitor lifecycle check when validating Hyprland hotplug:
 
 ```bash
 JOBO_AMBIENCE_LIVE_HOTPLUG=1 python tests/live_phase3_hotplug.py
+```
+
+Versioning, pull-request checks, and the release process are defined in
+[`CONTRIBUTING.md`](CONTRIBUTING.md). Release notes are kept in
+[`CHANGELOG.md`](CHANGELOG.md). Validate a clean release candidate with:
+
+```bash
+./scripts/release-check.sh
 ```
 
 Extraction provenance and milestone gates are documented in [`PLAN.md`](PLAN.md)

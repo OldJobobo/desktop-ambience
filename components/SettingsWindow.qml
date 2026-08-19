@@ -14,6 +14,8 @@ Item {
   property var settings: null
   property var shell: null
   property string pluginId: "jobo.desktop-ambience"
+  property string pluginVersion: ""
+  readonly property url donationUrl: "https://ko-fi.com/oldjobobo"
   property bool closingFromHost: false
   property bool closeReportingReady: false
   property string selectedEffectId: "trackingLines"
@@ -54,6 +56,10 @@ Item {
   function requestClose() {
     if (shell && typeof shell.hide === "function") shell.hide(pluginId)
     else window.visible = false
+  }
+
+  function openDonation() {
+    return Qt.openUrlExternally(donationUrl)
   }
 
   function ensureSelection() {
@@ -345,7 +351,9 @@ Item {
             spacing: Style.space(3)
 
             Text {
-              text: "DESKTOP AMBIENCE"
+              text: root.pluginVersion !== ""
+                ? "DESKTOP AMBIENCE · V" + root.pluginVersion.toUpperCase()
+                : "DESKTOP AMBIENCE"
               color: Color.accent
               font.family: Style.font.family
               font.pixelSize: Style.font.caption
@@ -363,8 +371,8 @@ Item {
           }
 
           Row {
-            anchors.right: closeButton.left
-            anchors.rightMargin: Style.space(12)
+            anchors.right: donateButton.left
+            anchors.rightMargin: Style.space(10)
             anchors.verticalCenter: parent.verticalCenter
             spacing: Style.space(8)
 
@@ -392,6 +400,18 @@ Item {
               focusable: true
               onClicked: root.retryPersistence()
             }
+          }
+
+          Button {
+            id: donateButton
+            anchors.right: closeButton.left
+            anchors.rightMargin: Style.space(8)
+            anchors.verticalCenter: parent.verticalCenter
+            text: "Donate"
+            tooltipText: "Support OldJobobo on Ko-fi"
+            bordered: true
+            focusable: true
+            onClicked: root.openDonation()
           }
 
           Button {

@@ -52,8 +52,7 @@ def test_check_script_covers_packaging_runtime_and_forbidden_dependencies():
         "python -m pytest",
         "git diff --check",
         "python -m compileall",
-        "bash -n scripts/check.sh",
-        "bash -n scripts/menu-entry.sh",
+        'for script in scripts/*.sh; do bash -n "$script"; done',
     ):
         assert command in check
     assert "unsafe {kind} entry point" in check
@@ -87,6 +86,11 @@ def test_readme_documents_repository_lifecycle_and_owned_state_cleanup():
         'scripts/menu-entry.sh\" remove',
     ):
         assert command in readme
+    for lifecycle_reference in (
+        "CONTRIBUTING.md", "CHANGELOG.md", "./scripts/check-contracts.sh",
+        "./scripts/release-check.sh",
+    ):
+        assert lifecycle_reference in readme
     assert "bar widget" in readme.lower()
     assert "optional Omarchy menu row" in readme
     assert "$XDG_CONFIG_HOME/omarchy/jobo/desktop-ambience" in readme

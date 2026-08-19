@@ -28,6 +28,7 @@ Item {
   readonly property real vignetteIntensity: Number(backgroundVignette.intensity)
   readonly property bool vignetteBehindEffects: backgroundVignette.ignoreBackgroundAnimationLayer === true
   readonly property bool opened: settingsWindow.opened
+  readonly property string pluginVersion: String(root.manifest && root.manifest.version || "")
   readonly property bool hostReady: true
   readonly property bool foregroundOverlay: presentation === "foreground"
   readonly property bool visualSurfaceEnabled: ambienceEnabled || vignetteEnabled
@@ -111,6 +112,7 @@ Item {
 
   function statusObject() {
     return {
+      version: root.pluginVersion,
       enabled: root.ambienceEnabled,
       presentation: root.presentation,
       mode: root.mappingMode,
@@ -156,6 +158,7 @@ Item {
     settings: ambienceSettings
     shell: root.shell
     pluginId: "jobo.desktop-ambience"
+    pluginVersion: root.pluginVersion
   }
 
   AmbienceStack {

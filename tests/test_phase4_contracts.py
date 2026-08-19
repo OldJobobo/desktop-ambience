@@ -24,6 +24,19 @@ def test_settings_window_contains_only_standalone_animations_scope():
     assert 'text: "Layout"' not in window
 
 
+def test_header_shows_manifest_version_and_offers_verified_support_link():
+    panel = read("Panel.qml")
+    window = read("components/SettingsWindow.qml")
+    assert 'readonly property string pluginVersion: String(root.manifest && root.manifest.version || "")' in panel
+    assert "pluginVersion: root.pluginVersion" in panel
+    assert "version: root.pluginVersion" in panel
+    assert 'property string pluginVersion: ""' in window
+    assert 'readonly property url donationUrl: "https://ko-fi.com/oldjobobo"' in window
+    assert 'text: "Donate"' in window
+    assert 'tooltipText: "Support OldJobobo on Ko-fi"' in window
+    assert "Qt.openUrlExternally(donationUrl)" in window
+
+
 def test_global_stack_vignette_and_persistence_actions_are_owned_by_window():
     window = read("components/SettingsWindow.qml")
     for function_name in (
