@@ -355,7 +355,9 @@ configuration, or unrelated plugin state.
   instructions.
 - Add a check script for JSON, manifest validation, QML lint/load, unit tests,
   and forbidden runtime dependencies.
-- Add a launcher-only bar widget that summons the persistent settings window.
+- Add a launcher-only bar widget that summons the persistent settings window;
+  its icon is selected from the plugin settings view and stored as inline bar
+  widget state owned by Omarchy's shell configuration.
 - Add an idempotent opt-in Omarchy menu helper with exact marker-owned removal.
 - Install from the repository source rather than a development symlink and
   verify `omarchy plugin validate`, `omarchy plugin enable`, bar placement, and
@@ -423,7 +425,10 @@ The extraction is complete when:
   foreground presentation;
 - current effect screenshots remain visually equivalent; and
 - the bar icon and optional Omarchy menu row both open the same persistent
-  settings window without duplicating runtime ownership; and
+  settings window without duplicating runtime ownership;
+- all documented bar-icon choices are selectable in plugin settings, persist in
+  inline widget state, update live on every bar surface, and default to the
+  Animation glyph; and
 - install, update, disable, and uninstall—including exact menu-row and owned
   state cleanup—are documented and tested on a clean base Omarchy profile.
 

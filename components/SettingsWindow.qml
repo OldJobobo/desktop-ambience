@@ -4,6 +4,7 @@ import QtQuick.Controls as QQC
 import qs.Commons
 import qs.Ui
 import "../services/EffectRegistry.js" as EffectRegistry
+import "../services/LauncherIcons.js" as LauncherIcons
 
 // Standalone Animations settings surface. It owns no persistence itself: every
 // interaction mutates a normalized copy through AmbienceSettings.
@@ -23,6 +24,8 @@ Item {
   readonly property var activeOrder: settings && settings.data && Array.isArray(settings.data.activeEffects)
     ? settings.data.activeEffects : []
   readonly property var effectDefinitions: EffectRegistry.orderedDefinitions()
+  readonly property var launcherIcons: LauncherIcons.definitions()
+  readonly property string barIconId: barIconFromShell()
   readonly property color muted: Qt.rgba(Color.foreground.r, Color.foreground.g, Color.foreground.b, 0.58)
   readonly property color faint: Qt.rgba(Color.foreground.r, Color.foreground.g, Color.foreground.b, 0.09)
   readonly property color accentWash: Qt.rgba(Color.accent.r, Color.accent.g, Color.accent.b, 0.14)
@@ -94,6 +97,59 @@ Item {
     if (!next) return false
     next.reduceMotion = value === true
     return commit(next)
+  }
+
+  function barEntryId(entry) {
+    return typeof entry === "string" ? entry : String(entry && entry.id || "")
+  }
+
+  function barIconFromShell() {
+    var config = shell && shell.shellConfig ? shell.shellConfig : null
+    var layout = config && config.bar ? config.bar.layout : null
+    if (!layout) return LauncherIcons.DEFAULT_ID
+    var sections = ["left", "center", "right"]
+    for (var sectionIndex = 0; sectionIndex < sections.length; sectionIndex++) {
+      var entries = layout[sections[sectionIndex]]
+      if (!Array.isArray(entries)) continue
+      for (var entryIndex = 0; entryIndex < entries.length; entryIndex++) {
+        var entry = entries[entryIndex]
+        if (barEntryId(entry) !== pluginId) continue
+        return LauncherIcons.normalize(entry && entry.settings ? entry.settings.icon : "")
+      }
+    }
+    return LauncherIcons.DEFAULT_ID
+  }
+
+  function setBarIcon(iconId) {
+    var normalized = LauncherIcons.normalize(iconId)
+    if (!shell || typeof shell.mutateShellConfig !== "function") return false
+    var changed = false
+    shell.mutateShellConfig(function(config) {
+      var layout = config && config.bar ? config.bar.layout : null
+      if (!layout) return
+      var sections = ["left", "center", "right"]
+      for (var sectionIndex = 0; sectionIndex < sections.length; sectionIndex++) {
+        var entries = layout[sections[sectionIndex]]
+        if (!Array.isArray(entries)) continue
+        for (var entryIndex = 0; entryIndex < entries.length; entryIndex++) {
+          var entry = entries[entryIndex]
+          if (barEntryId(entry) !== pluginId) continue
+          if (typeof entry === "string") {
+            entry = { id: pluginId }
+            entries[entryIndex] = entry
+          }
+          var nextSettings = {}
+          var currentSettings = entry.settings || {}
+          for (var key in currentSettings) nextSettings[key] = currentSettings[key]
+          if (nextSettings.icon === normalized) return
+          nextSettings.icon = normalized
+          entry.settings = nextSettings
+          changed = true
+          return
+        }
+      }
+    })
+    return changed
   }
 
   function setVignetteField(key, value) {
@@ -215,6 +271,7 @@ Item {
     if (!settings || !settings.defaultData) return false
     selectedEffectId = "trackingLines"
     resetArmed = false
+    setBarIcon(LauncherIcons.DEFAULT_ID)
     return commit(settings.defaultData())
   }
 
@@ -427,6 +484,41 @@ Item {
                   hint: "Uses the calmer source timing where supported."
                   checked: root.settings ? root.settings.reduceMotion : false
                   onToggledTo: function(value) { root.setReduceMotion(value) }
+                }
+
+                Rectangle { width: parent.width; height: 1; color: root.faint }
+                PanelSectionHeader { text: "BAR ICON" }
+
+                Text {
+                  width: parent.width
+                  text: "Choose the launcher symbol shown in the Omarchy bar."
+                  color: root.muted
+                  font.family: Style.font.family
+                  font.pixelSize: Style.font.bodySmall
+                  wrapMode: Text.WordWrap
+                }
+
+                Grid {
+                  id: iconGrid
+                  width: parent.width
+                  columns: 2
+                  spacing: Style.space(6)
+
+                  Repeater {
+                    model: root.launcherIcons
+
+                    Button {
+                      required property var modelData
+                      width: (iconGrid.width - iconGrid.spacing) / 2
+                      text: modelData.glyph + "  " + modelData.label
+                      tooltipText: modelData.label
+                      selected: root.barIconId === modelData.id
+                      leftAlign: true
+                      bordered: true
+                      focusable: true
+                      onClicked: root.setBarIcon(modelData.id)
+                    }
+                  }
                 }
 
                 Rectangle { width: parent.width; height: 1; color: root.faint }
@@ -675,7 +767,7 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     text: root.settings && root.settings.persistenceError !== ""
                       ? root.settings.persistenceError
-                      : "Reset changes only this plugin's settings file."
+                      : "Reset restores ambience and launcher defaults."
                     color: root.settings && root.settings.persistenceError !== "" ? Color.urgent : root.muted
                     font.family: Style.font.family
                     font.pixelSize: Style.font.bodySmall

@@ -67,4 +67,4 @@ def test_reset_and_controls_never_target_unrelated_configuration():
     assert "themes/" not in window
     assert "settings.settingsFile" not in window
     assert "defaultData()" in window
-    assert "Reset changes only this plugin's settings file." in window
+    assert "Reset restores ambience and launcher defaults." in window

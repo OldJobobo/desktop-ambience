@@ -33,7 +33,7 @@ def run_menu_script(home: Path, action: str, check: bool = True) -> subprocess.C
 
 def test_manifest_contributes_panel_and_single_bar_widget():
     manifest = json.loads(read("manifest.json"))
-    assert manifest["version"] == "0.2.0"
+    assert manifest["version"] == "0.3.0"
     assert manifest["kinds"] == ["panel", "bar-widget"]
     assert manifest["entryPoints"] == {"panel": "Panel.qml", "barWidget": "BarWidget.qml"}
     assert manifest["barWidget"] == {
@@ -48,7 +48,8 @@ def test_manifest_contributes_panel_and_single_bar_widget():
 def test_bar_widget_is_a_launcher_without_duplicate_runtime_ownership():
     widget = read("BarWidget.qml")
     assert 'moduleName: "jobo.desktop-ambience"' in widget
-    assert 'tooltipText: "Desktop Ambience"' in widget
+    assert 'tooltipText: "Desktop Ambience · "' in widget
+    assert "LauncherIcons.glyphFor" in widget
     assert "function openSettings()" in widget
     assert "omarchy-shell shell toggle jobo.desktop-ambience '{}'" in widget
     assert "AmbienceSettings" not in widget
@@ -98,6 +99,7 @@ def test_menu_entry_install_handles_a_new_empty_extension_file():
         )
         parsed = json.loads(without_comments)
         assert parsed["desktop-ambience"]["label"] == "Desktop Ambience"
+        assert parsed["desktop-ambience"]["icon"] == "󰗘"
 
 
 @unittest.skipUnless(HAVE_SESSION, "needs a quickshell binary and a Wayland session")
@@ -132,7 +134,8 @@ ShellRoot {{
     onTriggered: {{
       widget.item.openSettings()
       console.log("BEHAVE " + JSON.stringify({{moduleName: widget.item.moduleName,
-        command: fakeBar.command, width: widget.item.implicitWidth, height: widget.item.implicitHeight}}))
+        command: fakeBar.command, iconId: widget.item.iconId, iconGlyph: widget.item.iconGlyph,
+        width: widget.item.implicitWidth, height: widget.item.implicitHeight}}))
       Qt.quit()
     }}
   }}
@@ -148,5 +151,26 @@ ShellRoot {{
             "omarchy-shell shell toggle jobo.desktop-ambience '{}'",
             output[-2000:],
         )
+        self.assertEqual(row["iconId"], "animation")
+        self.assertEqual(row["iconGlyph"], "󰗘")
         self.assertGreater(row["width"], 0)
         self.assertGreater(row["height"], 0)
+
+    def test_settings_icon_picker_persists_inline_state_and_updates_widget(self):
+        qml = f'''\nimport Quickshell\nimport QtQuick\nShellRoot {{\n  QtObject {{\n    id: fakeShell\n    property var shellConfig: ({{bar: {{layout: {{\n      left: [], center: [], right: [{{id: "jobo.desktop-ambience", settings: {{other: 7}}}}]\n    }}}}}})\n    function mutateShellConfig(mutate) {{\n      var copy = JSON.parse(JSON.stringify(shellConfig))\n      mutate(copy)\n      shellConfig = copy\n    }}\n    function hide(pluginId) {{}}\n  }}\n  QtObject {{\n    id: fakeBar\n    property bool vertical: false\n    property int barSize: 28\n    property color barForeground: "white"\n    property color urgent: "red"\n    property string fontFamily: "monospace"\n    property bool foregroundAnimationEnabled: false\n    function run(value) {{}}\n    function showTooltip(item, text) {{}}\n    function hideTooltip(item) {{}}\n    function registerClickTarget(item) {{}}\n    function unregisterClickTarget(item) {{}}\n  }}\n  Loader {{ id: settingsView; source: "{qml_url('components/SettingsWindow.qml')}" }}\n  Loader {{ id: widget; source: "{qml_url('BarWidget.qml')}" }}\n  Timer {{\n    interval: 40; running: true\n    onTriggered: {{\n      settingsView.item.shell = fakeShell\n      widget.item.bar = fakeBar\n      var choices = settingsView.item.launcherIcons\n      var allChanged = true\n      for (var i = 0; i < choices.length; i++)\n        if (!settingsView.item.setBarIcon(choices[i].id)) allChanged = false\n      var entry = fakeShell.shellConfig.bar.layout.right[0]\n      widget.item.settings = entry.settings\n      console.log("BEHAVE " + JSON.stringify({{\n        count: choices.length,\n        ids: choices.map(function(choice) {{ return choice.id }}),\n        allChanged: allChanged,\n        selected: settingsView.item.barIconId,\n        persisted: entry.settings.icon,\n        preserved: entry.settings.other,\n        widgetIcon: widget.item.iconId,\n        widgetGlyph: widget.item.iconGlyph\n      }}))\n      Qt.quit()\n    }}\n  }}\n}}\n'''
+        with tempfile.TemporaryDirectory() as config_home:
+            output = run_quickshell(qml, config_home=Path(config_home), timeout=10)
+        require_no_qml_errors(output)
+        row = parse_behave(output)[-1]
+        self.assertEqual(row["count"], 8, output[-2000:])
+        self.assertEqual(row["ids"][0], "animation")
+        self.assertEqual(
+            row["ids"],
+            ["animation", "tune", "blur", "magicStaff", "palette", "monitorEye", "vintageFilter", "autoFix"],
+        )
+        self.assertTrue(row["allChanged"], output[-2000:])
+        self.assertEqual(row["selected"], "autoFix")
+        self.assertEqual(row["persisted"], "autoFix")
+        self.assertEqual(row["preserved"], 7)
+        self.assertEqual(row["widgetIcon"], "autoFix")
+        self.assertEqual(row["widgetGlyph"], "󰁨")

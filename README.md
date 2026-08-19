@@ -65,9 +65,14 @@ layer surfaces can overlap even when both remain click-through.
 
 ## Open settings
 
-Click the **Desktop Ambience** icon (`󰖔`) in the bar or choose **Desktop
+Click the **Desktop Ambience** animation icon (`󰗘`) in the bar or choose **Desktop
 Ambience** from the optional Omarchy menu row. Both launchers summon the same
 persistent settings window and own no renderer or settings state themselves.
+The bar icon can be changed from the **Bar Icon** section in plugin settings.
+Choices include Animation, Tune, Blur, Magic staff, Palette, Monitor eye,
+Vintage filter, and Auto-fix. Animation is the default. The selected icon is
+stored with the widget's existing inline bar settings and updates every bar
+surface without restarting the ambience renderer.
 
 The equivalent shell command is:
 

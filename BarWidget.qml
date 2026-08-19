@@ -1,11 +1,14 @@
 import QtQuick
 import qs.Ui
+import "services/LauncherIcons.js" as LauncherIcons
 
 // Lightweight launcher only. The persistent panel entry point continues to own
 // settings, surfaces, services, and IPC.
 BarWidget {
   id: root
   moduleName: "jobo.desktop-ambience"
+  readonly property string iconId: LauncherIcons.normalize(root.setting("icon", LauncherIcons.DEFAULT_ID))
+  readonly property string iconGlyph: LauncherIcons.glyphFor(iconId)
 
   implicitWidth: button.implicitWidth
   implicitHeight: button.implicitHeight
@@ -18,8 +21,8 @@ BarWidget {
     id: button
     anchors.fill: parent
     bar: root.bar
-    text: "󰖔"
-    tooltipText: "Desktop Ambience"
+    text: root.iconGlyph
+    tooltipText: "Desktop Ambience · " + LauncherIcons.labelFor(root.iconId)
     horizontalMargin: 7.5
 
     onPressed: function(button) {

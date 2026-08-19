@@ -27,7 +27,7 @@ START = "// jobo-desktop-ambience-menu-start"
 END = "// jobo-desktop-ambience-menu-end"
 ENTRY = (
     '  "desktop-ambience": {'
-    '"icon":"󰖔",'
+    '"icon":"󰗘",'
     '"label":"Desktop Ambience",'
     '"description":"Compose desktop animation and vignette effects",'
     '"keywords":"desktop ambience animation effects vignette",'
