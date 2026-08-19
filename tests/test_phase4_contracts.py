@@ -68,3 +68,9 @@ def test_reset_and_controls_never_target_unrelated_configuration():
     assert "settings.settingsFile" not in window
     assert "defaultData()" in window
     assert "Reset restores ambience and launcher defaults." in window
+
+
+def test_toggle_copy_reserves_space_for_the_switch():
+    window = read("components/SettingsWindow.qml")
+    assert "anchors.right: toggle.left" in window
+    assert "anchors.right: toggle.right" not in window

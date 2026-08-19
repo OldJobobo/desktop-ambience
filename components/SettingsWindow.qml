@@ -810,9 +810,9 @@ Item {
 
     Column {
       anchors.left: parent.left
-      anchors.right: toggle.right
+      anchors.right: toggle.left
       anchors.leftMargin: Style.space(12)
-      anchors.rightMargin: Style.space(12)
+      anchors.rightMargin: Style.space(10)
       anchors.verticalCenter: parent.verticalCenter
       spacing: Style.space(2)
 
