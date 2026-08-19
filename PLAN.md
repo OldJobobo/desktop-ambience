@@ -394,6 +394,38 @@ frozen baseline.
 **Gate:** visual references match, no Lacuna runtime dependency remains, the
 clean-profile install passes, and all documented acceptance criteria are met.
 
+### Phase 7 — Performance characterization and runtime consolidation
+
+**Status:** approved for execution after `v0.4.0`. Preserve the released renderer
+output and settings contract while measuring and reducing inherited runtime cost.
+Do not combine several visual renderer rewrites in one change.
+
+1. Establish per-effect and three-effect-stack steady-state baselines on one and
+   multiple outputs. Record CPU, RSS, frame cadence, active object count where
+   observable, and cursor subprocess rate without reading or writing live plugin
+   settings.
+2. Move cursor sampling out of each Dust Motes renderer into one panel-owned
+   service. Inject the shared cursor state into every per-output stack, stop
+   sampling when Dust Motes is inactive, reduced motion is enabled, or no output
+   can paint, and expose tracker health through runtime status.
+3. Use the baseline to rank the item-heavy and short-timer renderers. Optimize
+   one renderer at a time, beginning with the highest measured cost. Shader or
+   particle replacements require their own visual comparison and independently
+   revertible commit.
+4. Rerun the complete Phase 6 matrix after every renderer implementation change.
+   Retain the `v0.4.0` references as the visual baseline and record Phase 7
+   before/after evidence separately.
+
+Do not set an arbitrary CPU target before the per-effect baseline exists. A
+performance change is accepted only when it shows a repeatable improvement in
+its measured scenario without changing composition, ordering, intensity,
+timing character, theme response, settings ownership, or surface lifecycle.
+
+**Gate:** per-effect and stack baselines exist; cursor sampling has one runtime
+owner and does not multiply with output count; hidden or fully suppressed Dust
+Motes instances cause no polling; at least one measured hotspot improves; all
+Phase 6 visual, lifecycle, fullscreen, recovery, and contract checks still pass.
+
 ## Required Automated Coverage
 
 - Manifest validation and safe relative entry points.

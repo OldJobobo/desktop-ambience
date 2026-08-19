@@ -4,6 +4,18 @@ All notable changes are recorded here. This project follows [Semantic Versioning
 
 ## [Unreleased]
 
+## [0.5.0-rc.1] - 2026-08-19
+
+### Added
+
+- Added an isolated Phase 7 per-effect performance matrix for one and three outputs, including repeatable targeted scenarios and previous-release worktree comparisons.
+- Added runtime cursor-tracker health and launch-count reporting.
+
+### Changed
+
+- Consolidated Dust Motes cursor sampling into one panel-owned service instead of one polling subprocess per output.
+- Suspended cursor sampling when Dust Motes is inactive, reduced motion is enabled, or every ambience output is unable to paint.
+
 ## [0.4.0] - 2026-08-19
 
 ### Added

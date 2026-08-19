@@ -267,6 +267,24 @@ alternate refresh rate, restores the original mode, and writes evidence under
 JOBO_AMBIENCE_LIVE_PHASE6=1 ./scripts/check-phase6.sh
 ```
 
+Profile the Phase 7 per-effect matrix with isolated settings and reversible
+headless outputs:
+
+```bash
+JOBO_AMBIENCE_LIVE_PHASE7=1 python tests/live_phase7_performance.py
+```
+
+Use `--target-root <worktree>` to compare another revision, or combine `--cases
+dustMotes --repetitions 5` for a repeatable focused sample. Run the complete
+performance and Phase 6 parity matrix before release:
+
+```bash
+JOBO_AMBIENCE_LIVE_PHASE7=1 ./scripts/check-phase7.sh
+```
+
+Findings and current machine evidence are documented in
+[`docs/performance/phase7.md`](docs/performance/phase7.md).
+
 Versioning, pull-request checks, and the release process are defined in
 [`CONTRIBUTING.md`](CONTRIBUTING.md). Release notes are kept in
 [`CHANGELOG.md`](CHANGELOG.md). Validate a clean release candidate with:

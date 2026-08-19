@@ -33,7 +33,7 @@ def run_menu_script(home: Path, action: str, check: bool = True) -> subprocess.C
 
 def test_manifest_contributes_panel_and_single_bar_widget():
     manifest = json.loads(read("manifest.json"))
-    assert manifest["version"] == "0.4.0"
+    assert manifest["version"] == "0.5.0-rc.1"
     assert manifest["kinds"] == ["panel", "bar-widget"]
     assert manifest["entryPoints"] == {"panel": "Panel.qml", "barWidget": "BarWidget.qml"}
     assert manifest["barWidget"] == {

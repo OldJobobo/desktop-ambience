@@ -32,10 +32,19 @@ Item {
   readonly property bool hostReady: true
   readonly property bool foregroundOverlay: presentation === "foreground"
   readonly property bool visualSurfaceEnabled: ambienceEnabled || vignetteEnabled
+  readonly property var dustMotesSettings: ambienceSettings.effects
+    && ambienceSettings.effects.dustMotes ? ambienceSettings.effects.dustMotes : ({})
+  readonly property bool dustMotesRequested: ambienceEnabled
+    && normalizedOrder().indexOf("dustMotes") >= 0
+    && dustMotesSettings.enabled === true
+    && dustMotesSettings.mouseReactive === true
+    && Number(dustMotesSettings.intensity) * Number(ambienceSettings.opacity) > 0.001
+    && !ambienceSettings.reduceMotion
   readonly property string mappingMode: !visualSurfaceEnabled
     ? "none" : (foregroundOverlay ? "overlay" : "bottom")
 
   property var productionSurfaces: []
+  property int paintAllowedSurfaceCount: 0
 
   function open(payloadJson) {
     settingsWindow.open(payloadJson)
@@ -49,11 +58,19 @@ Item {
     return orderProbe.normalizeActiveEffects(activeEffects)
   }
 
+  function recountPaintAllowedSurfaces() {
+    var count = 0
+    for (var i = 0; i < productionSurfaces.length; i++)
+      if (productionSurfaces[i] && productionSurfaces[i].paintAllowed) count += 1
+    paintAllowedSurfaceCount = count
+  }
+
   function registerProductionSurface(surface) {
     if (!surface || productionSurfaces.indexOf(surface) >= 0) return
     var next = productionSurfaces.slice()
     next.push(surface)
     productionSurfaces = next
+    recountPaintAllowedSurfaces()
   }
 
   function unregisterProductionSurface(surface) {
@@ -62,6 +79,7 @@ Item {
     var next = productionSurfaces.slice()
     next.splice(index, 1)
     productionSurfaces = next
+    recountPaintAllowedSurfaces()
   }
 
   function surfaceAt(index) {
@@ -141,7 +159,8 @@ Item {
         requestedRevision: ambienceSettings.requestedSaveRevision,
         confirmedRevision: ambienceSettings.confirmedSaveRevision
       },
-      theme: themeAdapter.status()
+      theme: themeAdapter.status(),
+      cursorTracker: cursorTracker.status()
     }
   }
 
@@ -152,6 +171,10 @@ Item {
   AmbienceSettings { id: ambienceSettings }
   ThemeAdapter { id: themeAdapter }
   FullscreenGuard { id: fullscreenGuard }
+  CursorTracker {
+    id: cursorTracker
+    active: root.dustMotesRequested && root.paintAllowedSurfaceCount > 0
+  }
 
   SettingsWindow {
     id: settingsWindow
@@ -216,6 +239,7 @@ Item {
         targetScreen: ambienceSurface.modelData
         settings: ambienceSettings
         theme: themeAdapter
+        cursorTracker: cursorTracker
         activeEffects: root.activeEffects
         foregroundOverlay: root.foregroundOverlay
         paintEnabled: ambienceSurface.paintAllowed
@@ -230,6 +254,7 @@ Item {
         paintEnabled: ambienceSurface.paintAllowed
       }
 
+      onPaintAllowedChanged: root.recountPaintAllowedSurfaces()
       Component.onCompleted: root.registerProductionSurface(this)
       Component.onDestruction: root.unregisterProductionSurface(this)
     }

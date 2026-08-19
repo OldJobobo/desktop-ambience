@@ -7,6 +7,7 @@ Item {
   property var targetScreen: null
   property var settings: null
   property var theme: null
+  property var cursorTracker: null
   property var activeEffects: settings && settings.activeEffects ? settings.activeEffects : []
   property bool foregroundOverlay: false
   property bool paintEnabled: true
@@ -132,6 +133,7 @@ Item {
       objectName: "dustMotesEffect"
       anchors.fill: parent
       targetScreen: root.targetScreen
+      cursorTracker: root.cursorTracker
       effectSettings: root.settingsFor("dustMotes")
       globalOpacity: root.settings ? root.settings.opacity : 1
       reducedMotion: root.settings ? root.settings.reduceMotion : false

@@ -1,4 +1,3 @@
-import Quickshell.Io
 import QtQuick
 
 Item {
@@ -9,15 +8,14 @@ Item {
   property bool reducedMotion: false
   property var theme: null
   property var targetScreen: null
+  property var cursorTracker: null
   property bool runtimeEnabled: true
   property real runtimeIntensity: -1
-  property real cursorX: -1
-  property real cursorY: -1
-  property real lastCursorX: -1
-  property real lastCursorY: -1
-  property real cursorVelocityX: 0
-  property real cursorVelocityY: 0
-  property real cursorKick: 0
+  readonly property real cursorX: cursorTracker ? Number(cursorTracker.cursorX) : -1
+  readonly property real cursorY: cursorTracker ? Number(cursorTracker.cursorY) : -1
+  readonly property real cursorVelocityX: cursorTracker ? Number(cursorTracker.cursorVelocityX) : 0
+  readonly property real cursorVelocityY: cursorTracker ? Number(cursorTracker.cursorVelocityY) : 0
+  readonly property real cursorKick: cursorTracker ? Number(cursorTracker.cursorKick) : 0
 
   readonly property var overlaySettings: effectSettings
   readonly property bool configuredEnabled: overlaySettings.enabled === true
@@ -82,40 +80,6 @@ Item {
     return isNaN(value) ? 0 : value
   }
 
-  function pollCursor() {
-    if (!mouseReactive || !effectVisible || cursorProc.running) return
-    cursorProc.output = ""
-    cursorProc.command = ["hyprctl", "cursorpos", "-j"]
-    cursorProc.running = true
-  }
-
-  function applyCursorPayload(raw) {
-    try {
-      var parsed = JSON.parse(raw || "{}")
-      var nextX = Number(parsed.x)
-      var nextY = Number(parsed.y)
-      if (isNaN(nextX) || isNaN(nextY)) return
-
-      if (lastCursorX >= 0 && lastCursorY >= 0) {
-        var dx = nextX - lastCursorX
-        var dy = nextY - lastCursorY
-        var distance = Math.sqrt(dx * dx + dy * dy)
-        if (distance > 0.5) {
-          cursorVelocityX = Math.max(-90, Math.min(90, dx))
-          cursorVelocityY = Math.max(-90, Math.min(90, dy))
-          cursorKick = Math.max(cursorKick, Math.min(1, 0.35 + distance / 180))
-          cursorDecayTimer.restart()
-        }
-      }
-
-      cursorX = nextX
-      cursorY = nextY
-      lastCursorX = nextX
-      lastCursorY = nextY
-    } catch (error) {
-    }
-  }
-
   function open(payloadJson) {
     var payload = parsePayload(payloadJson)
     runtimeEnabled = true
@@ -124,56 +88,6 @@ Item {
 
   function close() {
     runtimeEnabled = false
-  }
-
-  Timer {
-    id: cursorPollTimer
-
-    interval: 120
-    repeat: true
-    running: root.effectVisible && !root.reducedMotion && root.mouseReactive
-    triggeredOnStart: true
-    onTriggered: root.pollCursor()
-  }
-
-  Timer {
-    id: cursorDecayTimer
-
-    interval: 520
-    repeat: false
-    onTriggered: {
-      root.cursorVelocityX = 0
-      root.cursorVelocityY = 0
-      root.cursorKick = 0
-    }
-  }
-
-  Behavior on cursorVelocityX {
-    NumberAnimation { duration: 360; easing.type: Easing.OutCubic }
-  }
-
-  Behavior on cursorVelocityY {
-    NumberAnimation { duration: 360; easing.type: Easing.OutCubic }
-  }
-
-  Behavior on cursorKick {
-    NumberAnimation { duration: 420; easing.type: Easing.OutCubic }
-  }
-
-  Process {
-    id: cursorProc
-
-    property string output: ""
-
-    stdout: SplitParser {
-      onRead: function(data) {
-        cursorProc.output += data
-      }
-    }
-
-    onExited: function(exitCode) {
-      if (exitCode === 0) root.applyCursorPayload(cursorProc.output)
-    }
   }
 
   Item {
