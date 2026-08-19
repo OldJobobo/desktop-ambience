@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "jobo.desktop-ambience",
   "name": "Desktop Ambience",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "author": "J. S. Brown",
   "description": "Ordered, configurable desktop ambience effects for Omarchy Shell.",
   "kinds": [

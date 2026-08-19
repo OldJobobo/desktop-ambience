@@ -114,7 +114,9 @@ Item {
       for (var entryIndex = 0; entryIndex < entries.length; entryIndex++) {
         var entry = entries[entryIndex]
         if (barEntryId(entry) !== pluginId) continue
-        return LauncherIcons.normalize(entry && entry.settings ? entry.settings.icon : "")
+        var icon = entry && entry.icon !== undefined ? entry.icon
+          : (entry && entry.settings ? entry.settings.icon : "")
+        return LauncherIcons.normalize(icon)
       }
     }
     return LauncherIcons.DEFAULT_ID
@@ -138,12 +140,20 @@ Item {
             entry = { id: pluginId }
             entries[entryIndex] = entry
           }
-          var nextSettings = {}
-          var currentSettings = entry.settings || {}
-          for (var key in currentSettings) nextSettings[key] = currentSettings[key]
-          if (nextSettings.icon === normalized) return
-          nextSettings.icon = normalized
-          entry.settings = nextSettings
+          if (entry.icon === normalized && !(entry.settings && entry.settings.icon)) return
+          entry.icon = normalized
+          // Migrate the short-lived nested shape written by plugin 0.3.0.
+          if (entry.settings && entry.settings.icon !== undefined) {
+            var remainingSettings = {}
+            var hasRemainingSettings = false
+            for (var key in entry.settings) {
+              if (key === "icon") continue
+              remainingSettings[key] = entry.settings[key]
+              hasRemainingSettings = true
+            }
+            if (hasRemainingSettings) entry.settings = remainingSettings
+            else delete entry.settings
+          }
           changed = true
           return
         }
