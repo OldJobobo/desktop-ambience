@@ -1,11 +1,12 @@
 # Desktop Ambience
 
 A standalone Omarchy Shell plugin for an ordered stack of desktop ambience
-effects. Phases 1–3 of [`PLAN.md`](PLAN.md) are present: the owned renderers,
+effects. Phases 1–4 of [`PLAN.md`](PLAN.md) are present: the owned renderers,
 ordered lazy stack, dedicated vignette, standalone settings and theme services,
-and persistent per-output host now live inside the plugin boundary.
+persistent per-output host, and complete settings window now live inside the
+plugin boundary.
 
-## Planned effects
+## Included effects
 
 - Aurora Drift
 - Cinematic Light
@@ -34,8 +35,10 @@ is paint-only and resolved per output. Monitor remaps retain the standard
 Omarchy `ScreenMoveRemap` guard.
 
 The persistent root also owns one on-demand settings window and truthful IPC
-status reporting. Phase 4 will replace the window's lifecycle placeholder with
-the extracted effect controls.
+status reporting. The window provides global enable, presentation, opacity,
+reduced-motion, active-stack add/remove/reorder, every registry-backed effect
+field, dedicated vignette controls, save retry feedback, and a guarded reset.
+Every action writes only the plugin-owned versioned settings file.
 
 The 1.0 product boundary is approved: a persistent panel root with background
 and explicit click-through foreground presentation, including the dedicated
@@ -44,7 +47,7 @@ per output for fullscreen applications.
 
 ## Development
 
-Validate the Phase 3 extraction with an active Wayland session:
+Validate the Phase 4 extraction with an active Wayland session:
 
 ```bash
 ./scripts/check.sh

@@ -39,7 +39,7 @@ fi
 [[ $(grep -c 'ThemeAdapter { id: themeAdapter }' Panel.qml) -eq 1 ]]
 
 if ! command -v quickshell >/dev/null 2>&1 || [[ -z ${WAYLAND_DISPLAY:-} ]]; then
-  echo "Phase 3 behavior checks require quickshell and an active Wayland session; refusing to report a partial pass" >&2
+  echo "Phase 4 behavior checks require quickshell and an active Wayland session; refusing to report a partial pass" >&2
   exit 1
 fi
 
@@ -47,8 +47,8 @@ pytest_output=$(mktemp)
 trap 'rm -f "$pytest_output"' EXIT
 python -m pytest -q tests -rs | tee "$pytest_output"
 if grep -Eq '[0-9]+ skipped' "$pytest_output"; then
-  echo "Phase 3 behavior coverage was skipped" >&2
+  echo "Phase 4 behavior coverage was skipped" >&2
   exit 1
 fi
 
-echo "Phase 3 checks passed with runtime behavior coverage"
+echo "Phase 4 checks passed with runtime behavior coverage"

@@ -1,0 +1,218 @@
+from __future__ import annotations
+
+import json
+import tempfile
+import unittest
+from pathlib import Path
+
+from qml_harness import HAVE_SESSION, parse_behave, qml_url, require_no_qml_errors, run_quickshell
+
+
+@unittest.skipUnless(HAVE_SESSION, "needs a quickshell binary and a Wayland session")
+class Phase4SettingsBehaviorTests(unittest.TestCase):
+    def test_all_controls_round_trip_and_survive_service_restart(self):
+        qml = f'''
+import Quickshell
+import QtQuick
+ShellRoot {{
+  property int stage: 0
+  property int editedFieldCount: 0
+  Loader {{ id: settingsLoader; source: "{qml_url('services/AmbienceSettings.qml')}" }}
+  Loader {{
+    id: windowLoader
+    source: "{qml_url('components/SettingsWindow.qml')}"
+    onLoaded: if (settingsLoader.item) item.settings = settingsLoader.item
+  }}
+  Connections {{
+    target: settingsLoader.item
+    function onLoaded() {{
+      if (stage !== 0 || !windowLoader.item) return
+      stage = 1
+      var window = windowLoader.item
+      window.settings = settingsLoader.item
+      window.addEffect("filmGrain")
+      window.addEffect("auroraDrift")
+      window.moveEffect("auroraDrift", -1)
+      window.removeEffect("trackingLines")
+
+      var definitions = window.effectDefinitions
+      for (var i = 0; i < definitions.length; i++) {{
+        var id = definitions[i].id
+        var fields = window.fieldsFor(id)
+        for (var j = 0; j < fields.length; j++) {{
+          var field = fields[j]
+          var target
+          if (field.type === "bool") target = true
+          else if (field.type === "enum") target = field.values[field.values.length - 1]
+          else {{
+            target = (Number(field.minimum) + Number(field.maximum)) / 2
+            if (field.type === "int") target = Math.round(target)
+          }}
+          if (window.setEffectField(id, field.key, target)) editedFieldCount += 1
+        }}
+      }}
+
+      // Match the source interaction: changing vignette intensity enables it.
+      window.setVignetteField("intensity", 0.33)
+      window.setVignetteField("ignoreBackgroundAnimationLayer", true)
+      window.setPresentation("foreground")
+      window.setOpacity(0.42)
+      window.setReduceMotion(true)
+      window.setEnabled(false)
+      probe.start()
+    }}
+  }}
+  Timer {{
+    id: probe; interval: 30; repeat: true; property int attempts: 0
+    onTriggered: {{
+      attempts += 1
+      var service = settingsLoader.item
+      var window = windowLoader.item
+      if (!service || service.persistenceState !== "saved"
+          || service.confirmedSaveRevision !== service.requestedSaveRevision) {{
+        if (attempts > 180) {{ console.log("BEHAVE_ERR settings controls did not settle"); Qt.quit() }}
+        return
+      }}
+      var allFieldsMatch = true
+      var allMetadataComplete = true
+      var definitions = window.effectDefinitions
+      for (var i = 0; i < definitions.length; i++) {{
+        var id = definitions[i].id
+        var fields = window.fieldsFor(id)
+        for (var j = 0; j < fields.length; j++) {{
+          var field = fields[j]
+          if (!field.label || !field.hint || !(Number(field.step) > 0)) allMetadataComplete = false
+          var actual = service.data.effects[id][field.key]
+          if (field.type === "bool" && actual !== true) allFieldsMatch = false
+          else if (field.type === "enum" && actual !== field.values[field.values.length - 1]) allFieldsMatch = false
+          else if (field.type !== "bool" && field.type !== "enum") {{
+            var expected = (Number(field.minimum) + Number(field.maximum)) / 2
+            if (field.type === "int") expected = Math.round(expected)
+            if (Math.abs(Number(actual) - expected) > 0.0001) allFieldsMatch = false
+          }}
+        }}
+      }}
+      stop()
+      console.log("BEHAVE " + JSON.stringify({{
+        enabled: service.data.enabled,
+        presentation: service.data.presentation,
+        opacity: service.data.opacity,
+        reduceMotion: service.data.reduceMotion,
+        activeEffects: service.data.activeEffects,
+        vignette: service.data.backgroundVignette,
+        editedFieldCount: editedFieldCount,
+        allFieldsMatch: allFieldsMatch,
+        allMetadataComplete: allMetadataComplete,
+        persistence: service.persistenceState
+      }}))
+      Qt.quit()
+    }}
+  }}
+}}
+'''
+        with tempfile.TemporaryDirectory() as config_dir:
+            config_home = Path(config_dir)
+            output = run_quickshell(qml, config_home=config_home, timeout=15)
+            require_no_qml_errors(output)
+            row = parse_behave(output)[-1]
+            disk = json.loads((config_home / "omarchy/jobo/desktop-ambience/settings.json").read_text())
+
+            restart_qml = f'''
+import Quickshell
+import QtQuick
+ShellRoot {{
+  Loader {{ id: service; source: "{qml_url('services/AmbienceSettings.qml')}" }}
+  Connections {{
+    target: service.item
+    function onLoaded() {{
+      console.log("BEHAVE " + JSON.stringify(service.item.data))
+      Qt.quit()
+    }}
+  }}
+}}
+'''
+            restart_output = run_quickshell(restart_qml, config_home=config_home, timeout=10)
+            require_no_qml_errors(restart_output)
+            restarted = parse_behave(restart_output)[-1]
+
+        self.assertFalse(row["enabled"], output[-2000:])
+        self.assertEqual(row["presentation"], "foreground", output[-2000:])
+        self.assertAlmostEqual(row["opacity"], 0.42, places=4)
+        self.assertTrue(row["reduceMotion"])
+        self.assertEqual(row["activeEffects"], ["auroraDrift", "filmGrain"])
+        self.assertEqual(row["vignette"]["enabled"], True)
+        self.assertAlmostEqual(row["vignette"]["intensity"], 0.33, places=4)
+        self.assertTrue(row["vignette"]["ignoreBackgroundAnimationLayer"])
+        self.assertGreater(row["editedFieldCount"], 60)
+        self.assertTrue(row["allFieldsMatch"], output[-2000:])
+        self.assertTrue(row["allMetadataComplete"], output[-2000:])
+        self.assertEqual(row["persistence"], "saved")
+        self.assertEqual(disk, restarted)
+        self.assertEqual(disk["activeEffects"], ["auroraDrift", "filmGrain"])
+
+    def test_reset_restores_defaults_without_touching_unrelated_file(self):
+        qml = f'''
+import Quickshell
+import QtQuick
+ShellRoot {{
+  property int stage: 0
+  Loader {{ id: settingsLoader; source: "{qml_url('services/AmbienceSettings.qml')}" }}
+  Loader {{ id: windowLoader; source: "{qml_url('components/SettingsWindow.qml')}" }}
+  Connections {{
+    target: settingsLoader.item
+    function onLoaded() {{
+      if (stage !== 0 || !windowLoader.item) return
+      stage = 1
+      windowLoader.item.settings = settingsLoader.item
+      windowLoader.item.resetAll()
+      probe.start()
+    }}
+  }}
+  Timer {{
+    id: probe; interval: 30; repeat: true; property int attempts: 0
+    onTriggered: {{
+      attempts += 1
+      var service = settingsLoader.item
+      if (service && service.persistenceState === "saved"
+          && service.confirmedSaveRevision === service.requestedSaveRevision) {{
+        stop()
+        console.log("BEHAVE " + JSON.stringify(service.data))
+        Qt.quit()
+      }} else if (attempts > 150) {{ console.log("BEHAVE_ERR reset did not settle"); Qt.quit() }}
+    }}
+  }}
+}}
+'''
+        with tempfile.TemporaryDirectory() as config_dir:
+            config_home = Path(config_dir)
+            settings_file = config_home / "omarchy/jobo/desktop-ambience/settings.json"
+            settings_file.parent.mkdir(parents=True)
+            settings_file.write_text(json.dumps({
+                "version": 1,
+                "enabled": False,
+                "presentation": "foreground",
+                "opacity": 0.12,
+                "activeEffects": ["filmGrain", "crt"],
+                "backgroundVignette": {"enabled": True, "intensity": 0.2},
+            }), encoding="utf-8")
+            unrelated = config_home / "omarchy/unrelated.json"
+            unrelated.parent.mkdir(parents=True, exist_ok=True)
+            unrelated.write_text('{"keep":true}\n', encoding="utf-8")
+
+            output = run_quickshell(qml, config_home=config_home, timeout=12)
+            require_no_qml_errors(output)
+            row = parse_behave(output)[-1]
+            disk = json.loads(settings_file.read_text())
+            unrelated_text = unrelated.read_text()
+
+        self.assertTrue(row["enabled"], output[-2000:])
+        self.assertEqual(row["presentation"], "background")
+        self.assertEqual(row["opacity"], 1)
+        self.assertEqual(row["activeEffects"], ["trackingLines"])
+        self.assertFalse(row["backgroundVignette"]["enabled"])
+        self.assertEqual(disk, row)
+        self.assertEqual(unrelated_text, '{"keep":true}\n')
+
+
+if __name__ == "__main__":
+    unittest.main()

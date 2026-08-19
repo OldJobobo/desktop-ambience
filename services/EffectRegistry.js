@@ -93,6 +93,44 @@ var dedicatedVignette = {
   }
 }
 
+var fieldLabels = {
+  enabled: "Enabled", intensity: "Intensity", speed: "Speed",
+  ribbonCount: "Ribbon Count", blurSoftness: "Blur Softness", accentBlend: "Accent Tint",
+  vignette: "Built-in Vignette", stylePreset: "Light Style", slowDrift: "Slow Drift",
+  occasionalSweeps: "Occasional Sweeps", activeShimmer: "Active Shimmer", flareCount: "Flare Count",
+  scanlineSpacing: "Scanline Spacing", staticBandHeight: "Static Band Height",
+  staticAmount: "Static Amount", glowAmount: "Glow Amount", bloomPulse: "Bloom Pulse",
+  bloomPulseAmount: "Bloom Amount", bloomPulseInterval: "Bloom Interval",
+  distortion: "Distortion", distortionAmount: "Distortion Amount", moteCount: "Mote Count",
+  moteSize: "Mote Size", mouseReactive: "Mouse Reactive", mouseInfluence: "Mouse Influence",
+  grainCount: "Grain Count", grainSize: "Grain Size", rayCount: "Ray Count",
+  raySpread: "Ray Spread", shimmer: "Shimmer", origin: "Ray Origin", dropCount: "Drop Count",
+  slant: "Slant", mistAmount: "Mist Amount", splashAmount: "Splash Amount",
+  lineSpacing: "Line Spacing", trackingBands: "Tracking Bands", noiseAmount: "Noise Amount",
+  glitchAmount: "Glitch Amount", chromaBleed: "Chroma Bleed",
+  ignoreBackgroundAnimationLayer: "Place Behind Animations"
+}
+
+var fieldHints = {
+  enabled: "Keep this renderer available in the active composition.",
+  intensity: "Controls the strength of the effect.",
+  speed: "Controls the animation rate.",
+  accentBlend: "Blends the active Omarchy accent into the effect palette.",
+  vignette: "Adds the renderer's own edge darkening.",
+  stylePreset: "Selects the source light composition.",
+  slowDrift: "Uses slow breathing and lateral movement.",
+  occasionalSweeps: "Adds rare bright horizontal passes.",
+  activeShimmer: "Adds frequent glints and pulse variation.",
+  bloomPulse: "Animates the CRT bloom level.",
+  distortion: "Enables foreground-only CRT distortion.",
+  mouseReactive: "Lets pointer movement disturb nearby motes.",
+  mouseInfluence: "Sets the strength of pointer interaction.",
+  shimmer: "Adds gentle brightness variation to the rays.",
+  origin: "Chooses the corner the rays emerge from.",
+  chromaBleed: "Separates color channels along tracking edges.",
+  ignoreBackgroundAnimationLayer: "Draws the dedicated vignette behind the ordered stack."
+}
+
 function boolField(defaultValue) {
   return { type: "bool", defaultValue: defaultValue === true }
 }
@@ -137,6 +175,64 @@ function definition(value) {
 
 function vignetteDefinition() {
   return deepCopy(dedicatedVignette)
+}
+
+function fieldLabel(key) {
+  return fieldLabels[String(key || "")] || String(key || "")
+}
+
+function fieldHint(key) {
+  var normalized = String(key || "")
+  if (fieldHints[normalized]) return fieldHints[normalized]
+  if (normalized.indexOf("Count") >= 0) return "Controls how many source elements are rendered."
+  if (normalized.indexOf("Size") >= 0 || normalized.indexOf("Spacing") >= 0
+      || normalized.indexOf("Height") >= 0) return "Controls the renderer's source geometry."
+  if (normalized.indexOf("Amount") >= 0 || normalized.indexOf("Softness") >= 0
+      || normalized === "slant" || normalized === "raySpread") return "Tunes this part of the visual treatment."
+  if (normalized.indexOf("Interval") >= 0) return "Sets the time between animation pulses."
+  return "Adjusts the source renderer setting."
+}
+
+function stepForField(field) {
+  if (!field) return 0.01
+  if (field.type === "int") {
+    var range = Number(field.maximum) - Number(field.minimum)
+    return range > 200 ? 4 : 1
+  }
+  var numericRange = Number(field.maximum) - Number(field.minimum)
+  return numericRange > 10 ? 1000 : (numericRange > 4 ? 0.05 : 0.01)
+}
+
+function fieldDefinitions(value) {
+  var entry = definition(value)
+  if (!entry) return []
+  var result = []
+  var keys = Object.keys(entry.fields)
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i]
+    var field = deepCopy(entry.fields[key])
+    field.key = key
+    field.label = fieldLabel(key)
+    field.hint = fieldHint(key)
+    field.step = stepForField(field)
+    result.push(field)
+  }
+  return result
+}
+
+function vignetteFieldDefinitions() {
+  var result = []
+  var keys = Object.keys(dedicatedVignette.fields)
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i]
+    var field = deepCopy(dedicatedVignette.fields[key])
+    field.key = key
+    field.label = fieldLabel(key)
+    field.hint = fieldHint(key)
+    field.step = stepForField(field)
+    result.push(field)
+  }
+  return result
 }
 
 function defaultsFor(value) {
