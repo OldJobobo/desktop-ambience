@@ -2,14 +2,23 @@
   "schemaVersion": 1,
   "id": "jobo.desktop-ambience",
   "name": "Desktop Ambience",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": "J. S. Brown",
   "description": "Ordered, configurable desktop ambience effects for Omarchy Shell.",
   "kinds": [
-    "panel"
+    "panel",
+    "bar-widget"
   ],
   "keepLoaded": true,
   "entryPoints": {
-    "panel": "Panel.qml"
+    "panel": "Panel.qml",
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Desktop Ambience",
+    "description": "Open the ambience composition and effect settings",
+    "category": "Compositor",
+    "defaultSection": "right",
+    "allowMultiple": false
   }
 }

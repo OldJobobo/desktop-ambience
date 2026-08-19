@@ -13,9 +13,9 @@ def read(path: str) -> str:
 def test_manifest_uses_persistent_panel_boundary():
     manifest = json.loads(read("manifest.json"))
     assert manifest["id"] == "jobo.desktop-ambience"
-    assert manifest["kinds"] == ["panel"]
+    assert manifest["kinds"] == ["panel", "bar-widget"]
     assert manifest["keepLoaded"] is True
-    assert manifest["entryPoints"] == {"panel": "Panel.qml"}
+    assert manifest["entryPoints"] == {"panel": "Panel.qml", "barWidget": "BarWidget.qml"}
     assert "lacuna" not in manifest
 
 

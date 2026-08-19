@@ -21,13 +21,15 @@ for kind, entry in manifest.get("entryPoints", {}).items():
 PY
 omarchy plugin validate "$repo_root"
 bash -n scripts/check.sh
+bash -n scripts/menu-entry.sh
 python -m compileall -q tests
 qmllint -I /usr/share/omarchy/shell \
-  Panel.qml components/*.qml effects/*.qml services/*.qml
+  Panel.qml BarWidget.qml components/*.qml effects/*.qml services/*.qml
 
 runtime_files=(
   manifest.json
   Panel.qml
+  BarWidget.qml
   components/*.qml
   effects/*.qml
   services/*.qml

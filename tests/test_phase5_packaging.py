@@ -15,7 +15,7 @@ def test_repository_root_is_the_installable_plugin_boundary():
     manifest = json.loads(read("manifest.json"))
     assert ROOT.joinpath(".git").is_dir()
     assert manifest["id"] == "jobo.desktop-ambience"
-    assert manifest["kinds"] == ["panel"]
+    assert manifest["kinds"] == ["panel", "bar-widget"]
     assert manifest["keepLoaded"] is True
     for entry in manifest["entryPoints"].values():
         path = Path(entry)
@@ -30,6 +30,7 @@ def test_runtime_files_are_regular_repository_owned_files():
     runtime_paths = [
         ROOT / "manifest.json",
         ROOT / "Panel.qml",
+        ROOT / "BarWidget.qml",
         *sorted((ROOT / "components").glob("*.qml")),
         *sorted((ROOT / "effects").glob("*.qml")),
         *sorted((ROOT / "services").glob("*.qml")),
@@ -52,6 +53,7 @@ def test_check_script_covers_packaging_runtime_and_forbidden_dependencies():
         "git diff --check",
         "python -m compileall",
         "bash -n scripts/check.sh",
+        "bash -n scripts/menu-entry.sh",
     ):
         assert command in check
     assert "unsafe {kind} entry point" in check
@@ -81,7 +83,11 @@ def test_readme_documents_repository_lifecycle_and_owned_state_cleanup():
         "omarchy plugin remove jobo.desktop-ambience",
         "omarchy-shell shell summon jobo.desktop-ambience",
         "omarchy-shell jobo-desktop-ambience status",
+        'scripts/menu-entry.sh\" install',
+        'scripts/menu-entry.sh\" remove',
     ):
         assert command in readme
+    assert "bar widget" in readme.lower()
+    assert "optional Omarchy menu row" in readme
     assert "$XDG_CONFIG_HOME/omarchy/jobo/desktop-ambience" in readme
     assert "${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/jobo/desktop-ambience" in readme

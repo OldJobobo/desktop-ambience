@@ -38,10 +38,11 @@ rewrite requires a separate justification and visual regression review.
 
 ## Recommended Product Boundary
 
-Ship one persistent **panel-kind plugin** in a dedicated repository, tentatively
-named `jobo.desktop-ambience`. The `omarchy.*` namespace is reserved for
-first-party Omarchy plugins; all plugin IDs, IPC targets, layer namespaces, and
-owned state introduced here use the `jobo` namespace.
+Ship one plugin with a persistent **panel** entry point and a lightweight
+**bar-widget** launcher in a dedicated repository, named
+`jobo.desktop-ambience`. The `omarchy.*` namespace is reserved for first-party
+Omarchy plugins; all plugin IDs, IPC targets, layer namespaces, and owned state
+introduced here use the `jobo` namespace.
 
 The panel entry point remains loaded and owns both:
 
@@ -52,8 +53,15 @@ The panel entry point remains loaded and owns both:
 This is preferable to declaring separate overlay and panel plugins. Omarchy's
 current generic loader chooses one panel-like entry point per plugin, while a
 persistent panel root can legally own the effect `PanelWindow` instances and
-its settings window together. It also avoids requiring a configuration widget
-in the bar.
+its settings window together. The optional bar widget is launcher-only: it
+summons the panel-owned settings window and never duplicates settings, theme,
+renderer, surface, or IPC ownership.
+
+The stock plugin manifest has no contribution point for inserting a third-party
+row into the Omarchy command menu. Ship an idempotent, marker-owned menu helper
+instead. It adds and removes only the `desktop-ambience` row in the user's
+`omarchy-menu.jsonc`, remains opt-in, and is documented in install/uninstall
+steps.
 
 The standalone repository should contain the plugin directory at its root so it
 can be installed through the normal Omarchy repository-source workflow.
@@ -129,6 +137,7 @@ archived animation-pipeline experiment documents prior visual-parity failures.
 jobo.desktop-ambience/
 ├── manifest.json
 ├── Panel.qml
+├── BarWidget.qml
 ├── components/
 │   ├── AmbienceStack.qml
 │   ├── FullscreenGuard.qml
@@ -147,7 +156,9 @@ jobo.desktop-ambience/
 │   ├── AmbienceSettings.qml
 │   ├── EffectRegistry.js
 │   └── ThemeAdapter.qml
-└── assets/
+├── assets/
+└── scripts/
+    └── menu-entry.sh
 ```
 
 All runtime imports must remain inside the plugin directory except supported
@@ -343,9 +354,12 @@ configuration, or unrelated plugin state.
 - Add README installation, upgrade, troubleshooting, and uninstall
   instructions.
 - Add a check script for JSON, manifest validation, QML lint/load, unit tests,
-  and forbidden Lacuna dependencies.
+  and forbidden runtime dependencies.
+- Add a launcher-only bar widget that summons the persistent settings window.
+- Add an idempotent opt-in Omarchy menu helper with exact marker-owned removal.
 - Install from the repository source rather than a development symlink and
-  verify `omarchy plugin validate` and `omarchy plugin enable`.
+  verify `omarchy plugin validate`, `omarchy plugin enable`, bar placement, and
+  both launcher paths.
 
 **Gate:** a clean stock Omarchy profile can install, configure, update, and
 remove the plugin without this Lacuna repository present.
@@ -394,7 +408,7 @@ clean-profile install passes, and all documented acceptance criteria are met.
 The extraction is complete when:
 
 - one Omarchy plugin ID owns all eight ordered effects, the dedicated vignette,
-  and their settings;
+  their settings, and both launcher paths;
 - stock Omarchy is the only runtime dependency;
 - installation does not require Lacuna files, services, menu, bar, or scripts;
 - one selected host surface exists per output, not one surface per effect;
@@ -408,8 +422,10 @@ The extraction is complete when:
 - the dedicated vignette preserves its source behavior in both background and
   foreground presentation;
 - current effect screenshots remain visually equivalent; and
-- install, update, disable, and uninstall are documented and tested on a clean
-  base Omarchy profile.
+- the bar icon and optional Omarchy menu row both open the same persistent
+  settings window without duplicating runtime ownership; and
+- install, update, disable, and uninstall—including exact menu-row and owned
+  state cleanup—are documented and tested on a clean base Omarchy profile.
 
 ## Resolved Decisions
 

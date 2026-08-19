@@ -46,10 +46,18 @@ development symlink:
 omarchy plugin add "file://$(pwd)" --enable --yes
 ```
 
-If the repository was added without `--enable`, enable it later:
+If the repository was added without `--enable`, enable it later. New installs
+place the single-instance launcher in the right bar section:
 
 ```bash
-omarchy plugin enable jobo.desktop-ambience
+omarchy plugin enable jobo.desktop-ambience --section right
+```
+
+Install the optional Omarchy menu row from the cloned plugin. The helper is
+idempotent and owns only its marked `desktop-ambience` entry:
+
+```bash
+"$HOME/.config/omarchy/plugins/jobo.desktop-ambience/scripts/menu-entry.sh" install
 ```
 
 Avoid running multiple full-desktop effect systems at the same time. Their
@@ -57,7 +65,11 @@ layer surfaces can overlap even when both remain click-through.
 
 ## Open settings
 
-Summon the settings window through the shell:
+Click the **Desktop Ambience** icon (`󰖔`) in the bar or choose **Desktop
+Ambience** from the optional Omarchy menu row. Both launchers summon the same
+persistent settings window and own no renderer or settings state themselves.
+
+The equivalent shell command is:
 
 ```bash
 omarchy-shell shell summon jobo.desktop-ambience '{}'
@@ -111,6 +123,21 @@ Omarchy fetches the configured origin, fast-forwards the checkout, validates the
 manifest, and rescans plugins. Settings are versioned and normalized on load;
 upgrades do not read or migrate state from other plugins.
 
+When upgrading from a panel-only version, disable and re-enable once so Omarchy
+moves the existing plugin entry into the bar layout:
+
+```bash
+omarchy plugin disable jobo.desktop-ambience
+omarchy plugin enable jobo.desktop-ambience --section right
+```
+
+Re-running the menu helper refreshes the marker-owned row without creating a
+duplicate:
+
+```bash
+"$HOME/.config/omarchy/plugins/jobo.desktop-ambience/scripts/menu-entry.sh" install
+```
+
 ## Disable
 
 Disable rendering and unload the plugin while preserving its settings:
@@ -127,9 +154,11 @@ omarchy plugin enable jobo.desktop-ambience
 
 ## Uninstall
 
-Remove the installed Git checkout:
+Remove the optional menu row while the helper is still available, then remove
+the installed Git checkout:
 
 ```bash
+"$HOME/.config/omarchy/plugins/jobo.desktop-ambience/scripts/menu-entry.sh" remove
 omarchy plugin remove jobo.desktop-ambience
 ```
 
@@ -152,6 +181,16 @@ Validate the checkout and ask the shell to discover plugins again:
 omarchy plugin validate "$HOME/.config/omarchy/plugins/jobo.desktop-ambience"
 omarchy-shell shell rescanPlugins
 omarchy plugin list
+```
+
+### The bar icon or menu row is missing
+
+Reinsert the bar widget and install the optional menu row:
+
+```bash
+omarchy plugin disable jobo.desktop-ambience
+omarchy plugin enable jobo.desktop-ambience --section right
+"$HOME/.config/omarchy/plugins/jobo.desktop-ambience/scripts/menu-entry.sh" install
 ```
 
 ### The settings window does not open
@@ -198,9 +237,10 @@ check from an active Wayland session:
 ```
 
 It validates JSON and manifest entry points, runs Omarchy manifest validation,
-lints every QML file, compiles the Python test suite, rejects forbidden runtime
-dependencies and effect-local file readers, runs all behavior tests with zero
-skips, and checks the Git diff for whitespace errors.
+lints every QML file (including the bar widget), checks both shell helpers,
+compiles the Python test suite, rejects forbidden runtime dependencies and
+effect-local file readers, runs all behavior tests with zero skips, and checks
+the Git diff for whitespace errors.
 
 Run the reversible live monitor lifecycle check explicitly when validating
 Hyprland hotplug behavior. It creates and removes one temporary headless output
