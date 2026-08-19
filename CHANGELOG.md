@@ -17,6 +17,7 @@ All notable changes are recorded here. This project follows [Semantic Versioning
 - Suspended cursor sampling when Dust Motes is inactive, reduced motion is enabled, or every ambience output is unable to paint.
 - Delayed renderer animation startup until the host geometry is stable so first loops use the full output dimensions.
 - Seeded Rainfall drops across their complete travel path on startup instead of cascading from partial first cycles.
+- Initialized Aurora Drift secondary glows at their animated opacity floor so startup no longer briefly over-stacks fully opaque extras.
 
 ## [0.4.0] - 2026-08-19
 

@@ -275,11 +275,14 @@ Item {
           readonly property int blurPad: Math.round(124 + root.blurSoftness * 154)
           readonly property int glowWidth: Math.max(170, Math.round(auroraWindow.width * (0.096 + root.blurSoftness * 0.068) * (0.86 + root.seededNoise(seed + 19) * 0.36)))
           readonly property int glowHeight: Math.max(760, Math.round(auroraWindow.height * (0.9 + root.blurSoftness * 0.24) * (0.92 + root.seededNoise(seed + 23) * 0.3)))
+          readonly property real glowFloor: 0.12 + root.seededNoise(seed + 47) * 0.14
+          readonly property real glowPeak: 0.42 + root.seededNoise(seed + 53) * 0.26
 
           x: xA
           y: yA
           width: glowWidth + blurPad * 2
           height: glowHeight + blurPad * 2
+          opacity: glowFloor
           rotation: -6 + root.seededNoise(seed + 29) * 12
           layer.enabled: true
           layer.smooth: true
@@ -354,15 +357,15 @@ Item {
             }
 
             NumberAnimation {
-              from: 0.12 + root.seededNoise(glow.seed + 47) * 0.14
-              to: 0.42 + root.seededNoise(glow.seed + 53) * 0.26
+              from: glow.glowFloor
+              to: glow.glowPeak
               duration: Math.max(7200, (11200 + root.seededNoise(glow.seed + 59) * 8400) / root.speed)
               easing.type: Easing.InOutSine
             }
 
             NumberAnimation {
-              from: 0.42 + root.seededNoise(glow.seed + 53) * 0.26
-              to: 0.12 + root.seededNoise(glow.seed + 47) * 0.14
+              from: glow.glowPeak
+              to: glow.glowFloor
               duration: Math.max(7600, (12400 + root.seededNoise(glow.seed + 61) * 8800) / root.speed)
               easing.type: Easing.InOutSine
             }

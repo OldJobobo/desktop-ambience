@@ -55,6 +55,17 @@ def test_renderers_wait_for_stable_geometry_before_first_animation_cycle():
     assert stack.count("runtimeEnabled: root.rendererPaintEnabled && root.productionEffectsEnabled") == 8
 
 
+def test_aurora_secondary_glows_start_at_their_animated_floor():
+    aurora = read("effects/AuroraDriftEffect.qml")
+    assert "readonly property real glowFloor:" in aurora
+    assert "readonly property real glowPeak:" in aurora
+    assert "opacity: glowFloor" in aurora
+    assert "from: glow.glowFloor" in aurora
+    assert "to: glow.glowPeak" in aurora
+    assert "from: glow.glowPeak" in aurora
+    assert "to: glow.glowFloor" in aurora
+
+
 def test_rainfall_seeds_full_length_loops_at_distributed_startup_phases():
     rain = read("effects/RainfallEffect.qml")
     assert "phaseOffset" not in rain
