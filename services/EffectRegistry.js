@@ -11,7 +11,6 @@ const effects = [
   { id: "filmGrain", label: "Film Grain" },
   { id: "godRays", label: "God Rays" },
   { id: "rainfall", label: "Rainfall" },
-  { id: "vhs", label: "VHS" },
-  // Replace this provisional ID with the canonical source ID during Phase 0.
+  { id: "trackingLines", label: "VHS" },
   { id: "backgroundVignette", label: "Background Vignette" }
 ]

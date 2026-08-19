@@ -1,8 +1,9 @@
 # Desktop Ambience
 
 A standalone Omarchy Shell plugin for an ordered stack of desktop ambience
-effects. The repository currently contains the architecture scaffold described
-in [`PLAN.md`](PLAN.md); renderer extraction has not started.
+effects. Phase 1 of the extraction described in [`PLAN.md`](PLAN.md) is now
+present: the owned renderers, ordered lazy stack, full-output foreground host,
+and dedicated vignette are copied into the standalone plugin boundary.
 
 ## Planned effects
 
@@ -18,9 +19,15 @@ in [`PLAN.md`](PLAN.md); renderer extraction has not started.
 
 ## Current status
 
-The manifest and plugin lifecycle shell are present, but rendering, settings
-persistence, the settings window, and theme integration are placeholders. Do
-not install this revision expecting visible effects.
+The renderer baseline and in-memory host are present. Settings persistence, the
+settings window, centralized theme integration, and removal of effect-local
+legacy settings readers remain later phases. Phase 1 defaults to background
+presentation with VHS selected and the dedicated vignette disabled. The eight
+renderer bodies remain byte-identical to the pinned source except for one
+Phase 1 host-boundary injection in `CrtEffect.qml`: its legacy-derived
+`foregroundOverlay` readonly property is now an injected boolean property so
+CRT foreground-only distortion follows the standalone host presentation. Its
+visual math is unchanged.
 
 The 1.0 product boundary is approved: a persistent panel root with background
 and explicit click-through foreground presentation, including the dedicated
@@ -29,7 +36,7 @@ per output for fullscreen applications.
 
 ## Development
 
-Validate the repository scaffold with:
+Validate the Phase 1 extraction with:
 
 ```bash
 ./scripts/check.sh
