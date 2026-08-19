@@ -19,7 +19,9 @@ def test_manifest_uses_persistent_panel_boundary():
     assert "lacuna" not in manifest
 
 
-def test_host_owns_click_through_background_and_foreground_surfaces():
+def test_phase1_host_preserves_source_dual_window_layer_contract():
+    # Interim extraction baseline only. Phase 3 replaces both window trees with
+    # one dynamically selected surface per output and must revise this test.
     panel = read("Panel.qml")
     assert 'target: "jobo-desktop-ambience"' in panel
     assert 'WlrLayershell.namespace: "jobo-desktop-ambience-bottom"' in panel
@@ -83,9 +85,10 @@ def test_crt_foreground_mode_is_injected_from_the_host():
     assert "visible: root.foregroundOverlay && root.distortion" in crt
 
 
-def test_registry_and_stack_preserve_all_canonical_effect_ids():
+def test_registry_separates_ordered_effects_from_dedicated_vignette():
     registry = read("services/EffectRegistry.js")
     stack = read("components/AmbienceStack.qml")
+    plan = read("PLAN.md")
     expected = [
         ("auroraDrift", "auroraDriftLoader"),
         ("cinematicLight", "cinematicLightLoader"),
@@ -103,6 +106,13 @@ def test_registry_and_stack_preserve_all_canonical_effect_ids():
         assert f'root.productionEffectActive("{effect_id}")' in stack
         assert f'id: "{effect_id}"' in registry
 
+    assert "const orderedEffects = [" in registry
     assert '{ id: "trackingLines", label: "VHS" }' in registry
     assert '{ id: "vhs", label: "VHS" }' not in registry
-    assert '{ id: "backgroundVignette", label: "Background Vignette" }' in registry
+    assert "const dedicatedVignette = {" in registry
+    assert 'id: "backgroundVignette"' in registry
+    ordered_block = registry.split("const orderedEffects = [", 1)[1].split("]", 1)[0]
+    assert "backgroundVignette" not in ordered_block
+    assert 'VHS (`trackingLines`)' in plan
+    assert '"activeEffects": ["trackingLines"]' in plan
+    assert '"activeEffects": ["vhs"]' not in plan

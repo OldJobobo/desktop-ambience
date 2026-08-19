@@ -22,8 +22,10 @@ and dedicated vignette are copied into the standalone plugin boundary.
 The renderer baseline and in-memory host are present. Settings persistence, the
 settings window, centralized theme integration, and removal of effect-local
 legacy settings readers remain later phases. Phase 1 defaults to background
-presentation with VHS selected and the dedicated vignette disabled. The eight
-renderer bodies remain byte-identical to the pinned source except for one
+presentation with VHS (`trackingLines`) selected and the dedicated vignette
+disabled. The vignette has separate enable/intensity state and is not part of
+the reorderable effect list. The eight renderer bodies remain byte-identical to
+the pinned source except for one
 Phase 1 host-boundary injection in `CrtEffect.qml`: its legacy-derived
 `foregroundOverlay` readonly property is now an injected boolean property so
 CRT foreground-only distortion follows the standalone host presentation. Its

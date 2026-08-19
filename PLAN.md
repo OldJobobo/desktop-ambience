@@ -70,8 +70,8 @@ Include the eight effects already composed by
 5. Film Grain (`filmGrain`)
 6. God Rays (`godRays`)
 7. Rainfall (`rainfall`)
-8. VHS (`vhs`)
-9. Background Vignette (copy its canonical ID from the extraction source)
+8. VHS (`trackingLines`)
+9. Background Vignette (`backgroundVignette`, dedicated lifecycle)
 
 Preserve ordered composition for the existing ambience stack: index 0 is
 frontmost, invalid IDs are ignored, and duplicates collapse to the first
@@ -170,9 +170,9 @@ Recommended initial shape:
   "presentation": "background",
   "opacity": 1,
   "reduceMotion": false,
-  "activeEffects": ["vhs"],
+  "activeEffects": ["trackingLines"],
   "effects": {
-    "vhs": {
+    "trackingLines": {
       "enabled": true,
       "intensity": 0.68,
       "speed": 1
@@ -191,8 +191,12 @@ Recommended initial shape:
 - publish one normalized object to the host, effects, and settings UI.
 
 `EffectRegistry.js` should own IDs, labels, defaults, bounds, and enum values.
-Do not keep separate defaults in the manifest, stack, and effect
-implementations.
+It must expose the eight reorderable renderers separately from dedicated
+vignette metadata. `backgroundVignette` never appears in `activeEffects` or the
+ordered effects map; it owns separate `enabled` and `intensity` state. VHS uses
+the source contract's canonical persisted ID, `trackingLines`; `vhs` is not a
+second persisted ID. Do not keep separate defaults in the manifest, stack, and
+effect implementations.
 
 ## Theme Contract
 
@@ -273,6 +277,12 @@ effect systems simultaneously, but it must not name or inspect Lacuna plugins.
 - Keep rendering code byte-for-byte except where a renamed injected property or
   full-output geometry adapter is required to sever a Lacuna dependency.
 
+Phase 1 deliberately retains the source host's two per-output window trees—one
+Bottom and one Overlay—with only the selected tree mapped. This is an interim
+provenance contract, not the final surface architecture. Phase 3 replaces it
+with one dynamically selected surface per output; Phase 1 tests that count both
+windows must be revised in that commit rather than treated as permanent API.
+
 **Gate:** the copied renderer still passes the existing ordering and lazy-load
 behavior tests before settings or UI extraction begins.
 
@@ -299,8 +309,8 @@ behavior tests before settings or UI extraction begins.
 
 ### Phase 3 — Build the persistent panel root
 
-- Implement `Panel.qml` with one dynamically selected ambience surface per
-  output and one on-demand settings window.
+- Replace the Phase 1 dual-window baseline with one dynamically selected
+  ambience surface per output and add one on-demand settings window.
 - Preserve lazy effect loading and sibling-z ordering.
 - Keep all surfaces input-transparent and non-exclusive.
 - Add required per-output fullscreen suppression for foreground mode.

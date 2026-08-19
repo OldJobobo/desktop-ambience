@@ -1,0 +1,58 @@
+{
+  "sourceCommit": "27c73022bcf6e24d8de471b25d321864704902d4",
+  "settingsVersion": 3,
+  "reduceMotion": false,
+  "backgroundEffects": {
+    "enabled": false,
+    "foregroundOverlay": false,
+    "opacity": 0.85,
+    "activeEffect": "rainfall",
+    "activeEffects": [
+      "rainfall",
+      "dustMotes"
+    ],
+    "effects": {
+      "trackingLines": {
+        "enabled": true
+      },
+      "filmGrain": {
+        "enabled": true,
+        "intensity": 0.88,
+        "speed": 1.61,
+        "grainCount": 180,
+        "grainSize": 2.06,
+        "accentBlend": 0.71
+      },
+      "dustMotes": {
+        "enabled": true,
+        "intensity": 1,
+        "speed": 1.53,
+        "moteCount": 172,
+        "moteSize": 5.03,
+        "accentBlend": 0.75,
+        "mouseReactive": true,
+        "mouseInfluence": 1
+      },
+      "auroraDrift": {
+        "enabled": true
+      },
+      "rainfall": {
+        "enabled": true
+      },
+      "cinematicLight": {
+        "enabled": true
+      },
+      "godRays": {
+        "enabled": true
+      },
+      "crt": {
+        "enabled": true
+      }
+    }
+  },
+  "backgroundVignette": {
+    "enabled": true,
+    "intensity": 0.63,
+    "ignoreBackgroundAnimationLayer": false
+  }
+}

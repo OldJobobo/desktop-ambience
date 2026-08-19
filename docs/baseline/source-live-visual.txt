@@ -1,0 +1,6 @@
+.                                                                        [100%]
+==================================== PASSES ====================================
+=========================== short test summary info ============================
+PASSED tests/test_live_visual.py::LiveVisualTests::test_ambience_reorder_changes_pixels_without_remapping_host_surfaces
+settings-before-sha256: 12eee723c793c4eab1365fdf722aa5160b306c1d473096c2d3f7591e051f5fdf
+settings-after-sha256:  12eee723c793c4eab1365fdf722aa5160b306c1d473096c2d3f7591e051f5fdf

@@ -1,9 +1,9 @@
 .pragma library
 
-// The ordered effect IDs and labels are fixed by PLAN.md. The vignette's
-// canonical ID, plus all defaults and bounds, must be copied from the extraction
-// source rather than invented in the scaffold.
-const effects = [
+// Phase 2 fills in the copied defaults and bounds. Keep ordered renderers and
+// the dedicated vignette in separate contracts: the vignette is never part of
+// activeEffects or sibling-z ordering.
+const orderedEffects = [
   { id: "auroraDrift", label: "Aurora Drift" },
   { id: "cinematicLight", label: "Cinematic Light" },
   { id: "crt", label: "CRT" },
@@ -11,6 +11,10 @@ const effects = [
   { id: "filmGrain", label: "Film Grain" },
   { id: "godRays", label: "God Rays" },
   { id: "rainfall", label: "Rainfall" },
-  { id: "trackingLines", label: "VHS" },
-  { id: "backgroundVignette", label: "Background Vignette" }
+  { id: "trackingLines", label: "VHS" }
 ]
+
+const dedicatedVignette = {
+  id: "backgroundVignette",
+  label: "Background Vignette"
+}
