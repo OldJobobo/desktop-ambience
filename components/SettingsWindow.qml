@@ -487,41 +487,6 @@ Item {
                 }
 
                 Rectangle { width: parent.width; height: 1; color: root.faint }
-                PanelSectionHeader { text: "BAR ICON" }
-
-                Text {
-                  width: parent.width
-                  text: "Choose the launcher symbol shown in the Omarchy bar."
-                  color: root.muted
-                  font.family: Style.font.family
-                  font.pixelSize: Style.font.bodySmall
-                  wrapMode: Text.WordWrap
-                }
-
-                Grid {
-                  id: iconGrid
-                  width: parent.width
-                  columns: 2
-                  spacing: Style.space(6)
-
-                  Repeater {
-                    model: root.launcherIcons
-
-                    Button {
-                      required property var modelData
-                      width: (iconGrid.width - iconGrid.spacing) / 2
-                      text: modelData.glyph + "  " + modelData.label
-                      tooltipText: modelData.label
-                      selected: root.barIconId === modelData.id
-                      leftAlign: true
-                      bordered: true
-                      focusable: true
-                      onClicked: root.setBarIcon(modelData.id)
-                    }
-                  }
-                }
-
-                Rectangle { width: parent.width; height: 1; color: root.faint }
                 PanelSectionHeader { text: "ACTIVE STACK · FRONT TO BACK" }
 
                 Text {
@@ -568,6 +533,41 @@ Item {
                     bordered: true
                     focusable: true
                     onClicked: root.addEffect(modelData.id)
+                  }
+                }
+
+                Rectangle { width: parent.width; height: 1; color: root.faint }
+                PanelSectionHeader { text: "BAR ICON" }
+
+                Text {
+                  width: parent.width
+                  text: "Choose the launcher symbol shown in the Omarchy bar."
+                  color: root.muted
+                  font.family: Style.font.family
+                  font.pixelSize: Style.font.bodySmall
+                  wrapMode: Text.WordWrap
+                }
+
+                Grid {
+                  id: iconGrid
+                  width: parent.width
+                  columns: 2
+                  spacing: Style.space(6)
+
+                  Repeater {
+                    model: root.launcherIcons
+
+                    Button {
+                      required property var modelData
+                      width: (iconGrid.width - iconGrid.spacing) / 2
+                      text: modelData.glyph + "  " + modelData.label
+                      tooltipText: modelData.label
+                      selected: root.barIconId === modelData.id
+                      leftAlign: true
+                      bordered: true
+                      focusable: true
+                      onClicked: root.setBarIcon(modelData.id)
+                    }
                   }
                 }
               }
