@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "persistentHyprlandConfigModified": false,
+  "fractionalScaleAndRotation": {
+    "temporaryOutput": "JOBO-PHASE6-MODE-8b4bf6f9",
+    "scale": 1.25,
+    "transform": 1,
+    "surfaceCreated": true
+  },
+  "mixedRefreshRate": {
+    "output": "DP-3",
+    "originalHz": 60.0,
+    "testedHz": 180.0,
+    "restored": true,
+    "surfaceCountStable": true
+  }
+}
