@@ -48,7 +48,9 @@ def test_manifest_contributes_panel_and_single_bar_widget():
 def test_bar_widget_is_a_launcher_without_duplicate_runtime_ownership():
     widget = read("BarWidget.qml")
     assert 'moduleName: "jobo.desktop-ambience"' in widget
-    assert 'tooltipText: "Desktop Ambience · "' in widget
+    assert 'tooltipText: "Desktop Ambience"' in widget
+    assert 'tooltipText: "Desktop Ambience · "' not in widget
+    assert "LauncherIcons.labelFor(root.iconId)" not in widget
     assert "LauncherIcons.glyphFor" in widget
     assert "function openSettings()" in widget
     assert "omarchy-shell shell toggle jobo.desktop-ambience '{}'" in widget

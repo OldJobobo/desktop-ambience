@@ -24,6 +24,7 @@ All notable changes are recorded here. This project follows [Semantic Versioning
 - Reset stalled-frame backlog after one fixed simulation step, preventing temporary callback-cadence catch-up.
 - Preserved the Node Mesh renderer object while its enabled setting toggles inside an active stack, with zero simulation work while disabled.
 - Fixed settings sliders changing values during mouse-wheel or touchpad scrolling by forwarding wheel input to the containing settings list and requiring a left-button drag to change values.
+- Kept the bar tooltip fixed at **Desktop Ambience** instead of appending the selected custom icon name.
 
 ## [0.6.0] - 2026-08-20
 

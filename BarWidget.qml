@@ -22,7 +22,7 @@ BarWidget {
     anchors.fill: parent
     bar: root.bar
     text: root.iconGlyph
-    tooltipText: "Desktop Ambience · " + LauncherIcons.labelFor(root.iconId)
+    tooltipText: "Desktop Ambience"
     horizontalMargin: 7.5
 
     onPressed: function(button) {
