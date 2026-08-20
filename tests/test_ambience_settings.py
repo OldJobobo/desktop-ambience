@@ -90,6 +90,9 @@ class AmbienceSettingsBehaviorTests(unittest.TestCase):
                 "tacticalGrid": {"gridSpacing": 999, "gridLineWidth": 99, "mouseInfluence": 9,
                                  "reticleStyle": "invalid", "reticleSize": 999, "colorRole": "invalid"},
                 "trackingLines": {"lineSpacing": 99, "trackingBands": 99},
+                "bokeh": {"lightCount": 99, "lightSize": 999, "blurSoftness": 9,
+                          "driftAmount": 9, "twinkleAmount": 9,
+                          "primaryColorRole": "invalid", "secondaryColorRole": "color10"},
                 "vhs": {"enabled": True},
                 "backgroundVignette": {"enabled": True},
                 "futureGlow": {"enabled": True, "amount": 0.37, "nested": [1, None, False]},
@@ -111,6 +114,9 @@ class AmbienceSettingsBehaviorTests(unittest.TestCase):
                                  "mouseInfluence": -9, "reticleSize": -9,
                                  "reticleStyle": "ring", "colorRole": "color14"},
                 "trackingLines": {"lineSpacing": -9, "trackingBands": -9},
+                "bokeh": {"lightCount": -9, "lightSize": -9, "blurSoftness": -9,
+                          "driftAmount": -9, "twinkleAmount": -9,
+                          "primaryColorRole": "color09", "secondaryColorRole": "invalid"},
             },
             "backgroundVignette": {"intensity": -9},
         }
@@ -119,10 +125,16 @@ class AmbienceSettingsBehaviorTests(unittest.TestCase):
         self.assertTrue(defaults["enabled"])
         self.assertEqual(defaults["presentation"], "background")
         self.assertEqual(defaults["activeEffects"], ["trackingLines"])
-        self.assertEqual(set(defaults["effects"]), {"auroraDrift", "cinematicLight", "crt", "dustMotes", "filmGrain", "godRays", "rainfall", "tacticalGrid", "trackingLines"})
+        self.assertEqual(set(defaults["effects"]), {"auroraDrift", "cinematicLight", "crt", "dustMotes", "filmGrain", "godRays", "rainfall", "tacticalGrid", "trackingLines", "bokeh"})
         self.assertEqual(defaults["effects"]["tacticalGrid"]["reticleStyle"], "brackets")
         self.assertEqual(defaults["effects"]["tacticalGrid"]["colorRole"], "accent")
         self.assertEqual(defaults["effects"]["trackingLines"]["trackingBands"], 4)
+        self.assertEqual(defaults["effects"]["bokeh"], {
+            "enabled": True, "intensity": 0.52, "speed": 0.65, "lightCount": 28,
+            "lightSize": 88, "blurSoftness": 0.82, "driftAmount": 0.42,
+            "twinkleAmount": 0.18, "primaryColorRole": "accent",
+            "secondaryColorRole": "color13",
+        })
         self.assertFalse(defaults["backgroundVignette"]["enabled"])
         self.assertEqual(defaults["backgroundVignette"]["intensity"], 0.85)
 
@@ -148,6 +160,13 @@ class AmbienceSettingsBehaviorTests(unittest.TestCase):
         self.assertEqual(upper["effects"]["tacticalGrid"]["reticleStyle"], "brackets")
         self.assertEqual(upper["effects"]["tacticalGrid"]["colorRole"], "accent")
         self.assertEqual(upper["effects"]["trackingLines"]["trackingBands"], 7)
+        self.assertEqual(upper["effects"]["bokeh"]["lightCount"], 72)
+        self.assertEqual(upper["effects"]["bokeh"]["lightSize"], 240)
+        self.assertEqual(upper["effects"]["bokeh"]["blurSoftness"], 1)
+        self.assertEqual(upper["effects"]["bokeh"]["driftAmount"], 1)
+        self.assertEqual(upper["effects"]["bokeh"]["twinkleAmount"], 1)
+        self.assertEqual(upper["effects"]["bokeh"]["primaryColorRole"], "accent")
+        self.assertEqual(upper["effects"]["bokeh"]["secondaryColorRole"], "color10")
         self.assertEqual(upper["effects"]["auroraDrift"]["future"], {"ok": True})
         self.assertEqual(upper["backgroundVignette"]["futureVignette"], [1, None])
         self.assertEqual(upper["futureRoot"], {"safe": [1, True, None]})
@@ -167,6 +186,13 @@ class AmbienceSettingsBehaviorTests(unittest.TestCase):
         self.assertEqual(lower["effects"]["tacticalGrid"]["reticleStyle"], "ring")
         self.assertEqual(lower["effects"]["tacticalGrid"]["colorRole"], "color14")
         self.assertEqual(lower["effects"]["trackingLines"]["trackingBands"], 0)
+        self.assertEqual(lower["effects"]["bokeh"]["lightCount"], 6)
+        self.assertEqual(lower["effects"]["bokeh"]["lightSize"], 20)
+        self.assertEqual(lower["effects"]["bokeh"]["blurSoftness"], 0)
+        self.assertEqual(lower["effects"]["bokeh"]["driftAmount"], 0)
+        self.assertEqual(lower["effects"]["bokeh"]["twinkleAmount"], 0)
+        self.assertEqual(lower["effects"]["bokeh"]["primaryColorRole"], "color09")
+        self.assertEqual(lower["effects"]["bokeh"]["secondaryColorRole"], "color13")
         self.assertEqual(lower["backgroundVignette"]["intensity"], 0)
 
     def test_latest_write_and_malformed_edit_are_repaired_on_disk(self):

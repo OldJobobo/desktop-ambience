@@ -43,7 +43,7 @@ def test_visual_matrix_covers_every_effect_vignette_stack_theme_and_performance(
     source = read("tests/live_phase6_visual.py")
     for case_id in (
         "auroraDrift", "cinematicLight", "crt", "dustMotes", "filmGrain",
-        "godRays", "rainfall", "trackingLines", "backgroundVignette",
+        "godRays", "rainfall", "tacticalGrid", "trackingLines", "bokeh", "backgroundVignette",
         "threeEffectStack", "threeEffectStackThemeSwitch",
     ):
         assert case_id in source
@@ -59,6 +59,9 @@ def test_fullscreen_matrix_distinguishes_fake_and_real_fullscreen():
     assert "set_fullscreen_state(address, 0, 2)" in source
     assert "set_fullscreen_state(address, 2, 2)" in source
     assert '"surfaceRemainedMapped": True' in source
+    assert '"activeEffects": ["bokeh"]' in source
+    assert 'next.presentation = "background"' in source
+    assert '"bokehIdentityPreservedAcrossPresentation": True' in source
 
 
 def test_output_matrix_covers_fractional_scale_rotation_and_refresh_restore():

@@ -25,7 +25,8 @@ Item {
     "godRays",
     "rainfall",
     "tacticalGrid",
-    "trackingLines"
+    "trackingLines",
+    "bokeh"
   ]
   readonly property var normalizedActiveEffects: normalizeActiveEffects(activeEffects)
   readonly property var testFrontObject: testFrontLoader.item
@@ -39,7 +40,8 @@ Item {
     godRaysLoader,
     rainfallLoader,
     tacticalGridLoader,
-    vhsLoader
+    vhsLoader,
+    bokehLoader
   ].filter(function(loader) { return loader.active && loader.item !== null }).length
 
   function scheduleGeometryReady() {
@@ -104,7 +106,8 @@ Item {
       godRays: godRaysLoader,
       rainfall: rainfallLoader,
       tacticalGrid: tacticalGridLoader,
-      trackingLines: vhsLoader
+      trackingLines: vhsLoader,
+      bokeh: bokehLoader
     }
     var loader = loaders[String(effectId || "")]
     return loader ? loader.item : null
@@ -230,6 +233,19 @@ Item {
     }
   }
 
+  Component {
+    id: bokehComponent
+    BokehEffect {
+      objectName: "bokehEffect"
+      anchors.fill: parent
+      effectSettings: root.settingsFor("bokeh")
+      globalOpacity: root.settings ? root.settings.opacity : 1
+      reducedMotion: root.settings ? root.settings.reduceMotion : false
+      theme: root.theme
+      runtimeEnabled: root.rendererPaintEnabled && root.productionEffectsEnabled
+    }
+  }
+
   Loader {
     id: auroraDriftLoader
     anchors.fill: parent
@@ -300,6 +316,14 @@ Item {
     active: root.productionEffectActive("trackingLines")
     sourceComponent: vhsComponent
     z: root.zForEffect("trackingLines")
+  }
+
+  Loader {
+    id: bokehLoader
+    anchors.fill: parent
+    active: root.productionEffectActive("bokeh")
+    sourceComponent: bokehComponent
+    z: root.zForEffect("bokeh")
   }
 
   Loader {

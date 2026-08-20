@@ -134,6 +134,10 @@ ShellRoot {{
   property var windowScreen: null
   property bool lastSuppressed: false
   property bool reportedInitial: false
+  property bool sawSuppressed: false
+  property bool requestedBackground: false
+  property bool backgroundReported: false
+  property var bokehIdentity: null
 
   function findScreen() {{
     for (var i = 0; i < Quickshell.screens.length; i++)
@@ -199,17 +203,38 @@ ShellRoot {{
     onTriggered: {{
       var surface = root.testSurface()
       if (!surface) return
+      var bokeh = surface.stackObject
+        ? surface.stackObject.productionEffectObject("bokeh") : null
+      if (!bokeh) return
       panelLoader.item.fullscreenService.refresh()
       var suppressed = surface.fullscreenSuppressed === true
-      if (!root.reportedInitial || suppressed !== root.lastSuppressed) {{
+      if (!root.reportedInitial && !suppressed && !bokeh.effectVisible) return
+      if (!root.bokehIdentity) root.bokehIdentity = bokeh
+      var backgroundReady = root.requestedBackground && !root.backgroundReported
+        && panelLoader.item.presentation === "background" && surface.layerName === "bottom"
+      if (!root.reportedInitial || suppressed !== root.lastSuppressed || backgroundReady) {{
         root.reportedInitial = true
         root.lastSuppressed = suppressed
+        if (suppressed) root.sawSuppressed = true
+        if (backgroundReady) root.backgroundReported = true
         console.log("BEHAVE " + JSON.stringify({{
           output: surface.outputName,
           suppressed: suppressed,
           mapped: surface.visible,
-          paintAllowed: surface.paintAllowed
+          paintAllowed: surface.paintAllowed,
+          presentation: panelLoader.item.presentation,
+          layerName: surface.layerName,
+          bokehLoaded: bokeh !== null,
+          sameBokehObject: root.bokehIdentity === bokeh,
+          bokehVisible: bokeh.effectVisible,
+          bokehAnimationsRunning: bokeh.animationRunning
         }}))
+      }}
+      if (root.sawSuppressed && !suppressed && !root.requestedBackground) {{
+        root.requestedBackground = true
+        var next = panelLoader.item.settingsService.normalize(panelLoader.item.settingsService.data)
+        next.presentation = "background"
+        panelLoader.item.settingsService.save(next)
       }}
     }}
   }}
@@ -232,9 +257,9 @@ try:
             "enabled": True,
             "presentation": "foreground",
             "opacity": 1,
-            "reduceMotion": True,
-            "activeEffects": ["trackingLines"],
-            "effects": {"trackingLines": {"enabled": True, "intensity": 0}},
+            "reduceMotion": False,
+            "activeEffects": ["bokeh"],
+            "effects": {"bokeh": {"enabled": True, "intensity": 0.52}},
             "backgroundVignette": {"enabled": False, "intensity": 0},
         }), encoding="utf-8")
         palette = Path(state_dir) / "omarchy/current/theme/colors.toml"
@@ -273,7 +298,7 @@ try:
         real = set_fullscreen_state(address, 2, 2)
         time.sleep(0.7)
         restored = set_fullscreen_state(address, 0, 0)
-        time.sleep(0.7)
+        time.sleep(1.2)
 
         proc.terminate()
         stdout, _ = proc.communicate(timeout=10)
@@ -294,6 +319,20 @@ try:
         )
     if any(state["mapped"] is not True for state in states):
         raise AssertionError(states)
+    if any(state["bokehLoaded"] is not True or state["sameBokehObject"] is not True for state in states):
+        raise AssertionError(states)
+    if not any(state["presentation"] == "foreground" and state["layerName"] == "overlay" for state in states):
+        raise AssertionError(states)
+    if not any(state["presentation"] == "background" and state["layerName"] == "bottom" for state in states):
+        raise AssertionError(states)
+    if states[0]["bokehVisible"] is not True or states[-1]["bokehVisible"] is not True:
+        raise AssertionError(states)
+    if not any(state["suppressed"] and state["bokehVisible"] is False for state in states):
+        raise AssertionError(states)
+    if not any(not state["suppressed"] and state["bokehAnimationsRunning"] is True for state in states):
+        raise AssertionError(states)
+    if any(state["suppressed"] and state["bokehAnimationsRunning"] is not False for state in states):
+        raise AssertionError(states)
 
     evidence = {
         "schemaVersion": 1,
@@ -308,6 +347,12 @@ try:
         },
         "suppressionSequence": suppression,
         "surfaceRemainedMapped": True,
+        "presentationModes": ["foreground", "background"],
+        "activeEffect": "bokeh",
+        "bokehLoadedThroughout": True,
+        "bokehIdentityPreservedAcrossPresentation": True,
+        "bokehAnimatedWhilePaintable": True,
+        "bokehStoppedWhileSuppressed": True,
     }
     evidence_dir = ROOT / "docs/release/evidence" / VERSION
     evidence_dir.mkdir(parents=True, exist_ok=True)

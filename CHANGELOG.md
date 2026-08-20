@@ -4,6 +4,10 @@ All notable changes are recorded here. This project follows [Semantic Versioning
 
 ## [Unreleased]
 
+### Added
+
+- Added an opt-in, theme-aware Bokeh effect with a deterministic bounded light field, three grouped depth blurs, reduced-motion shutdown, and configurable population, size, softness, drift, twinkle, and palette roles.
+
 ## [0.6.0] - 2026-08-20
 
 ### Added

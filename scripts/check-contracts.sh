@@ -59,6 +59,7 @@ python -m pytest -q \
   tests/test_launcher_integrations.py \
   tests/test_phase6_release.py \
   tests/test_phase7_contracts.py \
+  tests/test_bokeh_contracts.py \
   tests/test_sdlc.py \
   -k 'not BarWidgetBehaviorTests'
 

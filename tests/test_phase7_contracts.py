@@ -94,7 +94,7 @@ def test_renderers_wait_for_stable_geometry_before_first_animation_cycle():
     assert "onWidthChanged: scheduleGeometryReady()" in stack
     assert "onHeightChanged: scheduleGeometryReady()" in stack
     assert "interval: 80" in stack
-    assert stack.count("runtimeEnabled: root.rendererPaintEnabled && root.productionEffectsEnabled") == 9
+    assert stack.count("runtimeEnabled: root.rendererPaintEnabled && root.productionEffectsEnabled") == 10
 
 
 def test_aurora_secondary_glows_start_at_their_animated_floor():
@@ -167,7 +167,7 @@ def test_phase7_performance_matrix_is_isolated_repeatable_and_revision_aware():
     assert 'parser.add_argument("--repetitions"' in source
     for case_id in (
         "auroraDrift", "cinematicLight", "crt", "dustMotes", "filmGrain",
-        "godRays", "rainfall", "tacticalGrid", "trackingLines", "backgroundVignette",
+        "godRays", "rainfall", "tacticalGrid", "trackingLines", "bokeh", "backgroundVignette",
         "threeEffectStack",
     ):
         assert case_id in source

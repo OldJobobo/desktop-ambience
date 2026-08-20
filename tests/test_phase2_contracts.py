@@ -21,6 +21,7 @@ ORDERED_EFFECTS = {
     "rainfall": "RainfallEffect.qml",
     "tacticalGrid": "TacticalGridEffect.qml",
     "trackingLines": "VhsEffect.qml",
+    "bokeh": "BokehEffect.qml",
 }
 
 
@@ -52,9 +53,9 @@ def test_stack_injects_normalized_state_without_duplicate_defaults():
 
     for effect_id in ORDERED_EFFECTS:
         assert f'effectSettings: root.settingsFor("{effect_id}")' in stack
-    assert stack.count("globalOpacity: root.settings ? root.settings.opacity : 1") == 9
-    assert stack.count("reducedMotion: root.settings ? root.settings.reduceMotion : false") == 9
-    assert stack.count("theme: root.theme") == 7
+    assert stack.count("globalOpacity: root.settings ? root.settings.opacity : 1") == 10
+    assert stack.count("reducedMotion: root.settings ? root.settings.reduceMotion : false") == 10
+    assert stack.count("theme: root.theme") == 8
     assert "foregroundOverlay: root.foregroundOverlay" in stack
     assert 'effectSettings: root.settingsFor("tacticalGrid")' in stack
     assert stack.count("targetScreen: root.targetScreen") == 2

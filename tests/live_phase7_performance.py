@@ -41,6 +41,12 @@ CASES = [
     ("rainfall", "effects/RainfallEffect.qml"),
     ("tacticalGrid", "effects/TacticalGridEffect.qml"),
     ("trackingLines", "effects/VhsEffect.qml"),
+    ("bokeh", "effects/BokehEffect.qml"),
+    ("bokehReducedMotion", "effects/BokehEffect.qml"),
+    ("bokehMaximumPopulation", "effects/BokehEffect.qml"),
+    ("bokehMaximumSoftness", "effects/BokehEffect.qml"),
+    ("bokehHidden", "effects/BokehEffect.qml"),
+    ("bokehFullscreenSuppressed", "effects/BokehEffect.qml"),
     ("backgroundVignette", "effects/VignetteEffect.qml"),
     ("threeEffectStack", "components/AmbienceStack.qml"),
 ]
@@ -64,6 +70,31 @@ def wait_for_outputs(names: list[str], present: bool, timeout: float = 10) -> No
             return
         time.sleep(0.1)
     raise AssertionError(f"outputs did not settle present={present}: {names}")
+
+
+def configure_temporary_output(name: str, x: int) -> dict:
+    expression = (
+        "hl.monitor({"
+        f'output = "{name}", mode = "1920x1080@60", position = "{x}x0", '
+        "scale = 1, transform = 0"
+        "})"
+    )
+    run(["hyprctl", "eval", expression])
+    deadline = time.monotonic() + 8
+    while time.monotonic() < deadline:
+        payload = json.loads(run(["hyprctl", "-j", "monitors", "all"]).stdout)
+        monitor = next((item for item in payload if str(item.get("name")) == name), None)
+        if monitor and int(monitor.get("x", 0)) == x:
+            return {
+                "name": name,
+                "x": int(monitor.get("x", 0)),
+                "y": int(monitor.get("y", 0)),
+                "width": int(monitor.get("width", 0)),
+                "height": int(monitor.get("height", 0)),
+                "scale": float(monitor.get("scale", 1)),
+            }
+        time.sleep(0.1)
+    raise AssertionError(f"temporary output {name} did not settle at x={x}")
 
 
 def proc_ticks(pid: int) -> int:
@@ -135,6 +166,7 @@ ShellRoot {{
   property real frameTotalMs: 0
   property real frameMaxMs: 0
   property int framesOver20Ms: 0
+  property var loadedItems: []
 
   QtObject {{
     id: state
@@ -148,7 +180,8 @@ ShellRoot {{
     function colorFor(name, fallback) {{
       var colors = {{
         background: "#101315", foreground: "#d8dee9", accent: "#88c0d0",
-        color5: "#b48ead", color11: "#ebcb8b", color12: "#81a1c1",
+        color5: "#b48ead", color09: "#bf616a", color10: "#a3be8c",
+        color11: "#ebcb8b", color12: "#81a1c1",
         color13: "#b48ead", color14: "#8fbcbb", color15: "#eceff4"
       }}
       return colors[name] || fallback
@@ -165,6 +198,23 @@ ShellRoot {{
     for (var i = 0; i < Qt.application.screens.length; i++)
       if (String(Qt.application.screens[i].name) === name) return Qt.application.screens[i]
     return null
+  }}
+
+  function bokehMetrics() {{
+    var delegates = 0
+    var blurLayers = 0
+    var animatedOutputs = 0
+    var visibleOutputs = 0
+    for (var i = 0; i < loadedItems.length; i++) {{
+      var item = loadedItems[i]
+      if (!item || item.boundedDelegateCount === undefined) continue
+      delegates += Number(item.boundedDelegateCount)
+      blurLayers += Number(item.activeBlurLayerCount)
+      if (item.animationRunning) animatedOutputs += 1
+      if (item.effectVisible) visibleOutputs += 1
+    }}
+    return {{delegateCount: delegates, blurLayerCount: blurLayers,
+      animatedOutputs: animatedOutputs, visibleOutputs: visibleOutputs}}
   }}
 
   function configure(item, outputName) {{
@@ -185,13 +235,23 @@ ShellRoot {{
       item.productionEffectsEnabled = true
       item.paintEnabled = true
     }} else {{
-      item.effectSettings = EffectRegistry.defaultsFor(caseId)
-      item.globalOpacity = 1
-      item.reducedMotion = false
+      var registryId = caseId.indexOf("bokeh") === 0 ? "bokeh" : caseId
+      var effectSettings = EffectRegistry.defaultsFor(registryId)
+      if (caseId === "bokehMaximumPopulation") effectSettings.lightCount = 72
+      else if (caseId === "bokehMaximumSoftness") {{
+        effectSettings.lightSize = 240
+        effectSettings.blurSoftness = 1
+        effectSettings.driftAmount = 1
+      }}
+      item.effectSettings = effectSettings
+      item.globalOpacity = caseId === "bokehHidden" ? 0 : 1
+      item.reducedMotion = caseId === "bokehReducedMotion"
+      if (caseId === "bokehFullscreenSuppressed") item.runtimeEnabled = false
       if ("theme" in item) item.theme = theme
       {tracker_assign}
     }}
     if ("targetScreen" in item) item.targetScreen = renderScreen(outputName)
+    loadedItems = loadedItems.concat([item])
     loadedCount += 1
     if (loadedCount === {len(output_names)}) warmup.start()
   }}
@@ -233,7 +293,8 @@ ShellRoot {{
         meanFrameMs: frameCount > 0 ? frameTotalMs / frameCount : 0,
         maxFrameMs: frameMaxMs,
         framesOver20Ms: framesOver20Ms,
-        cursorLaunchCount: {tracker_count}
+        cursorLaunchCount: {tracker_count},
+        bokeh: root.bokehMetrics()
       }}))
       Qt.quit()
     }}
@@ -331,10 +392,13 @@ def main() -> None:
 
     output_names = [f"JOBO-PHASE7-PERF-{uuid.uuid4().hex[:8]}-{index}" for index in range(3)]
     results: list[dict] = []
+    output_layout: list[dict] = []
     try:
         for name in output_names:
             run(["hyprctl", "output", "create", "headless", name])
         wait_for_outputs(output_names, True)
+        for index, name in enumerate(output_names):
+            output_layout.append(configure_temporary_output(name, -5760 + index * 1920))
         for repetition in range(1, args.repetitions + 1):
             for count in output_counts:
                 for case_id, source in selected_cases:
@@ -343,6 +407,7 @@ def main() -> None:
                         args.duration_ms, shared_tracker,
                     )
                     result["repetition"] = repetition
+                    result["outputGeometry"] = output_layout[:count]
                     results.append(result)
                     print(
                         f"{case_id:22} outputs={count} run={repetition} "
@@ -363,6 +428,8 @@ def main() -> None:
         "durationMs": args.duration_ms,
         "repetitions": args.repetitions,
         "cases": [case[0] for case in selected_cases],
+        "temporaryOutputLayout": output_layout,
+        "negativeOriginCovered": any(item["x"] < 0 or item["y"] < 0 for item in output_layout),
         "results": results,
     }
     output_path = args.output or REPO_ROOT / "docs/performance/evidence" / version / "phase7-performance.json"

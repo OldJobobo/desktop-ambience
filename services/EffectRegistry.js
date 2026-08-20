@@ -95,6 +95,17 @@ var orderedEffects = [
       glitchAmount: realField(0.34, 0, 1), chromaBleed: boolField(true),
       vignette: boolField(true)
     }
+  },
+  {
+    id: "bokeh", label: "Bokeh",
+    fields: {
+      enabled: boolField(true), intensity: realField(0.52, 0, 1),
+      speed: realField(0.65, 0.15, 4), lightCount: intField(28, 6, 72),
+      lightSize: realField(88, 20, 240), blurSoftness: realField(0.82, 0, 1),
+      driftAmount: realField(0.42, 0, 1), twinkleAmount: realField(0.18, 0, 1),
+      primaryColorRole: enumField("accent", ["accent", "foreground", "color09", "color10", "color11", "color12", "color13", "color14"]),
+      secondaryColorRole: enumField("color13", ["accent", "foreground", "color09", "color10", "color11", "color12", "color13", "color14"])
+    }
   }
 ]
 
@@ -125,6 +136,9 @@ var fieldLabels = {
   reticlePulse: "Reticle Pulse", colorRole: "Theme Color",
   lineSpacing: "Line Spacing", trackingBands: "Tracking Bands", noiseAmount: "Noise Amount",
   glitchAmount: "Glitch Amount", chromaBleed: "Chroma Bleed",
+  lightCount: "Light Count", lightSize: "Light Size", driftAmount: "Drift Amount",
+  twinkleAmount: "Twinkle Amount", primaryColorRole: "Primary Theme Color",
+  secondaryColorRole: "Secondary Theme Color",
   ignoreBackgroundAnimationLayer: "Place Behind Animations"
 }
 
@@ -179,6 +193,12 @@ var fieldHints = {
   noiseAmount: "Sets the amount of VHS static.",
   glitchAmount: "Sets the strength of displaced VHS slices.",
   chromaBleed: "Separates color channels along tracking edges.",
+  lightCount: "Sets the bounded number of bokeh lights rendered on each display.",
+  lightSize: "Sets the base diameter of the bokeh lights before depth variation.",
+  driftAmount: "Sets how far bokeh lights travel along their slow paths.",
+  twinkleAmount: "Sets the amount of slow opacity breathing without blinking.",
+  primaryColorRole: "Chooses the first color from the active Omarchy theme.",
+  secondaryColorRole: "Chooses the second color blended across the light field.",
   ignoreBackgroundAnimationLayer: "Draws the vignette behind all stacked effects."
 }
 

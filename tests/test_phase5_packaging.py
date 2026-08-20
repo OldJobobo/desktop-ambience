@@ -13,7 +13,15 @@ def read(path: str) -> str:
 
 def test_repository_root_is_the_installable_plugin_boundary():
     manifest = json.loads(read("manifest.json"))
-    assert ROOT.joinpath(".git").is_dir()
+    git_marker = ROOT / ".git"
+    assert git_marker.is_dir() or git_marker.is_file()
+    if git_marker.is_file():
+        prefix, separator, target = git_marker.read_text(encoding="utf-8").strip().partition(":")
+        assert prefix == "gitdir" and separator and target
+        git_dir = Path(target.strip())
+        if not git_dir.is_absolute():
+            git_dir = (ROOT / git_dir).resolve()
+        assert git_dir.is_dir()
     assert manifest["id"] == "jobo.desktop-ambience"
     assert manifest["kinds"] == ["panel", "bar-widget"]
     assert manifest["keepLoaded"] is True

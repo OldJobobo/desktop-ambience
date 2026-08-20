@@ -52,6 +52,15 @@ CASES = [
     ("rainfall", "effects/RainfallEffect.qml"),
     ("tacticalGrid", "effects/TacticalGridEffect.qml"),
     ("trackingLines", "effects/VhsEffect.qml"),
+    ("bokeh", "effects/BokehEffect.qml"),
+    ("bokehMinimum", "effects/BokehEffect.qml"),
+    ("bokehMaximum", "effects/BokehEffect.qml"),
+    ("bokehSharp", "effects/BokehEffect.qml"),
+    ("bokehSoft", "effects/BokehEffect.qml"),
+    ("bokehNoDrift", "effects/BokehEffect.qml"),
+    ("bokehTwinkleOff", "effects/BokehEffect.qml"),
+    ("bokehContrastingRoles", "effects/BokehEffect.qml"),
+    ("bokehReducedMotion", "effects/BokehEffect.qml"),
     ("backgroundVignette", "effects/VignetteEffect.qml"),
     ("threeEffectStack", "components/AmbienceStack.qml"),
 ]
@@ -131,11 +140,13 @@ ShellRoot {{
     function colorFor(name, fallback) {{
       var colors = alternate ? {{
         background: "#17120f", foreground: "#f0ddc5", accent: "#e06c75",
-        color5: "#c678dd", color11: "#e5c07b", color12: "#61afef",
+        color5: "#c678dd", color09: "#d19a66", color10: "#98c379",
+        color11: "#e5c07b", color12: "#61afef",
         color13: "#c678dd", color14: "#56b6c2", color15: "#f5e6d3"
       }} : {{
         background: "#101315", foreground: "#d8dee9", accent: "#88c0d0",
-        color5: "#b48ead", color11: "#ebcb8b", color12: "#81a1c1",
+        color5: "#b48ead", color09: "#bf616a", color10: "#a3be8c",
+        color11: "#ebcb8b", color12: "#81a1c1",
         color13: "#b48ead", color14: "#8fbcbb", color15: "#eceff4"
       }}
       return colors[name] || fallback
@@ -172,11 +183,32 @@ ShellRoot {{
       item.productionEffectsEnabled = true
       item.paintEnabled = true
     }} else {{
-      var settings = EffectRegistry.defaultsFor(caseId)
+      var registryId = caseId.indexOf("bokeh") === 0 ? "bokeh" : caseId
+      var settings = EffectRegistry.defaultsFor(registryId)
       if (caseId === "dustMotes") settings.mouseReactive = false
+      if (caseId === "bokehMinimum") settings.lightCount = 6
+      else if (caseId === "bokehMaximum") {{
+        settings.lightCount = 72
+        settings.lightSize = 240
+        settings.blurSoftness = 1
+        settings.driftAmount = 1
+        settings.twinkleAmount = 1
+      }} else if (caseId === "bokehSharp") {{
+        settings.lightSize = 36
+        settings.blurSoftness = 0.12
+      }} else if (caseId === "bokehSoft") {{
+        settings.lightSize = 200
+        settings.blurSoftness = 1
+      }} else if (caseId === "bokehNoDrift") settings.driftAmount = 0
+      else if (caseId === "bokehTwinkleOff") settings.twinkleAmount = 0
+      else if (caseId === "bokehContrastingRoles") {{
+        settings.primaryColorRole = "foreground"
+        settings.secondaryColorRole = "color10"
+      }}
       item.effectSettings = settings
       item.globalOpacity = 1
       item.reducedMotion = caseId !== "rainfall" && caseId !== "tacticalGrid"
+      if (caseId.indexOf("bokeh") === 0) item.reducedMotion = caseId === "bokehReducedMotion"
       if ("theme" in item) item.theme = theme
       if ("cursorTracker" in item) item.cursorTracker = tracker
     }}
@@ -208,13 +240,16 @@ ShellRoot {{
     if (capturePending || !effectLoader.item) return
     capturePending = true
     effectLoader.item.grabToImage(function(result) {{
-      var stackCase = cases[caseIndex].id === "threeEffectStack"
-      var outputFile = stackCase && root.themeSwitchPending
-        ? "{str((ARTIFACT_DIR / 'threeEffectStackThemeSwitch.png').resolve())}"
-        : cases[caseIndex].file
+      var caseId = cases[caseIndex].id
+      var themeSwitchCase = caseId === "threeEffectStack" || caseId === "bokehReducedMotion"
+      var themeSwitchFile = caseId === "bokehReducedMotion"
+        ? "{str((ARTIFACT_DIR / 'bokehThemeSwitch.png').resolve())}"
+        : "{str((ARTIFACT_DIR / 'threeEffectStackThemeSwitch.png').resolve())}"
+      var outputFile = themeSwitchCase && root.themeSwitchPending
+        ? themeSwitchFile : cases[caseIndex].file
       var saved = result.saveToFile(outputFile)
       if (!saved) console.log("BEHAVE_ERR failed to save " + outputFile)
-      if (stackCase && !root.themeSwitchPending) {{
+      if (themeSwitchCase && !root.themeSwitchPending) {{
         root.capturePending = false
         root.themeSwitchPending = true
         theme.alternate = true
@@ -429,7 +464,9 @@ try:
         raise AssertionError(runtime)
 
     images = []
-    image_case_ids = [case_id for case_id, _ in CASES] + ["threeEffectStackThemeSwitch"]
+    image_case_ids = [case_id for case_id, _ in CASES] + [
+        "bokehThemeSwitch", "threeEffectStackThemeSwitch",
+    ]
     for case_id in image_case_ids:
         path = ARTIFACT_DIR / f"{case_id}.png"
         if not path.is_file() or path.stat().st_size < 1024:
@@ -443,8 +480,14 @@ try:
     switched_hash = next(
         image["sha256"] for image in images if image["case"] == "threeEffectStackThemeSwitch"
     )
+    bokeh_hash = next(image["sha256"] for image in images if image["case"] == "bokehReducedMotion")
+    bokeh_switched_hash = next(
+        image["sha256"] for image in images if image["case"] == "bokehThemeSwitch"
+    )
     if stack_hash == switched_hash:
         raise AssertionError("active stack pixels did not change after the theme switch")
+    if bokeh_hash == bokeh_switched_hash:
+        raise AssertionError("static Bokeh pixels did not change after the theme switch")
 
     rainfall_path = ARTIFACT_DIR / "rainfall.png"
     rainfall_top = bright_fraction(rainfall_path, "1920x540+0+0")
@@ -458,7 +501,7 @@ try:
     run([
         "magick", "montage",
         *[str(ARTIFACT_DIR / f"{case_id}.png") for case_id in image_case_ids],
-        "-thumbnail", "360x203", "-tile", "3x4", "-geometry", "+8+24",
+        "-thumbnail", "360x203", "-tile", "4x6", "-geometry", "+8+24",
         "-background", "#111318", "-fill", "white", "-pointsize", "17",
         "-set", "label", "%t", str(contact_sheet),
     ], timeout=60)
@@ -471,6 +514,7 @@ try:
         "liveSettingsModified": False,
         "renderCases": image_case_ids,
         "themeSwitchChangedPixels": stack_hash != switched_hash,
+        "bokehThemeSwitchChangedPixels": bokeh_hash != bokeh_switched_hash,
         "rainfallStartupCoverage": {
             "topBrightFraction": rainfall_top,
             "bottomBrightFraction": rainfall_bottom,
