@@ -103,8 +103,9 @@ def test_reset_and_controls_never_target_unrelated_configuration():
 def test_selected_stack_row_uses_one_outer_selection_surface():
     window = read("components/SettingsWindow.qml")
     stack_row = window.split("component EffectStackRow:", 1)[1]
-    assert 'borderSpec: Border.controlSpec(selected ? "selected" : "normal"' in stack_row
+    assert 'borderSpec: selected ? Border.none() : Border.controlSpec("normal"' in stack_row
     assert "selected: stackRow.selected" not in stack_row
+    assert "visible: stackRow.selected" in stack_row
     assert "color: stackRow.selected ? Color.accent : Color.foreground" in stack_row
     assert "onClicked: stackRow.selectedEffect()" in stack_row
 

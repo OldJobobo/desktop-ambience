@@ -1008,7 +1008,17 @@ Item {
     implicitHeight: Style.space(50)
     radius: Style.cornerRadius
     color: selected ? root.accentWash : "transparent"
-    borderSpec: Border.controlSpec(selected ? "selected" : "normal", Color.foreground, Color.accent)
+    borderSpec: selected ? Border.none() : Border.controlSpec("normal", Color.foreground, Color.accent)
+
+    Rectangle {
+      visible: stackRow.selected
+      anchors.left: parent.left
+      anchors.top: parent.top
+      anchors.bottom: parent.bottom
+      width: Style.space(2)
+      radius: width / 2
+      color: Color.accent
+    }
 
     Item {
       anchors.left: parent.left
