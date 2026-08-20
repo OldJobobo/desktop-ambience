@@ -1,6 +1,8 @@
 {
   "schemaVersion": 1,
-  "output": "JOBO-PHASE6-FS-accf760e",
+  "output": "DP-2",
+  "workspace": "8",
+  "windowAcceptedFocus": false,
   "liveSettingsModified": false,
   "coexistsWithInstalledPlugin": true,
   "clientStates": {

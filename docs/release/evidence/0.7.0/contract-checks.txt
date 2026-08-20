@@ -1,5 +1,4 @@
-........................................................................ [ 78%]
-....................                                                     [100%]
-92 passed, 2 deselected in 4.28s
-scripts/release-check.sh:63: trailing whitespace.
-+    "docs/release/evidence/$version/output-modes.json"}]}  ...  // malformed?} 
+........................................................................ [ 76%]
+......................                                                   [100%]
+94 passed, 2 deselected in 4.79s
+Host-independent contract checks passed

@@ -4,7 +4,7 @@
   "liveSettingsModified": false,
   "temporaryOutputLayout": [
     {
-      "name": "JOBO-NODE-VIS-ec2eaa0e-0",
+      "name": "JOBO-NODE-VIS-5d321c7e-0",
       "x": -3840,
       "y": 0,
       "width": 1920,
@@ -12,7 +12,7 @@
       "scale": 1.0
     },
     {
-      "name": "JOBO-NODE-VIS-2906bf70-1",
+      "name": "JOBO-NODE-VIS-851b36c2-1",
       "x": -1920,
       "y": 180,
       "width": 1920,
@@ -38,7 +38,7 @@
   "singleOutputPointerOwnership": true,
   "metrics": [
     {
-      "output": "JOBO-NODE-VIS-ec2eaa0e-0",
+      "output": "JOBO-NODE-VIS-5d321c7e-0",
       "originX": -3840,
       "originY": 0,
       "rawCursorLocalX": 960,
@@ -53,7 +53,7 @@
       "pathCount": 8
     },
     {
-      "output": "JOBO-NODE-VIS-2906bf70-1",
+      "output": "JOBO-NODE-VIS-851b36c2-1",
       "originX": -1920,
       "originY": 180,
       "rawCursorLocalX": -960,
@@ -71,7 +71,7 @@
   "images": [
     {
       "file": "nodeMesh-output-0.png",
-      "intendedOutput": "JOBO-NODE-VIS-ec2eaa0e-0",
+      "intendedOutput": "JOBO-NODE-VIS-5d321c7e-0",
       "intendedOrigin": {
         "x": -3840,
         "y": 0
@@ -92,13 +92,13 @@
           68
         ]
       },
-      "bytes": 17318,
-      "sha256": "a0dc0849bcf933e5ddd1371e0e6a61bf0e4effd6ff867920f1725e46a720e754",
-      "visiblePixels": 5614
+      "bytes": 17884,
+      "sha256": "73169e64d1bd980563a3d8a747f091ed967ea058dc15f1fca76c195f58f5ce46",
+      "visiblePixels": 5818
     },
     {
       "file": "nodeMesh-output-1.png",
-      "intendedOutput": "JOBO-NODE-VIS-2906bf70-1",
+      "intendedOutput": "JOBO-NODE-VIS-851b36c2-1",
       "intendedOrigin": {
         "x": -1920,
         "y": 180
@@ -119,9 +119,9 @@
           118
         ]
       },
-      "bytes": 33305,
-      "sha256": "8cd7720c9a0c07bb715d2301ff9449b822b3ea634fbb7b0e6c2736fc690e8583",
-      "visiblePixels": 16209
+      "bytes": 33920,
+      "sha256": "4af1d48b59d4ecdccc8926a507d56d88dea3f0490522298b6aa84ea0139f0587",
+      "visiblePixels": 16413
     }
   ],
   "artifactDirectory": ".pi/artifacts/node-mesh-multi-output",

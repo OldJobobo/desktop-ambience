@@ -1,44 +1,44 @@
 {
   "schemaVersion": 1,
   "renderProven": true,
-  "productionLineOpacityChangedPixels": 2784,
-  "productionConnectionDistanceChangedPixels": 13884,
-  "productionShortVisiblePixels": 3383,
-  "productionLongVisiblePixels": 14307,
-  "canvasVisiblePixels": 4724,
-  "shapeVisiblePixels": 2784,
-  "canvasShapeMaskJaccard": 0.5879864636209814,
-  "canvasShapeSmallerMaskOverlap": 0.9985632183908046,
-  "canvasShapeChangedPixels": 4446,
+  "productionLineOpacityChangedPixels": 5889,
+  "productionConnectionDistanceChangedPixels": 7209,
+  "productionShortVisiblePixels": 6302,
+  "productionLongVisiblePixels": 7616,
+  "canvasVisiblePixels": 10008,
+  "shapeVisiblePixels": 5889,
+  "canvasShapeMaskJaccard": 0.5884292565947242,
+  "canvasShapeSmallerMaskOverlap": 1.0,
+  "canvasShapeChangedPixels": 9681,
   "captures": [
     {
       "caseId": "production-lines-off",
       "saved": true,
-      "edgeCount": 31,
+      "edgeCount": 100,
       "pathCount": 8
     },
     {
       "caseId": "production-lines-on",
       "saved": true,
-      "edgeCount": 31,
+      "edgeCount": 100,
       "pathCount": 8
     },
     {
       "caseId": "production-long-distance",
       "saved": true,
-      "edgeCount": 91,
+      "edgeCount": 108,
       "pathCount": 8
     },
     {
       "caseId": "prototype-canvas",
       "saved": true,
-      "edgeCount": 31,
+      "edgeCount": 100,
       "pathCount": 0
     },
     {
       "caseId": "prototype-shape",
       "saved": true,
-      "edgeCount": 31,
+      "edgeCount": 100,
       "pathCount": 8
     }
   ],

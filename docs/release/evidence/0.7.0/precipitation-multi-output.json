@@ -5,7 +5,7 @@
   "persistentHyprlandConfigModified": false,
   "temporaryOutputLayout": [
     {
-      "name": "JOBO-PRECIP-VIS-dab09d3f-0",
+      "name": "JOBO-PRECIP-VIS-6c41801f-0",
       "x": -3840,
       "y": -180,
       "width": 1920,
@@ -13,7 +13,7 @@
       "scale": 1.0
     },
     {
-      "name": "JOBO-PRECIP-VIS-0852320a-1",
+      "name": "JOBO-PRECIP-VIS-25c8d1af-1",
       "x": -1920,
       "y": 0,
       "width": 1920,
@@ -29,7 +29,7 @@
   "reducedMotion": true,
   "metrics": [
     {
-      "output": "JOBO-PRECIP-VIS-dab09d3f-0",
+      "output": "JOBO-PRECIP-VIS-6c41801f-0",
       "style": "rain",
       "loadedStyleCount": 1,
       "particleCount": 280,
@@ -39,7 +39,7 @@
       "runningClockCount": 0
     },
     {
-      "output": "JOBO-PRECIP-VIS-0852320a-1",
+      "output": "JOBO-PRECIP-VIS-25c8d1af-1",
       "style": "snow",
       "loadedStyleCount": 1,
       "particleCount": 180,
@@ -54,11 +54,11 @@
   "images": [
     {
       "file": "precipitation-output-0.png",
-      "bytes": 82776,
-      "sha256": "9e3aced6d6ef5a06f7bdb26adf04d92f7e5ac2ef63e7ca28072c34f94aa49222",
+      "bytes": 82684,
+      "sha256": "2168d4639d866b9db4429bcac5426eea47a236cd32350a0fcbddc81d65bd59e2",
       "width": 1920,
       "height": 1080,
-      "standardDeviation": 5.020086847075582,
+      "standardDeviation": 4.982454538291586,
       "markerObserved": [
         255,
         23,
@@ -68,11 +68,11 @@
     },
     {
       "file": "precipitation-output-1.png",
-      "bytes": 32620,
-      "sha256": "b9b8a3708394675061961f8c7274c574c8a1e5de6cde5696e76761f72e610492",
+      "bytes": 32572,
+      "sha256": "a703ae52bab6e1274ad231ace5385f88941065711bcb0966bef364d6cc047aa2",
       "width": 1920,
       "height": 1080,
-      "standardDeviation": 4.794601245017574,
+      "standardDeviation": 4.755246699611129,
       "markerObserved": [
         0,
         230,
