@@ -11,6 +11,8 @@ Item {
   property bool runtimeEnabled: true
   property real runtimeIntensity: -1
   property real startupOpacity: 1
+  property real motionClock: 0
+  property int allocatedRayCount: 0
 
   readonly property var overlaySettings: effectSettings
   readonly property bool configuredEnabled: overlaySettings.enabled === true
@@ -98,6 +100,10 @@ Item {
     runtimeEnabled = false
   }
 
+  function wave(clock, seed, cyclesPerSecond) {
+    return 0.5 - 0.5 * Math.cos((clock * cyclesPerSecond + seededNoise(seed)) * Math.PI * 2)
+  }
+
   function restartStartupReveal() {
     startupReveal.stop()
     startupOpacity = reducedMotion ? 1 : 0.06
@@ -106,7 +112,16 @@ Item {
 
   onEffectVisibleChanged: restartStartupReveal()
   onReducedMotionChanged: restartStartupReveal()
-  Component.onCompleted: restartStartupReveal()
+  onRayCountChanged: allocatedRayCount = Math.max(allocatedRayCount, rayCount)
+  Component.onCompleted: {
+    allocatedRayCount = Math.max(0, rayCount)
+    restartStartupReveal()
+  }
+
+  FrameAnimation {
+    running: root.effectVisible && !root.reducedMotion
+    onTriggered: root.motionClock = (root.motionClock + frameTime * root.speed) % 3600
+  }
 
   SequentialAnimation {
     id: startupReveal
@@ -143,24 +158,9 @@ Item {
       anchors.fill: parent
       enabled: false
       opacity: root.effectiveIntensity * root.startupOpacity
-      property real ambientPulse: 0.58
-
-      SequentialAnimation on ambientPulse {
-        loops: Animation.Infinite
-        running: root.effectVisible && !root.reducedMotion && root.shimmer
-        NumberAnimation {
-          from: 0.58
-          to: 1
-          duration: Math.max(5200, 11200 / root.speed)
-          easing.type: Easing.InOutSine
-        }
-        NumberAnimation {
-          from: 1
-          to: 0.58
-          duration: Math.max(5600, 12800 / root.speed)
-          easing.type: Easing.InOutSine
-        }
-      }
+      readonly property real ambientPulse: root.shimmer
+        ? 0.58 + root.wave(root.motionClock, 97, 1 / 24) * 0.42
+        : 0.7
 
       Rectangle {
         anchors.fill: parent
@@ -213,14 +213,16 @@ Item {
       }
 
       Repeater {
-        model: root.rayCount
+        model: root.allocatedRayCount
 
         Item {
           id: ray
 
           readonly property real seed: index + 211
-          readonly property real lane: index / Math.max(1, root.rayCount - 1)
-          readonly property real fanLane: root.rayCount === 1 ? 0.5 : lane
+          readonly property real targetLane: root.rayCount === 1 ? 0.5 : index / Math.max(1, root.rayCount - 1)
+          property real fanLane: targetLane
+          property bool populationReady: false
+          property real populationOpacity: populationReady && index < root.rayCount ? 1 : 0
           readonly property int blurPad: Math.round(120 + root.blurSoftness * 180)
           readonly property int rayWidth: Math.max(180, Math.round(raysWindow.width * (0.105 + root.seededNoise(seed + 3) * 0.07)))
           readonly property int rayLength: Math.max(1100, Math.round(Math.max(raysWindow.width, raysWindow.height) * (1.62 + root.seededNoise(seed + 5) * 0.34)))
@@ -243,11 +245,14 @@ Item {
           readonly property color rayColor: root.colorForRay(index)
           readonly property color companionColor: root.colorForRay(index + 1)
 
-          x: xA
-          y: yA
+          x: xA + (xB - xA) * root.wave(root.motionClock, seed + 31, driftSpeed / 30)
+          y: yA + (yB - yA) * root.wave(root.motionClock, seed + 41, (0.78 + driftSpeed * 0.46) / 34)
           width: rayWidth + blurPad * 2
           height: rayLength + blurPad * 2
-          opacity: root.shimmer ? baseOpacity * 0.7 : baseOpacity
+          opacity: populationOpacity * (root.shimmer
+            ? baseOpacity * 0.7 + (Math.min(root.rayHighOpacity, baseOpacity * 1.42) - baseOpacity * 0.7)
+              * root.wave(root.motionClock, seed + 47, 1 / 22)
+            : baseOpacity)
           rotation: angle
           transformOrigin: root.originTop ? Item.Top : Item.Bottom
           layer.enabled: true
@@ -259,55 +264,18 @@ Item {
             autoPaddingEnabled: true
           }
 
-          SequentialAnimation on x {
-            loops: Animation.Infinite
-            running: root.effectVisible && !root.reducedMotion
-            NumberAnimation {
-              from: ray.xA
-              to: ray.xB
-              duration: Math.max(7600, (14600 + root.seededNoise(ray.seed + 31) * 9200) / (root.speed * ray.driftSpeed))
-              easing.type: Easing.InOutSine
-            }
-            NumberAnimation {
-              from: ray.xB
-              to: ray.xA
-              duration: Math.max(8200, (15400 + root.seededNoise(ray.seed + 37) * 9800) / (root.speed * ray.driftSpeed))
-              easing.type: Easing.InOutSine
-            }
+          Timer {
+            interval: 240
+            running: true
+            onTriggered: ray.populationReady = true
           }
 
-          SequentialAnimation on y {
-            loops: Animation.Infinite
-            running: root.effectVisible && !root.reducedMotion
-            NumberAnimation {
-              from: ray.yA
-              to: ray.yB
-              duration: Math.max(7600, (13200 + root.seededNoise(ray.seed + 41) * 8800) / (root.speed * (0.78 + ray.driftSpeed * 0.46)))
-              easing.type: Easing.InOutSine
-            }
-            NumberAnimation {
-              from: ray.yB
-              to: ray.yA
-              duration: Math.max(8200, (14800 + root.seededNoise(ray.seed + 43) * 9600) / (root.speed * (0.74 + ray.driftSpeed * 0.5)))
-              easing.type: Easing.InOutSine
-            }
+          Behavior on fanLane {
+            NumberAnimation { duration: 360; easing.type: Easing.InOutSine }
           }
 
-          SequentialAnimation on opacity {
-            loops: Animation.Infinite
-            running: root.effectVisible && !root.reducedMotion && root.shimmer
-            NumberAnimation {
-              from: ray.baseOpacity * 0.7
-              to: Math.min(root.rayHighOpacity, ray.baseOpacity * 1.42)
-              duration: Math.max(4200, (8400 + root.seededNoise(ray.seed + 47) * 6800) / root.speed)
-              easing.type: Easing.InOutSine
-            }
-            NumberAnimation {
-              from: Math.min(root.rayHighOpacity, ray.baseOpacity * 1.42)
-              to: ray.baseOpacity * 0.7
-              duration: Math.max(4800, (9600 + root.seededNoise(ray.seed + 53) * 7200) / root.speed)
-              easing.type: Easing.InOutSine
-            }
+          Behavior on populationOpacity {
+            NumberAnimation { duration: 360; easing.type: Easing.InOutSine }
           }
 
           Rectangle {
@@ -345,7 +313,7 @@ Item {
       }
 
       Repeater {
-        model: Math.max(3, Math.round(root.rayCount * 0.7))
+        model: Math.max(3, Math.round(root.allocatedRayCount * 0.7))
 
         Rectangle {
           id: mote
@@ -357,14 +325,19 @@ Item {
           readonly property int yA: Math.round(root.seededNoise(seed + 7) * raysWindow.height)
           readonly property int yB: yA + Math.round((root.originTop ? 1 : -1) * raysWindow.height * (0.035 + root.seededNoise(seed + 11) * 0.055))
           readonly property real moteOpacity: 0.1 + root.seededNoise(seed + 13) * 0.16
+          readonly property int activeMoteCount: Math.max(3, Math.round(root.rayCount * 0.7))
+          property bool populationReady: false
+          property real populationOpacity: populationReady && index < activeMoteCount ? 1 : 0
 
-          x: xA
-          y: yA
+          x: xA + (xB - xA) * root.wave(root.motionClock, seed + 17, 1 / 26)
+          y: yA + (yB - yA) * root.wave(root.motionClock, seed + 19, 1 / 28)
           width: moteSize
           height: moteSize
           radius: width / 2
           color: Qt.rgba(root.rayCore.r, root.rayCore.g, root.rayCore.b, 0.8)
-          opacity: root.shimmer ? moteOpacity * 0.25 : moteOpacity
+          opacity: populationOpacity * (root.shimmer
+            ? moteOpacity * (0.25 + root.wave(root.motionClock, seed + 23, 1 / 20) * 0.75)
+            : moteOpacity)
           visible: root.shimmer
           layer.enabled: true
           layer.smooth: true
@@ -375,43 +348,14 @@ Item {
             autoPaddingEnabled: true
           }
 
-          ParallelAnimation {
-            loops: Animation.Infinite
-            running: root.effectVisible && !root.reducedMotion && root.shimmer
-            NumberAnimation {
-              target: mote
-              property: "x"
-              from: mote.xA
-              to: mote.xB
-              duration: Math.max(9000, (16000 + root.seededNoise(mote.seed + 17) * 12000) / root.speed)
-              easing.type: Easing.InOutSine
-            }
-            NumberAnimation {
-              target: mote
-              property: "y"
-              from: mote.yA
-              to: mote.yB
-              duration: Math.max(9000, (16000 + root.seededNoise(mote.seed + 19) * 12000) / root.speed)
-              easing.type: Easing.InOutSine
-            }
-            SequentialAnimation {
-              NumberAnimation {
-                target: mote
-                property: "opacity"
-                from: mote.moteOpacity * 0.25
-                to: mote.moteOpacity
-                duration: Math.max(4400, (8600 + root.seededNoise(mote.seed + 23) * 6000) / root.speed)
-                easing.type: Easing.InOutSine
-              }
-              NumberAnimation {
-                target: mote
-                property: "opacity"
-                from: mote.moteOpacity
-                to: mote.moteOpacity * 0.25
-                duration: Math.max(4800, (9200 + root.seededNoise(mote.seed + 29) * 6200) / root.speed)
-                easing.type: Easing.InOutSine
-              }
-            }
+          Timer {
+            interval: 240
+            running: true
+            onTriggered: mote.populationReady = true
+          }
+
+          Behavior on populationOpacity {
+            NumberAnimation { duration: 360; easing.type: Easing.InOutSine }
           }
         }
       }

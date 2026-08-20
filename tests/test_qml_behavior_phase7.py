@@ -156,6 +156,63 @@ ShellRoot {{
             "runtime": True,
         }, output[-2000:])
 
+    def test_god_rays_motion_clock_survives_live_speed_and_count_changes(self):
+        settings = {
+            "enabled": True, "intensity": 0.8, "speed": 0.8, "rayCount": 7,
+            "raySpread": 0.72, "blurSoftness": 0.88, "accentBlend": 0.58,
+            "shimmer": True, "vignette": True, "origin": "top-left",
+        }
+        qml = f'''
+import Quickshell
+import QtQuick
+ShellRoot {{
+  property real beforeClock: -1
+  Item {{
+    width: 320
+    height: 180
+    Loader {{
+      id: effectLoader
+      anchors.fill: parent
+      source: "{qml_url('effects/GodRaysEffect.qml')}"
+      onLoaded: {{ item.effectSettings = {json.dumps(settings).lower()}; firstProbe.start() }}
+    }}
+  }}
+  Timer {{
+    id: firstProbe
+    interval: 180
+    onTriggered: {{
+      beforeClock = effectLoader.item.motionClock
+      var next = Object.assign({{}}, effectLoader.item.effectSettings)
+      next.speed = 3.5
+      next.rayCount = 12
+      effectLoader.item.effectSettings = next
+      finalProbe.start()
+    }}
+  }}
+  Timer {{
+    id: finalProbe
+    interval: 220
+    onTriggered: {{
+      console.log("BEHAVE " + JSON.stringify({{
+        beforeClock: beforeClock,
+        afterClock: effectLoader.item.motionClock,
+        speed: effectLoader.item.speed,
+        rayCount: effectLoader.item.rayCount
+      }}))
+      Qt.quit()
+    }}
+  }}
+}}
+'''
+        with tempfile.TemporaryDirectory() as config_home:
+            output = run_quickshell(qml, config_home=Path(config_home), timeout=10)
+        require_no_qml_errors(output)
+        payload = parse_behave(output)[-1]
+        self.assertGreater(payload["beforeClock"], 0, output[-2000:])
+        self.assertGreater(payload["afterClock"], payload["beforeClock"], output[-2000:])
+        self.assertEqual(payload["speed"], 3.5)
+        self.assertEqual(payload["rayCount"], 12)
+
     def test_cursor_tracker_stays_idle_until_activated(self):
         qml = f'''
 import Quickshell

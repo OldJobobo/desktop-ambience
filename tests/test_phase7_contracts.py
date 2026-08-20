@@ -78,11 +78,18 @@ def test_god_rays_start_together_from_their_animated_low_state():
     rays = read("effects/GodRaysEffect.qml")
     assert "initialDelay" not in rays
     assert "PauseAnimation" not in rays
-    assert "property real ambientPulse: 0.58" in rays
-    assert "opacity: root.shimmer ? baseOpacity * 0.7 : baseOpacity" in rays
-    assert "opacity: root.shimmer ? moteOpacity * 0.25 : moteOpacity" in rays
+    assert "readonly property real ambientPulse: root.shimmer" in rays
     assert "function restartStartupReveal()" in rays
     assert "opacity: root.effectiveIntensity * root.startupOpacity" in rays
+    assert "property real motionClock: 0" in rays
+    assert "FrameAnimation" in rays
+    assert "frameTime * root.speed" in rays
+    assert "property int allocatedRayCount: 0" in rays
+    assert "model: root.allocatedRayCount" in rays
+    assert "model: Math.max(3, Math.round(root.allocatedRayCount * 0.7))" in rays
+    assert rays.count("property bool populationReady: false") == 2
+    assert rays.count("Behavior on populationOpacity") == 2
+    assert "Behavior on fanLane" in rays
 
 
 def test_rainfall_seeds_full_length_loops_at_distributed_startup_phases():
