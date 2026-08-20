@@ -15,15 +15,17 @@ def test_cursor_sampling_has_one_panel_owned_runtime_owner():
     tracker = read("services/CursorTracker.qml")
 
     tactical = read("effects/TacticalGridEffect.qml")
+    node_mesh = read("effects/NodeMeshEffect.qml")
 
     assert panel.count("CursorTracker {") == 1
     assert "active: root.cursorTrackingRequested && root.paintAllowedSurfaceCount > 0" in panel
-    assert "dustMotesRequested || tacticalGridRequested" in panel
+    assert "tacticalGridRequested || nodeMeshRequested" in panel
     assert panel.count("        cursorTracker: sharedCursorTracker\n") == 1
     assert "property var cursorTracker: null" in stack
-    assert stack.count("cursorTracker: root.cursorTracker") == 2
+    assert stack.count("cursorTracker: root.cursorTracker") == 3
     assert "property var cursorTracker: null" in dust
     assert "property var cursorTracker: null" in tactical
+    assert "property var cursorTracker: null" in node_mesh
     assert "Quickshell.Io" not in dust
     assert "Process {" not in dust
     assert "hyprctl" not in dust
@@ -39,7 +41,9 @@ def test_cursor_sampling_stops_for_hidden_reduced_or_fully_suppressed_effects():
     assert "!ambienceSettings.reduceMotion" in panel
     assert 'normalizedOrder().indexOf("tacticalGrid") >= 0' in panel
     assert "tacticalGridSettings.enabled === true" in panel
-    assert "cursorTrackingRequested: dustMotesRequested || tacticalGridRequested" in panel
+    assert "|| tacticalGridRequested || nodeMeshRequested" in panel
+    assert 'normalizedOrder().indexOf("nodeMesh") >= 0' in panel
+    assert 'String(nodeMeshSettings.pointerMode) !== "off"' in panel
     assert "paintAllowedSurfaceCount > 0" in panel
     assert "onPaintAllowedChanged: root.recountPaintAllowedSurfaces()" in panel
 
@@ -94,7 +98,7 @@ def test_renderers_wait_for_stable_geometry_before_first_animation_cycle():
     assert "onWidthChanged: scheduleGeometryReady()" in stack
     assert "onHeightChanged: scheduleGeometryReady()" in stack
     assert "interval: 80" in stack
-    assert stack.count("runtimeEnabled: root.rendererPaintEnabled && root.productionEffectsEnabled") == 10
+    assert stack.count("runtimeEnabled: root.rendererPaintEnabled && root.productionEffectsEnabled") == 11
 
 
 def test_aurora_secondary_glows_start_at_their_animated_floor():
@@ -167,7 +171,7 @@ def test_phase7_performance_matrix_is_isolated_repeatable_and_revision_aware():
     assert 'parser.add_argument("--repetitions"' in source
     for case_id in (
         "auroraDrift", "cinematicLight", "crt", "dustMotes", "filmGrain",
-        "godRays", "rainfall", "tacticalGrid", "trackingLines", "bokeh", "backgroundVignette",
+        "godRays", "rainfall", "tacticalGrid", "trackingLines", "bokeh", "nodeMesh", "backgroundVignette",
         "threeEffectStack",
     ):
         assert case_id in source

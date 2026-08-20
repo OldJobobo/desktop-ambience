@@ -7,6 +7,14 @@ All notable changes are recorded here. This project follows [Semantic Versioning
 ### Added
 
 - Added an opt-in, theme-aware Bokeh effect with a deterministic bounded light field, three grouped depth blurs, reduced-motion shutdown, and configurable population, size, softness, drift, twinkle, and palette roles.
+- Added an opt-in Node Mesh effect with a deterministic 30 Hz bounded simulation, eight retained declarative ShapePath/PathMultiline connection buckets, configurable node and line treatment, reduced-motion static output, and shared-cursor attraction or repulsion across arbitrary output origins.
+- Added isolated Node Mesh renderer-selection, pixel-equivalence, visual, settings, multi-output, lifecycle, and one-/three-output performance coverage.
+
+### Fixed
+
+- Fixed Node Mesh connections rendering no pixels by replacing post-completion dynamic ShapePath parenting with declarative render-lifecycle paths.
+- Reset stalled-frame backlog after one fixed simulation step, preventing temporary callback-cadence catch-up.
+- Preserved the Node Mesh renderer object while its enabled setting toggles inside an active stack, with zero simulation work while disabled.
 
 ## [0.6.0] - 2026-08-20
 

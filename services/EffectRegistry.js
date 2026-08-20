@@ -106,6 +106,20 @@ var orderedEffects = [
       primaryColorRole: enumField("accent", ["accent", "foreground", "color09", "color10", "color11", "color12", "color13", "color14"]),
       secondaryColorRole: enumField("color13", ["accent", "foreground", "color09", "color10", "color11", "color12", "color13", "color14"])
     }
+  },
+  {
+    id: "nodeMesh", label: "Node Mesh",
+    fields: {
+      enabled: boolField(true), intensity: realField(0.48, 0, 1),
+      speed: realField(0.7, 0.15, 4), nodeCount: intField(54, 12, 120),
+      nodeSize: realField(3, 1, 10), connectionDistance: intField(132, 40, 260),
+      lineWidth: realField(1, 0.5, 3), lineOpacity: realField(0.3, 0, 1),
+      driftAmount: realField(0.38, 0, 1),
+      pointerMode: enumField("off", ["off", "attract", "repel"]),
+      mouseInfluence: realField(0.3, 0, 1),
+      nodeColorRole: enumField("accent", ["accent", "foreground", "color09", "color10", "color11", "color12", "color13", "color14"]),
+      lineColorRole: enumField("color12", ["accent", "foreground", "color09", "color10", "color11", "color12", "color13", "color14"])
+    }
   }
 ]
 
@@ -138,8 +152,21 @@ var fieldLabels = {
   glitchAmount: "Glitch Amount", chromaBleed: "Chroma Bleed",
   lightCount: "Light Count", lightSize: "Light Size", driftAmount: "Drift Amount",
   twinkleAmount: "Twinkle Amount", primaryColorRole: "Primary Theme Color",
-  secondaryColorRole: "Secondary Theme Color",
+  secondaryColorRole: "Secondary Theme Color", nodeCount: "Node Count",
+  nodeSize: "Node Size", connectionDistance: "Connection Distance",
+  lineWidth: "Line Width", lineOpacity: "Line Opacity", pointerMode: "Pointer Mode",
+  nodeColorRole: "Node Theme Color", lineColorRole: "Line Theme Color",
   ignoreBackgroundAnimationLayer: "Place Behind Animations"
+}
+
+var effectFieldLabels = {
+  nodeMesh: {
+    enabled: "Enabled", intensity: "Mesh Intensity", speed: "Mesh Speed",
+    nodeCount: "Node Count", nodeSize: "Node Size", connectionDistance: "Connection Distance",
+    lineWidth: "Line Width", lineOpacity: "Line Opacity", driftAmount: "Drift Amount",
+    pointerMode: "Pointer Mode", mouseInfluence: "Pointer Influence",
+    nodeColorRole: "Node Theme Color", lineColorRole: "Line Theme Color"
+  }
 }
 
 var fieldHints = {
@@ -199,7 +226,33 @@ var fieldHints = {
   twinkleAmount: "Sets the amount of slow opacity breathing without blinking.",
   primaryColorRole: "Chooses the first color from the active Omarchy theme.",
   secondaryColorRole: "Chooses the second color blended across the light field.",
+  nodeCount: "Sets the bounded number of mesh nodes rendered on each display.",
+  nodeSize: "Sets the base diameter of each mesh node before seeded variation.",
+  connectionDistance: "Sets the maximum distance at which nearby nodes connect.",
+  lineWidth: "Sets the thickness of mesh connections.",
+  lineOpacity: "Sets connection visibility relative to mesh intensity.",
+  pointerMode: "Chooses whether the pointer attracts, repels, or does not affect nodes.",
+  nodeColorRole: "Chooses the node color from the active Omarchy theme.",
+  lineColorRole: "Chooses the connection color from the active Omarchy theme.",
   ignoreBackgroundAnimationLayer: "Draws the vignette behind all stacked effects."
+}
+
+var effectFieldHints = {
+  nodeMesh: {
+    enabled: "Shows or hides Node Mesh without removing it from the stack.",
+    intensity: "Sets the overall visibility of Node Mesh nodes and connections.",
+    speed: "Sets the speed of the bounded node simulation.",
+    nodeCount: "Sets the bounded number of mesh nodes rendered on each display.",
+    nodeSize: "Sets the base diameter of each node before deterministic variation.",
+    connectionDistance: "Connects nodes only while they are closer than this distance.",
+    lineWidth: "Sets the thickness of all mesh connections.",
+    lineOpacity: "Sets connection visibility relative to the normalized effect intensity.",
+    driftAmount: "Sets the magnitude of deterministic autonomous node drift.",
+    pointerMode: "Chooses whether the pointer attracts, repels, or does not affect nearby nodes.",
+    mouseInfluence: "Sets the strength and radius of the bounded pointer force.",
+    nodeColorRole: "Chooses the node color from the active Omarchy theme.",
+    lineColorRole: "Chooses the connection color from the active Omarchy theme."
+  }
 }
 
 function boolField(defaultValue) {
@@ -248,12 +301,17 @@ function vignetteDefinition() {
   return deepCopy(dedicatedVignette)
 }
 
-function fieldLabel(key) {
-  return fieldLabels[String(key || "")] || String(key || "")
+function fieldLabel(key, effectId) {
+  var normalized = String(key || "")
+  var effectLabels = effectFieldLabels[String(effectId || "")]
+  if (effectLabels && effectLabels[normalized]) return effectLabels[normalized]
+  return fieldLabels[normalized] || normalized
 }
 
-function fieldHint(key) {
+function fieldHint(key, effectId) {
   var normalized = String(key || "")
+  var effectHints = effectFieldHints[String(effectId || "")]
+  if (effectHints && effectHints[normalized]) return effectHints[normalized]
   if (fieldHints[normalized]) return fieldHints[normalized]
   if (normalized.indexOf("Count") >= 0) return "Controls how many source elements are rendered."
   if (normalized.indexOf("Size") >= 0 || normalized.indexOf("Spacing") >= 0
@@ -283,8 +341,8 @@ function fieldDefinitions(value) {
     var key = keys[i]
     var field = deepCopy(entry.fields[key])
     field.key = key
-    field.label = fieldLabel(key)
-    field.hint = fieldHint(key)
+    field.label = fieldLabel(key, value)
+    field.hint = fieldHint(key, value)
     field.step = stepForField(field)
     result.push(field)
   }

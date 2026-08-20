@@ -26,7 +26,8 @@ Item {
     "rainfall",
     "tacticalGrid",
     "trackingLines",
-    "bokeh"
+    "bokeh",
+    "nodeMesh"
   ]
   readonly property var normalizedActiveEffects: normalizeActiveEffects(activeEffects)
   readonly property var testFrontObject: testFrontLoader.item
@@ -41,8 +42,12 @@ Item {
     rainfallLoader,
     tacticalGridLoader,
     vhsLoader,
-    bokehLoader
-  ].filter(function(loader) { return loader.active && loader.item !== null }).length
+    bokehLoader,
+    nodeMeshLoader
+  ].filter(function(loader) {
+    if (!loader.active || loader.item === null) return false
+    return loader !== nodeMeshLoader || root.settingsFor("nodeMesh").enabled === true
+  }).length
 
   function scheduleGeometryReady() {
     animationGeometryReady = false
@@ -89,6 +94,10 @@ Item {
       && effect.enabled === true
   }
 
+  function nodeMeshResident() {
+    return productionEffectsEnabled && stackIndex("nodeMesh") >= 0
+  }
+
   function settingsFor(effectId) {
     var effects = settings && settings.effects && typeof settings.effects === "object"
       ? settings.effects : ({})
@@ -107,7 +116,8 @@ Item {
       rainfall: rainfallLoader,
       tacticalGrid: tacticalGridLoader,
       trackingLines: vhsLoader,
-      bokeh: bokehLoader
+      bokeh: bokehLoader,
+      nodeMesh: nodeMeshLoader
     }
     var loader = loaders[String(effectId || "")]
     return loader ? loader.item : null
@@ -246,6 +256,21 @@ Item {
     }
   }
 
+  Component {
+    id: nodeMeshComponent
+    NodeMeshEffect {
+      objectName: "nodeMeshEffect"
+      anchors.fill: parent
+      targetScreen: root.targetScreen
+      cursorTracker: root.cursorTracker
+      effectSettings: root.settingsFor("nodeMesh")
+      globalOpacity: root.settings ? root.settings.opacity : 1
+      reducedMotion: root.settings ? root.settings.reduceMotion : false
+      theme: root.theme
+      runtimeEnabled: root.rendererPaintEnabled && root.productionEffectsEnabled
+    }
+  }
+
   Loader {
     id: auroraDriftLoader
     anchors.fill: parent
@@ -324,6 +349,14 @@ Item {
     active: root.productionEffectActive("bokeh")
     sourceComponent: bokehComponent
     z: root.zForEffect("bokeh")
+  }
+
+  Loader {
+    id: nodeMeshLoader
+    anchors.fill: parent
+    active: root.nodeMeshResident()
+    sourceComponent: nodeMeshComponent
+    z: root.zForEffect("nodeMesh")
   }
 
   Loader {

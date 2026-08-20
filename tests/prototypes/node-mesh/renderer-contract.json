@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 2,
+  "selectedRenderer": "shape",
+  "rejectedRenderer": "canvas",
+  "targetUpdatesPerSecond": 30,
+  "maximumNodeCount": 120,
+  "maximumNeighborsPerNode": 4,
+  "maximumEdgesPerOutput": 240,
+  "edgeCeilingFormula": "floor(nodeCount * maximumNeighborsPerNode / 2)",
+  "lineSurfaceCountPerOutput": 1,
+  "fixedShapePathsPerOutput": 8,
+  "pathAllocationPolicy": "eight declarative ShapePaths with retained PathMultiline opacity buckets",
+  "pixelEvidence": "docs/performance/evidence/node-mesh-pixels.json",
+  "evidence": "docs/performance/evidence/node-mesh-renderer.json",
+  "rationale": "A render-proven declarative ShapePath/PathMultiline renderer produced connection pixels with geometry overlapping 99.93% of the smaller Canvas mask, then used substantially less CPU and RSS than equivalent visible immediate Canvas painting in every default and maximum one-output and three-output comparison on Qt 6.11.1 and Quickshell 0.3.0."
+}

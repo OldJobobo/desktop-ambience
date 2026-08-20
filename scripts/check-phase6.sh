@@ -23,6 +23,9 @@ python tests/live_phase6_lifecycle.py | tee "$evidence_dir/lifecycle.log"
 python tests/live_phase6_output_modes.py | tee "$evidence_dir/output-modes.log"
 python tests/live_phase6_fullscreen.py | tee "$evidence_dir/fullscreen.log"
 python tests/live_phase6_visual.py | tee "$evidence_dir/visual-performance.log"
+JOBO_AMBIENCE_NODE_MESH_PIXEL_PROBE=1 \
+  python tests/live_node_mesh_pixel_probe.py | tee "$evidence_dir/node-mesh-pixels.log"
+python tests/live_node_mesh_multi_output_visual.py | tee "$evidence_dir/node-mesh-multi-output.log"
 
 git diff --check
 printf 'Phase 6 release matrix passed for v%s\n' "$version"

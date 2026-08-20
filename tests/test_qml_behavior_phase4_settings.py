@@ -10,6 +10,78 @@ from qml_harness import HAVE_SESSION, parse_behave, qml_url, require_no_qml_erro
 
 @unittest.skipUnless(HAVE_SESSION, "needs a quickshell binary and a Wayland session")
 class Phase4SettingsBehaviorTests(unittest.TestCase):
+    def test_node_mesh_add_effect_metadata_and_immediate_save_are_registry_driven(self):
+        qml = f'''
+import Quickshell
+import QtQuick
+ShellRoot {{
+  id: root
+  property int requestedBefore: 0
+  Loader {{ id: settingsLoader; source: "{qml_url('services/AmbienceSettings.qml')}" }}
+  Loader {{ id: windowLoader; source: "{qml_url('components/SettingsWindow.qml')}" }}
+  Connections {{
+    target: settingsLoader.item
+    function onLoaded() {{
+      if (!windowLoader.item) return
+      windowLoader.item.settings = settingsLoader.item
+      root.requestedBefore = settingsLoader.item.requestedSaveRevision
+      if (!windowLoader.item.addEffect("nodeMesh")) {{
+        console.log("BEHAVE_ERR Node Mesh was not addable"); Qt.quit(); return
+      }}
+      windowLoader.item.setEffectField("nodeMesh", "pointerMode", "attract")
+      windowLoader.item.setEffectField("nodeMesh", "nodeCount", 72)
+      probe.start()
+    }}
+  }}
+  Timer {{
+    id: probe; interval: 30; repeat: true; property int attempts: 0
+    onTriggered: {{
+      attempts += 1
+      var service = settingsLoader.item
+      var window = windowLoader.item
+      if (!service || service.persistenceState !== "saved"
+          || service.confirmedSaveRevision !== service.requestedSaveRevision) {{
+        if (attempts > 180) {{ console.log("BEHAVE_ERR Node Mesh save did not settle"); Qt.quit() }}
+        return
+      }}
+      var fields = window.fieldsFor("nodeMesh")
+      console.log("BEHAVE " + JSON.stringify({{
+        activeEffects: service.data.activeEffects,
+        pointerMode: service.data.effects.nodeMesh.pointerMode,
+        nodeCount: service.data.effects.nodeMesh.nodeCount,
+        fieldCount: fields.length,
+        fieldTypes: fields.map(function(field) {{ return field.type }}),
+        completeMetadata: fields.every(function(field) {{
+          return field.label && field.hint && Number(field.step) > 0
+        }}),
+        requestedBefore: root.requestedBefore,
+        requestedAfter: service.requestedSaveRevision,
+        confirmedAfter: service.confirmedSaveRevision
+      }}))
+      Qt.quit()
+    }}
+  }}
+}}
+'''
+        with tempfile.TemporaryDirectory() as config_dir:
+            config_home = Path(config_dir)
+            output = run_quickshell(qml, config_home=config_home, timeout=15)
+            require_no_qml_errors(output)
+            row = parse_behave(output)[-1]
+            disk = json.loads((config_home / "omarchy/jobo/desktop-ambience/settings.json").read_text())
+
+        self.assertIn("nodeMesh", row["activeEffects"], output[-2000:])
+        self.assertEqual(row["pointerMode"], "attract")
+        self.assertEqual(row["nodeCount"], 72)
+        self.assertEqual(row["fieldCount"], 13)
+        self.assertEqual(set(row["fieldTypes"]), {"bool", "real", "int", "enum"})
+        self.assertTrue(row["completeMetadata"])
+        self.assertGreater(row["requestedAfter"], row["requestedBefore"])
+        self.assertEqual(row["confirmedAfter"], row["requestedAfter"])
+        self.assertEqual(disk["effects"]["nodeMesh"]["pointerMode"], "attract")
+        self.assertNotIn("nodeMesh", (Path(__file__).resolve().parents[1]
+                                     / "components/SettingsWindow.qml").read_text(encoding="utf-8"))
+
     def test_all_controls_round_trip_and_survive_service_restart(self):
         qml = f'''
 import Quickshell
@@ -210,6 +282,8 @@ ShellRoot {{
         self.assertEqual(row["opacity"], 1)
         self.assertEqual(row["activeEffects"], ["trackingLines"])
         self.assertFalse(row["backgroundVignette"]["enabled"])
+        self.assertEqual(row["effects"]["nodeMesh"]["nodeCount"], 54)
+        self.assertEqual(row["effects"]["nodeMesh"]["pointerMode"], "off")
         self.assertEqual(disk, row)
         self.assertEqual(unrelated_text, '{"keep":true}\n')
 

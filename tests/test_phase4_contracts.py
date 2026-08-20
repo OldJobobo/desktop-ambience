@@ -78,8 +78,8 @@ def test_effect_editor_is_driven_by_registry_metadata_for_every_field_type():
     registry = read("services/EffectRegistry.js")
     assert "function fieldDefinitions(value)" in registry
     assert "function vignetteFieldDefinitions()" in registry
-    assert "function fieldLabel(key)" in registry
-    assert "function fieldHint(key)" in registry
+    assert "function fieldLabel(key, effectId)" in registry
+    assert "function fieldHint(key, effectId)" in registry
     assert "function stepForField(field)" in registry
     assert 'model: EffectRegistry.fieldDefinitions(root.selectedEffectId)' in window
     assert 'modelData.type === "bool"' in window

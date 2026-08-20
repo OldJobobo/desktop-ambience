@@ -125,7 +125,7 @@ class AmbienceSettingsBehaviorTests(unittest.TestCase):
         self.assertTrue(defaults["enabled"])
         self.assertEqual(defaults["presentation"], "background")
         self.assertEqual(defaults["activeEffects"], ["trackingLines"])
-        self.assertEqual(set(defaults["effects"]), {"auroraDrift", "cinematicLight", "crt", "dustMotes", "filmGrain", "godRays", "rainfall", "tacticalGrid", "trackingLines", "bokeh"})
+        self.assertEqual(set(defaults["effects"]), {"auroraDrift", "cinematicLight", "crt", "dustMotes", "filmGrain", "godRays", "rainfall", "tacticalGrid", "trackingLines", "bokeh", "nodeMesh"})
         self.assertEqual(defaults["effects"]["tacticalGrid"]["reticleStyle"], "brackets")
         self.assertEqual(defaults["effects"]["tacticalGrid"]["colorRole"], "accent")
         self.assertEqual(defaults["effects"]["trackingLines"]["trackingBands"], 4)
@@ -134,6 +134,12 @@ class AmbienceSettingsBehaviorTests(unittest.TestCase):
             "lightSize": 88, "blurSoftness": 0.82, "driftAmount": 0.42,
             "twinkleAmount": 0.18, "primaryColorRole": "accent",
             "secondaryColorRole": "color13",
+        })
+        self.assertEqual(defaults["effects"]["nodeMesh"], {
+            "enabled": True, "intensity": 0.48, "speed": 0.7, "nodeCount": 54,
+            "nodeSize": 3, "connectionDistance": 132, "lineWidth": 1,
+            "lineOpacity": 0.3, "driftAmount": 0.38, "pointerMode": "off",
+            "mouseInfluence": 0.3, "nodeColorRole": "accent", "lineColorRole": "color12",
         })
         self.assertFalse(defaults["backgroundVignette"]["enabled"])
         self.assertEqual(defaults["backgroundVignette"]["intensity"], 0.85)

@@ -22,6 +22,7 @@ ORDERED_EFFECTS = {
     "tacticalGrid": "TacticalGridEffect.qml",
     "trackingLines": "VhsEffect.qml",
     "bokeh": "BokehEffect.qml",
+    "nodeMesh": "NodeMeshEffect.qml",
 }
 
 
@@ -53,13 +54,13 @@ def test_stack_injects_normalized_state_without_duplicate_defaults():
 
     for effect_id in ORDERED_EFFECTS:
         assert f'effectSettings: root.settingsFor("{effect_id}")' in stack
-    assert stack.count("globalOpacity: root.settings ? root.settings.opacity : 1") == 10
-    assert stack.count("reducedMotion: root.settings ? root.settings.reduceMotion : false") == 10
-    assert stack.count("theme: root.theme") == 8
+    assert stack.count("globalOpacity: root.settings ? root.settings.opacity : 1") == 11
+    assert stack.count("reducedMotion: root.settings ? root.settings.reduceMotion : false") == 11
+    assert stack.count("theme: root.theme") == 9
     assert "foregroundOverlay: root.foregroundOverlay" in stack
     assert 'effectSettings: root.settingsFor("tacticalGrid")' in stack
-    assert stack.count("targetScreen: root.targetScreen") == 2
-    assert stack.count("cursorTracker: root.cursorTracker") == 2
+    assert stack.count("targetScreen: root.targetScreen") == 3
+    assert stack.count("cursorTracker: root.cursorTracker") == 3
 
 
 def test_effects_have_only_injected_adapters_and_no_file_owners():

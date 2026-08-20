@@ -138,6 +138,7 @@ ShellRoot {{
   property bool requestedBackground: false
   property bool backgroundReported: false
   property var bokehIdentity: null
+  property var nodeMeshIdentity: null
 
   function findScreen() {{
     for (var i = 0; i < Quickshell.screens.length; i++)
@@ -205,11 +206,14 @@ ShellRoot {{
       if (!surface) return
       var bokeh = surface.stackObject
         ? surface.stackObject.productionEffectObject("bokeh") : null
-      if (!bokeh) return
+      var nodeMesh = surface.stackObject
+        ? surface.stackObject.productionEffectObject("nodeMesh") : null
+      if (!bokeh || !nodeMesh) return
       panelLoader.item.fullscreenService.refresh()
       var suppressed = surface.fullscreenSuppressed === true
       if (!root.reportedInitial && !suppressed && !bokeh.effectVisible) return
       if (!root.bokehIdentity) root.bokehIdentity = bokeh
+      if (!root.nodeMeshIdentity) root.nodeMeshIdentity = nodeMesh
       var backgroundReady = root.requestedBackground && !root.backgroundReported
         && panelLoader.item.presentation === "background" && surface.layerName === "bottom"
       if (!root.reportedInitial || suppressed !== root.lastSuppressed || backgroundReady) {{
@@ -227,7 +231,12 @@ ShellRoot {{
           bokehLoaded: bokeh !== null,
           sameBokehObject: root.bokehIdentity === bokeh,
           bokehVisible: bokeh.effectVisible,
-          bokehAnimationsRunning: bokeh.animationRunning
+          bokehAnimationsRunning: bokeh.animationRunning,
+          nodeMeshLoaded: nodeMesh !== null,
+          sameNodeMeshObject: root.nodeMeshIdentity === nodeMesh,
+          nodeMeshVisible: nodeMesh.effectVisible,
+          nodeMeshSimulationRunning: nodeMesh.simulationRunning,
+          nodeMeshUpdateCount: nodeMesh.simulationUpdateCount
         }}))
       }}
       if (root.sawSuppressed && !suppressed && !root.requestedBackground) {{
@@ -258,8 +267,11 @@ try:
             "presentation": "foreground",
             "opacity": 1,
             "reduceMotion": False,
-            "activeEffects": ["bokeh"],
-            "effects": {"bokeh": {"enabled": True, "intensity": 0.52}},
+            "activeEffects": ["bokeh", "nodeMesh"],
+            "effects": {
+                "bokeh": {"enabled": True, "intensity": 0.52},
+                "nodeMesh": {"enabled": True, "intensity": 0.48, "pointerMode": "off"},
+            },
             "backgroundVignette": {"enabled": False, "intensity": 0},
         }), encoding="utf-8")
         palette = Path(state_dir) / "omarchy/current/theme/colors.toml"
@@ -321,6 +333,8 @@ try:
         raise AssertionError(states)
     if any(state["bokehLoaded"] is not True or state["sameBokehObject"] is not True for state in states):
         raise AssertionError(states)
+    if any(state["nodeMeshLoaded"] is not True or state["sameNodeMeshObject"] is not True for state in states):
+        raise AssertionError(states)
     if not any(state["presentation"] == "foreground" and state["layerName"] == "overlay" for state in states):
         raise AssertionError(states)
     if not any(state["presentation"] == "background" and state["layerName"] == "bottom" for state in states):
@@ -328,6 +342,14 @@ try:
     if states[0]["bokehVisible"] is not True or states[-1]["bokehVisible"] is not True:
         raise AssertionError(states)
     if not any(state["suppressed"] and state["bokehVisible"] is False for state in states):
+        raise AssertionError(states)
+    if states[0]["nodeMeshVisible"] is not True or states[-1]["nodeMeshVisible"] is not True:
+        raise AssertionError(states)
+    if not any(state["suppressed"] and state["nodeMeshVisible"] is False
+               and state["nodeMeshSimulationRunning"] is False for state in states):
+        raise AssertionError(states)
+    if not any(not state["suppressed"] and state["nodeMeshSimulationRunning"] is True
+               and state["nodeMeshUpdateCount"] > 0 for state in states):
         raise AssertionError(states)
     if not any(not state["suppressed"] and state["bokehAnimationsRunning"] is True for state in states):
         raise AssertionError(states)
@@ -348,11 +370,15 @@ try:
         "suppressionSequence": suppression,
         "surfaceRemainedMapped": True,
         "presentationModes": ["foreground", "background"],
-        "activeEffect": "bokeh",
+        "activeEffects": ["bokeh", "nodeMesh"],
         "bokehLoadedThroughout": True,
         "bokehIdentityPreservedAcrossPresentation": True,
         "bokehAnimatedWhilePaintable": True,
         "bokehStoppedWhileSuppressed": True,
+        "nodeMeshLoadedThroughout": True,
+        "nodeMeshIdentityPreservedAcrossPresentation": True,
+        "nodeMeshAnimatedWhilePaintable": True,
+        "nodeMeshStoppedWhileSuppressed": True,
     }
     evidence_dir = ROOT / "docs/release/evidence" / VERSION
     evidence_dir.mkdir(parents=True, exist_ok=True)

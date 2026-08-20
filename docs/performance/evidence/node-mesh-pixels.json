@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "renderProven": true,
+  "productionLineOpacityChangedPixels": 2779,
+  "productionConnectionDistanceChangedPixels": 14112,
+  "productionShortVisiblePixels": 3368,
+  "productionLongVisiblePixels": 14525,
+  "canvasVisiblePixels": 4673,
+  "shapeVisiblePixels": 2779,
+  "canvasShapeMaskJaccard": 0.5940106951871658,
+  "canvasShapeSmallerMaskOverlap": 0.9992803166606693,
+  "canvasShapeChangedPixels": 4376,
+  "captures": [
+    {
+      "caseId": "production-lines-off",
+      "saved": true,
+      "edgeCount": 31,
+      "pathCount": 8
+    },
+    {
+      "caseId": "production-lines-on",
+      "saved": true,
+      "edgeCount": 31,
+      "pathCount": 8
+    },
+    {
+      "caseId": "production-long-distance",
+      "saved": true,
+      "edgeCount": 92,
+      "pathCount": 8
+    },
+    {
+      "caseId": "prototype-canvas",
+      "saved": true,
+      "edgeCount": 31,
+      "pathCount": 0
+    },
+    {
+      "caseId": "prototype-shape",
+      "saved": true,
+      "edgeCount": 31,
+      "pathCount": 8
+    }
+  ],
+  "artifactDirectory": ".pi/artifacts/node-mesh-pixels"
+}

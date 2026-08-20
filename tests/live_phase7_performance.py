@@ -47,6 +47,14 @@ CASES = [
     ("bokehMaximumSoftness", "effects/BokehEffect.qml"),
     ("bokehHidden", "effects/BokehEffect.qml"),
     ("bokehFullscreenSuppressed", "effects/BokehEffect.qml"),
+    ("nodeMeshStatic", "effects/NodeMeshEffect.qml"),
+    ("nodeMeshDefault", "effects/NodeMeshEffect.qml"),
+    ("nodeMeshMaximum", "effects/NodeMeshEffect.qml"),
+    ("nodeMeshPointerOff", "effects/NodeMeshEffect.qml"),
+    ("nodeMeshPointerAttract", "effects/NodeMeshEffect.qml"),
+    ("nodeMeshPointerRepel", "effects/NodeMeshEffect.qml"),
+    ("nodeMeshHidden", "effects/NodeMeshEffect.qml"),
+    ("nodeMeshFullscreenSuppressed", "effects/NodeMeshEffect.qml"),
     ("backgroundVignette", "effects/VignetteEffect.qml"),
     ("threeEffectStack", "components/AmbienceStack.qml"),
 ]
@@ -145,9 +153,12 @@ def make_qml(
     source: "{tracker_source}"
   }}''' if shared_tracker else "  QtObject { id: trackerLoader; property var item: null }"
 
-    tracker_assign = 'if ("cursorTracker" in item) item.cursorTracker = trackerLoader.item' if shared_tracker else ""
+    tracker_assign = ('if ("cursorTracker" in item) item.cursorTracker = '
+                      '(caseId.indexOf("nodeMeshPointer") === 0 ? nodeTracker : trackerLoader.item)') if shared_tracker else ""
     stack_tracker_assign = "item.cursorTracker = trackerLoader.item" if shared_tracker else ""
-    tracker_start = 'if (trackerLoader.item) trackerLoader.item.active = caseId === "dustMotes" || caseId === "tacticalGrid"' if shared_tracker else ""
+    tracker_start = ('if (trackerLoader.item) trackerLoader.item.active = caseId === "dustMotes" '
+                     '|| caseId === "tacticalGrid" || caseId === "nodeMeshPointerAttract" '
+                     '|| caseId === "nodeMeshPointerRepel"') if shared_tracker else ""
     tracker_stop = "if (trackerLoader.item) trackerLoader.item.active = false" if shared_tracker else ""
     tracker_count = "trackerLoader.item ? trackerLoader.item.launchCount : -1" if shared_tracker else "-1"
 
@@ -167,12 +178,24 @@ ShellRoot {{
   property real frameMaxMs: 0
   property int framesOver20Ms: 0
   property var loadedItems: []
+  property int nodeMeshBaselineUpdates: 0
+  property int nodeMeshBaselinePaints: 0
 
   QtObject {{
     id: state
     property real opacity: 1
     property bool reduceMotion: false
     property var effects: ({{}})
+  }}
+
+  QtObject {{
+    id: nodeTracker
+    property var ownerScreen: root.renderScreen("{output_names[0]}")
+    property bool hasCursorSample: ownerScreen !== null
+    property real cursorX: ownerScreen ? Number(ownerScreen.x) + 960 : -1
+    property real cursorY: ownerScreen ? Number(ownerScreen.y) + 540 : -1
+    property real displayCursorX: cursorX
+    property real displayCursorY: cursorY
   }}
 
   QtObject {{
@@ -207,7 +230,7 @@ ShellRoot {{
     var visibleOutputs = 0
     for (var i = 0; i < loadedItems.length; i++) {{
       var item = loadedItems[i]
-      if (!item || item.boundedDelegateCount === undefined) continue
+      if (!item || item.activeBlurLayerCount === undefined) continue
       delegates += Number(item.boundedDelegateCount)
       blurLayers += Number(item.activeBlurLayerCount)
       if (item.animationRunning) animatedOutputs += 1
@@ -215,6 +238,34 @@ ShellRoot {{
     }}
     return {{delegateCount: delegates, blurLayerCount: blurLayers,
       animatedOutputs: animatedOutputs, visibleOutputs: visibleOutputs}}
+  }}
+
+  function nodeMeshMetrics() {{
+    var updates = 0
+    var paints = 0
+    var nodes = 0
+    var edges = 0
+    var paths = 0
+    var runningOutputs = 0
+    var visibleOutputs = 0
+    var pointerOwnedOutputs = 0
+    var pointerActiveOutputs = 0
+    for (var i = 0; i < loadedItems.length; i++) {{
+      var item = loadedItems[i]
+      if (!item || item.simulationUpdateCount === undefined) continue
+      updates += Number(item.simulationUpdateCount)
+      paints += Number(item.paintRequestCount)
+      nodes += Number(item.acceptedNodeCount)
+      edges += Number(item.edgeCount)
+      paths += Number(item.shapePathCount)
+      if (item.simulationRunning) runningOutputs += 1
+      if (item.effectVisible) visibleOutputs += 1
+      if (item.cursorOwned) pointerOwnedOutputs += 1
+      if (item.pointerForceActive) pointerActiveOutputs += 1
+    }}
+    return {{updates: updates, paints: paints, nodeCount: nodes, edgeCount: edges,
+      pathCount: paths, runningOutputs: runningOutputs, visibleOutputs: visibleOutputs,
+      pointerOwnedOutputs: pointerOwnedOutputs, pointerActiveOutputs: pointerActiveOutputs}}
   }}
 
   function configure(item, outputName) {{
@@ -235,18 +286,33 @@ ShellRoot {{
       item.productionEffectsEnabled = true
       item.paintEnabled = true
     }} else {{
-      var registryId = caseId.indexOf("bokeh") === 0 ? "bokeh" : caseId
+      var registryId = caseId.indexOf("bokeh") === 0 ? "bokeh"
+        : (caseId.indexOf("nodeMesh") === 0 ? "nodeMesh" : caseId)
       var effectSettings = EffectRegistry.defaultsFor(registryId)
       if (caseId === "bokehMaximumPopulation") effectSettings.lightCount = 72
       else if (caseId === "bokehMaximumSoftness") {{
         effectSettings.lightSize = 240
         effectSettings.blurSoftness = 1
         effectSettings.driftAmount = 1
+      }} else if (caseId === "nodeMeshMaximum") {{
+        effectSettings.nodeCount = 120
+        effectSettings.connectionDistance = 260
+        effectSettings.lineOpacity = 1
+      }} else if (caseId === "nodeMeshPointerOff") {{
+        effectSettings.pointerMode = "off"
+        effectSettings.mouseInfluence = 1
+      }} else if (caseId === "nodeMeshPointerAttract") {{
+        effectSettings.pointerMode = "attract"
+        effectSettings.mouseInfluence = 1
+      }} else if (caseId === "nodeMeshPointerRepel") {{
+        effectSettings.pointerMode = "repel"
+        effectSettings.mouseInfluence = 1
       }}
       item.effectSettings = effectSettings
-      item.globalOpacity = caseId === "bokehHidden" ? 0 : 1
-      item.reducedMotion = caseId === "bokehReducedMotion"
-      if (caseId === "bokehFullscreenSuppressed") item.runtimeEnabled = false
+      item.globalOpacity = (caseId === "bokehHidden" || caseId === "nodeMeshHidden") ? 0 : 1
+      item.reducedMotion = caseId === "bokehReducedMotion" || caseId === "nodeMeshStatic"
+      if (caseId === "bokehFullscreenSuppressed" || caseId === "nodeMeshFullscreenSuppressed")
+        item.runtimeEnabled = false
       if ("theme" in item) item.theme = theme
       {tracker_assign}
     }}
@@ -263,6 +329,9 @@ ShellRoot {{
     interval: 1200
     onTriggered: {{
       {tracker_start}
+      var nodeMetrics = root.nodeMeshMetrics()
+      root.nodeMeshBaselineUpdates = nodeMetrics.updates
+      root.nodeMeshBaselinePaints = nodeMetrics.paints
       root.measuring = true
       sample.stop()
       sample.start()
@@ -286,6 +355,9 @@ ShellRoot {{
     onTriggered: {{
       root.measuring = false
       {tracker_stop}
+      var nodeMetrics = root.nodeMeshMetrics()
+      nodeMetrics.updateDelta = nodeMetrics.updates - root.nodeMeshBaselineUpdates
+      nodeMetrics.paintDelta = nodeMetrics.paints - root.nodeMeshBaselinePaints
       console.log("BEHAVE " + JSON.stringify({{
         caseId: caseId,
         outputs: {len(output_names)},
@@ -294,7 +366,8 @@ ShellRoot {{
         maxFrameMs: frameMaxMs,
         framesOver20Ms: framesOver20Ms,
         cursorLaunchCount: {tracker_count},
-        bokeh: root.bokehMetrics()
+        bokeh: root.bokehMetrics(),
+        nodeMesh: nodeMetrics
       }}))
       Qt.quit()
     }}
@@ -365,6 +438,31 @@ def profile_case(
             len(output_names) * 1000 / 120 if case_id == "dustMotes" and not shared_tracker else 0
         ),
     })
+    if case_id.startswith("nodeMesh"):
+        metrics = row["nodeMesh"]
+        population = 120 if case_id == "nodeMeshMaximum" else 54
+        expected_nodes = population * len(output_names)
+        expected_paths = 8 * len(output_names)
+        if metrics["nodeCount"] != expected_nodes or metrics["pathCount"] != expected_paths:
+            raise AssertionError(row)
+        expected_edge_ceiling = population * 2 * len(output_names)
+        if metrics["edgeCount"] > expected_edge_ceiling:
+            raise AssertionError(row)
+        maximum_updates = (duration_ms / 1000) * 31 * len(output_names)
+        if metrics["updateDelta"] > maximum_updates or metrics["paintDelta"] < metrics["updateDelta"]:
+            raise AssertionError(row)
+        stopped = case_id in {"nodeMeshStatic", "nodeMeshHidden", "nodeMeshFullscreenSuppressed"}
+        if stopped and (metrics["updateDelta"] != 0 or metrics["runningOutputs"] != 0):
+            raise AssertionError(row)
+        if not stopped and metrics["updateDelta"] <= 0:
+            raise AssertionError(row)
+        if case_id in {"nodeMeshPointerAttract", "nodeMeshPointerRepel"}:
+            if (metrics["pointerOwnedOutputs"] != 1 or metrics["pointerActiveOutputs"] != 1
+                    or row["cursorLaunchCount"] <= 0):
+                raise AssertionError(row)
+        if case_id == "nodeMeshPointerOff":
+            if metrics["pointerActiveOutputs"] != 0 or row["cursorLaunchCount"] != 0:
+                raise AssertionError(row)
     return row
 
 

@@ -1,7 +1,7 @@
 # Desktop Ambience
 
 A standalone Omarchy Shell plugin for composing animated desktop atmosphere.
-Ten ordered renderers share one persistent surface per output, while a
+Eleven ordered renderers share one persistent surface per output, while a
 separate vignette can sit above or below the stack. The plugin owns its settings,
 theme adaptation, settings window, and runtime status endpoint.
 
@@ -19,10 +19,14 @@ theme adaptation, settings window, and runtime status endpoint.
 8. Tactical Grid
 9. VHS (`trackingLines` in the settings file)
 10. Bokeh (opt-in)
-11. Dedicated background vignette
+11. Node Mesh (opt-in)
+12. Dedicated background vignette
 
 The ordered list is front-to-back: position 1 is topmost. The dedicated vignette
-is intentionally outside that list.
+is intentionally outside that list. Node Mesh renders a bounded deterministic
+field with nearby connections, selectable theme roles, reduced-motion static
+output, and optional pointer attraction or repulsion through the shared cursor
+tracker.
 
 ## Requirements
 
@@ -95,7 +99,8 @@ omarchy-shell jobo-desktop-ambience status | jq
 ```
 
 The status includes active order, loaded renderer count, per-output surfaces,
-fullscreen suppression, settings persistence health, and theme-adapter health.
+fullscreen suppression, settings persistence health, theme-adapter health,
+shared-cursor requests, and per-output Node Mesh ownership and population metrics.
 
 ## Presentation behavior
 

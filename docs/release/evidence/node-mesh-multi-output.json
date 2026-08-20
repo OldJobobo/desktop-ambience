@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 2,
+  "isolatedConfig": true,
+  "liveSettingsModified": false,
+  "temporaryOutputLayout": [
+    {
+      "name": "JOBO-NODE-VIS-d10b2f81-0",
+      "x": -3840,
+      "y": 0,
+      "width": 1920,
+      "height": 1080,
+      "scale": 1.0
+    },
+    {
+      "name": "JOBO-NODE-VIS-87dd13b8-1",
+      "x": -1920,
+      "y": 180,
+      "width": 1920,
+      "height": 1080,
+      "scale": 1.0
+    }
+  ],
+  "negativeOriginsCovered": true,
+  "differingOriginsCovered": true,
+  "compositorPlacementVerified": true,
+  "screenshotOutputAssignmentMatrix": [
+    [
+      true,
+      false
+    ],
+    [
+      false,
+      true
+    ]
+  ],
+  "swappedCaptureAssignmentRejected": true,
+  "screenshotsNonBlankAndDistinct": true,
+  "singleOutputPointerOwnership": true,
+  "metrics": [
+    {
+      "output": "JOBO-NODE-VIS-d10b2f81-0",
+      "originX": -3840,
+      "originY": 0,
+      "rawCursorLocalX": 960,
+      "rawCursorLocalY": 540,
+      "cursorOwned": true,
+      "pointerForceActive": true,
+      "simulationRunning": true,
+      "updates": 35,
+      "nodeCount": 54,
+      "connectionDistance": 132,
+      "edgeCount": 30,
+      "pathCount": 8
+    },
+    {
+      "output": "JOBO-NODE-VIS-87dd13b8-1",
+      "originX": -1920,
+      "originY": 180,
+      "rawCursorLocalX": -960,
+      "rawCursorLocalY": 360,
+      "cursorOwned": false,
+      "pointerForceActive": false,
+      "simulationRunning": true,
+      "updates": 34,
+      "nodeCount": 54,
+      "connectionDistance": 260,
+      "edgeCount": 86,
+      "pathCount": 8
+    }
+  ],
+  "images": [
+    {
+      "file": "nodeMesh-output-0.png",
+      "intendedOutput": "JOBO-NODE-VIS-d10b2f81-0",
+      "intendedOrigin": {
+        "x": -3840,
+        "y": 0
+      },
+      "marker": {
+        "position": {
+          "x": 24,
+          "y": 24
+        },
+        "expectedRgb": [
+          255,
+          23,
+          68
+        ],
+        "observedRgb": [
+          255,
+          23,
+          68
+        ]
+      },
+      "bytes": 17884,
+      "sha256": "73169e64d1bd980563a3d8a747f091ed967ea058dc15f1fca76c195f58f5ce46",
+      "visiblePixels": 5818
+    },
+    {
+      "file": "nodeMesh-output-1.png",
+      "intendedOutput": "JOBO-NODE-VIS-87dd13b8-1",
+      "intendedOrigin": {
+        "x": -1920,
+        "y": 180
+      },
+      "marker": {
+        "position": {
+          "x": 104,
+          "y": 24
+        },
+        "expectedRgb": [
+          0,
+          230,
+          118
+        ],
+        "observedRgb": [
+          0,
+          230,
+          118
+        ]
+      },
+      "bytes": 33920,
+      "sha256": "4af1d48b59d4ecdccc8926a507d56d88dea3f0490522298b6aa84ea0139f0587",
+      "visiblePixels": 16413
+    }
+  ],
+  "artifactDirectory": ".pi/artifacts/node-mesh-multi-output"
+}

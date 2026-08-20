@@ -61,6 +61,21 @@ CASES = [
     ("bokehTwinkleOff", "effects/BokehEffect.qml"),
     ("bokehContrastingRoles", "effects/BokehEffect.qml"),
     ("bokehReducedMotion", "effects/BokehEffect.qml"),
+    ("nodeMesh", "effects/NodeMeshEffect.qml"),
+    ("nodeMeshMinimum", "effects/NodeMeshEffect.qml"),
+    ("nodeMeshMaximum", "effects/NodeMeshEffect.qml"),
+    ("nodeMeshShortDistance", "effects/NodeMeshEffect.qml"),
+    ("nodeMeshLongDistance", "effects/NodeMeshEffect.qml"),
+    ("nodeMeshLowOpacity", "effects/NodeMeshEffect.qml"),
+    ("nodeMeshHighOpacity", "effects/NodeMeshEffect.qml"),
+    ("nodeMeshPointerOff", "effects/NodeMeshEffect.qml"),
+    ("nodeMeshAttractCenter", "effects/NodeMeshEffect.qml"),
+    ("nodeMeshAttractEdge", "effects/NodeMeshEffect.qml"),
+    ("nodeMeshRepelCenter", "effects/NodeMeshEffect.qml"),
+    ("nodeMeshRepelEdge", "effects/NodeMeshEffect.qml"),
+    ("nodeMeshReducedMotion", "effects/NodeMeshEffect.qml"),
+    ("nodeMeshBackground", "components/AmbienceStack.qml"),
+    ("nodeMeshForeground", "components/AmbienceStack.qml"),
     ("backgroundVignette", "effects/VignetteEffect.qml"),
     ("threeEffectStack", "components/AmbienceStack.qml"),
 ]
@@ -117,6 +132,7 @@ ShellRoot {{
   property real frameTotalMs: 0
   property real frameMaxMs: 0
   property int framesOverBudget: 0
+  property bool edgeCursor: false
 
   QtObject {{
     id: state
@@ -127,8 +143,10 @@ ShellRoot {{
 
   QtObject {{
     id: tracker
-    property real cursorX: root.renderScreen ? Number(root.renderScreen.x) + renderWindow.width * 0.68 : -1
-    property real cursorY: root.renderScreen ? Number(root.renderScreen.y) + renderWindow.height * 0.42 : -1
+    property real cursorX: root.renderScreen ? Number(root.renderScreen.x)
+      + renderWindow.width * (root.edgeCursor ? 0.94 : 0.5) : -1
+    property real cursorY: root.renderScreen ? Number(root.renderScreen.y)
+      + renderWindow.height * (root.edgeCursor ? 0.08 : 0.5) : -1
     property real displayCursorX: cursorX
     property real displayCursorY: cursorY
     property bool hasCursorSample: root.renderScreen !== null
@@ -166,11 +184,13 @@ ShellRoot {{
   }}
 
   function configure(item, caseId) {{
+    root.edgeCursor = caseId.indexOf("Edge") >= 0
     if (caseId === "backgroundVignette") {{
       item.settings = EffectRegistry.vignetteDefaults()
       item.settings.enabled = true
       item.paintEnabled = true
-    }} else if (caseId === "threeEffectStack") {{
+    }} else if (caseId === "threeEffectStack"
+        || caseId === "nodeMeshBackground" || caseId === "nodeMeshForeground") {{
       var ids = EffectRegistry.orderedIds()
       var values = {{}}
       for (var i = 0; i < ids.length; i++) values[ids[i]] = EffectRegistry.defaultsFor(ids[i])
@@ -179,11 +199,16 @@ ShellRoot {{
       state.reduceMotion = false
       item.settings = state
       item.theme = theme
-      item.activeEffects = ["auroraDrift", "rainfall", "filmGrain"]
+      item.cursorTracker = tracker
+      item.targetScreen = root.renderScreen
+      item.activeEffects = caseId.indexOf("nodeMesh") === 0
+        ? ["nodeMesh"] : ["auroraDrift", "rainfall", "filmGrain"]
+      item.foregroundOverlay = caseId === "nodeMeshForeground"
       item.productionEffectsEnabled = true
       item.paintEnabled = true
     }} else {{
-      var registryId = caseId.indexOf("bokeh") === 0 ? "bokeh" : caseId
+      var registryId = caseId.indexOf("bokeh") === 0 ? "bokeh"
+        : (caseId.indexOf("nodeMesh") === 0 ? "nodeMesh" : caseId)
       var settings = EffectRegistry.defaultsFor(registryId)
       if (caseId === "dustMotes") settings.mouseReactive = false
       if (caseId === "bokehMinimum") settings.lightCount = 6
@@ -204,11 +229,28 @@ ShellRoot {{
       else if (caseId === "bokehContrastingRoles") {{
         settings.primaryColorRole = "foreground"
         settings.secondaryColorRole = "color10"
+      }} else if (caseId === "nodeMeshMinimum") settings.nodeCount = 12
+      else if (caseId === "nodeMeshMaximum") {{
+        settings.nodeCount = 120
+        settings.connectionDistance = 260
+        settings.lineOpacity = 1
+      }} else if (caseId === "nodeMeshShortDistance") settings.connectionDistance = 40
+      else if (caseId === "nodeMeshLongDistance") settings.connectionDistance = 260
+      else if (caseId === "nodeMeshLowOpacity") settings.lineOpacity = 0.08
+      else if (caseId === "nodeMeshHighOpacity") settings.lineOpacity = 1
+      else if (caseId === "nodeMeshPointerOff") settings.pointerMode = "off"
+      else if (caseId.indexOf("nodeMeshAttract") === 0) {{
+        settings.pointerMode = "attract"
+        settings.mouseInfluence = 1
+      }} else if (caseId.indexOf("nodeMeshRepel") === 0) {{
+        settings.pointerMode = "repel"
+        settings.mouseInfluence = 1
       }}
       item.effectSettings = settings
       item.globalOpacity = 1
       item.reducedMotion = caseId !== "rainfall" && caseId !== "tacticalGrid"
       if (caseId.indexOf("bokeh") === 0) item.reducedMotion = caseId === "bokehReducedMotion"
+      if (caseId.indexOf("nodeMesh") === 0) item.reducedMotion = caseId === "nodeMeshReducedMotion"
       if ("theme" in item) item.theme = theme
       if ("cursorTracker" in item) item.cursorTracker = tracker
     }}
@@ -242,9 +284,12 @@ ShellRoot {{
     effectLoader.item.grabToImage(function(result) {{
       var caseId = cases[caseIndex].id
       var themeSwitchCase = caseId === "threeEffectStack" || caseId === "bokehReducedMotion"
+        || caseId === "nodeMeshReducedMotion"
       var themeSwitchFile = caseId === "bokehReducedMotion"
         ? "{str((ARTIFACT_DIR / 'bokehThemeSwitch.png').resolve())}"
-        : "{str((ARTIFACT_DIR / 'threeEffectStackThemeSwitch.png').resolve())}"
+        : (caseId === "nodeMeshReducedMotion"
+          ? "{str((ARTIFACT_DIR / 'nodeMeshThemeSwitch.png').resolve())}"
+          : "{str((ARTIFACT_DIR / 'threeEffectStackThemeSwitch.png').resolve())}")
       var outputFile = themeSwitchCase && root.themeSwitchPending
         ? themeSwitchFile : cases[caseIndex].file
       var saved = result.saveToFile(outputFile)
@@ -465,7 +510,7 @@ try:
 
     images = []
     image_case_ids = [case_id for case_id, _ in CASES] + [
-        "bokehThemeSwitch", "threeEffectStackThemeSwitch",
+        "bokehThemeSwitch", "nodeMeshThemeSwitch", "threeEffectStackThemeSwitch",
     ]
     for case_id in image_case_ids:
         path = ARTIFACT_DIR / f"{case_id}.png"
@@ -488,6 +533,14 @@ try:
         raise AssertionError("active stack pixels did not change after the theme switch")
     if bokeh_hash == bokeh_switched_hash:
         raise AssertionError("static Bokeh pixels did not change after the theme switch")
+    node_mesh_hash = next(
+        image["sha256"] for image in images if image["case"] == "nodeMeshReducedMotion"
+    )
+    node_mesh_switched_hash = next(
+        image["sha256"] for image in images if image["case"] == "nodeMeshThemeSwitch"
+    )
+    if node_mesh_hash == node_mesh_switched_hash:
+        raise AssertionError("static Node Mesh pixels did not change after the theme switch")
 
     rainfall_path = ARTIFACT_DIR / "rainfall.png"
     rainfall_top = bright_fraction(rainfall_path, "1920x540+0+0")
@@ -501,7 +554,7 @@ try:
     run([
         "magick", "montage",
         *[str(ARTIFACT_DIR / f"{case_id}.png") for case_id in image_case_ids],
-        "-thumbnail", "360x203", "-tile", "4x6", "-geometry", "+8+24",
+        "-thumbnail", "360x203", "-tile", "5x8", "-geometry", "+8+24",
         "-background", "#111318", "-fill", "white", "-pointsize", "17",
         "-set", "label", "%t", str(contact_sheet),
     ], timeout=60)
@@ -515,6 +568,8 @@ try:
         "renderCases": image_case_ids,
         "themeSwitchChangedPixels": stack_hash != switched_hash,
         "bokehThemeSwitchChangedPixels": bokeh_hash != bokeh_switched_hash,
+        "nodeMeshThemeSwitchChangedPixels": node_mesh_hash != node_mesh_switched_hash,
+        "nodeMeshPresentationCases": ["nodeMeshBackground", "nodeMeshForeground"],
         "rainfallStartupCoverage": {
             "topBrightFraction": rainfall_top,
             "bottomBrightFraction": rainfall_bottom,

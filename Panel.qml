@@ -51,7 +51,17 @@ Item {
         && tacticalGridSettings.parallaxEnabled === true
         && Number(tacticalGridSettings.mouseInfluence) > 0.001
         && !ambienceSettings.reduceMotion))
-  readonly property bool cursorTrackingRequested: dustMotesRequested || tacticalGridRequested
+  readonly property var nodeMeshSettings: ambienceSettings.effects
+    && ambienceSettings.effects.nodeMesh ? ambienceSettings.effects.nodeMesh : ({})
+  readonly property bool nodeMeshRequested: ambienceEnabled
+    && normalizedOrder().indexOf("nodeMesh") >= 0
+    && nodeMeshSettings.enabled === true
+    && Number(nodeMeshSettings.intensity) * Number(ambienceSettings.opacity) > 0.001
+    && String(nodeMeshSettings.pointerMode) !== "off"
+    && Number(nodeMeshSettings.mouseInfluence) > 0.001
+    && !ambienceSettings.reduceMotion
+  readonly property bool cursorTrackingRequested: dustMotesRequested
+    || tacticalGridRequested || nodeMeshRequested
   readonly property string mappingMode: !visualSurfaceEnabled
     ? "none" : (foregroundOverlay ? "overlay" : "bottom")
 
@@ -122,6 +132,7 @@ Item {
       if (!surface) continue
       var stack = surface.stackObject
       var tacticalGrid = stack ? stack.productionEffectObject("tacticalGrid") : null
+      var nodeMesh = stack ? stack.productionEffectObject("nodeMesh") : null
       result.push({
         output: surface.outputName,
         mapped: surface.visible,
@@ -140,6 +151,20 @@ Item {
           rawCursorLocalY: tacticalGrid.rawCursorLocalY,
           screenOriginX: tacticalGrid.screenOriginX,
           screenOriginY: tacticalGrid.screenOriginY
+        } : null,
+        nodeMesh: nodeMesh ? {
+          width: nodeMesh.width,
+          height: nodeMesh.height,
+          cursorOwned: nodeMesh.cursorOwned,
+          rawCursorX: nodeMesh.rawCursorX,
+          rawCursorY: nodeMesh.rawCursorY,
+          rawCursorLocalX: nodeMesh.rawCursorLocalX,
+          rawCursorLocalY: nodeMesh.rawCursorLocalY,
+          screenOriginX: nodeMesh.screenOriginX,
+          screenOriginY: nodeMesh.screenOriginY,
+          simulationRunning: nodeMesh.simulationRunning,
+          nodeCount: nodeMesh.acceptedNodeCount,
+          edgeCount: nodeMesh.edgeCount
         } : null
       })
     }
@@ -185,6 +210,11 @@ Item {
         confirmedRevision: ambienceSettings.confirmedSaveRevision
       },
       theme: themeAdapter.status(),
+      cursorRequests: {
+        dustMotes: root.dustMotesRequested,
+        tacticalGrid: root.tacticalGridRequested,
+        nodeMesh: root.nodeMeshRequested
+      },
       cursorTracker: sharedCursorTracker.status()
     }
   }
@@ -199,7 +229,7 @@ Item {
   CursorTracker {
     id: sharedCursorTracker
     active: root.cursorTrackingRequested && root.paintAllowedSurfaceCount > 0
-    pollIntervalMs: root.tacticalGridRequested ? 60 : 120
+    pollIntervalMs: root.tacticalGridRequested || root.nodeMeshRequested ? 60 : 120
   }
 
   SettingsWindow {
