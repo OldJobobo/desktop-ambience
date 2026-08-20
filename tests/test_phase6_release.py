@@ -111,6 +111,21 @@ def test_fullscreen_matrix_distinguishes_fake_and_real_fullscreen():
     assert "Qt.WindowDoesNotAcceptFocus" in source
 
 
+def test_render_harnesses_use_non_focusable_layer_surfaces():
+    for path in (
+        "tests/live_phase6_visual.py",
+        "tests/live_phase7_performance.py",
+        "tests/live_node_mesh_pixel_probe.py",
+        "tests/live_node_mesh_multi_output_visual.py",
+        "tests/live_precipitation_multi_output_visual.py",
+    ):
+        source = read(path)
+        assert "PanelWindow {{" in source, path
+        assert "WlrLayershell.keyboardFocus: WlrKeyboardFocus.None" in source, path
+        assert "exclusionMode: ExclusionMode.Ignore" in source, path
+        assert "  Window {{" not in source, path
+
+
 def test_output_matrix_covers_fractional_scale_rotation_and_refresh_restore():
     source = read("tests/live_phase6_output_modes.py")
     assert 'configure(headless, "1920x1080@60", 1.25, 1)' in source

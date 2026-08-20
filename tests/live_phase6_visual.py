@@ -153,8 +153,8 @@ def make_qml() -> str:
     )
     return f'''
 import Quickshell
+import Quickshell.Wayland
 import QtQuick
-import QtQuick.Window
 import "{qml_url('services/EffectRegistry.js')}" as EffectRegistry
 
 ShellRoot {{
@@ -392,14 +392,17 @@ ShellRoot {{
 
   Timer {{ id: startDelay; interval: 1200; onTriggered: root.nextCase() }}
 
-  Window {{
+  PanelWindow {{
     id: renderWindow
-    screen: root.windowScreen
-    visibility: Window.FullScreen
+    screen: root.renderScreen
     visible: false
-    flags: Qt.Tool | Qt.WindowDoesNotAcceptFocus
-    title: "{window_title}"
     color: "#101315"
+    WlrLayershell.namespace: "{window_title}"
+    WlrLayershell.layer: WlrLayer.Overlay
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+    exclusionMode: ExclusionMode.Ignore
+    mask: Region {{}}
+    anchors {{ top: true; bottom: true; left: true; right: true }}
 
     Loader {{
       id: effectLoader
@@ -446,42 +449,6 @@ ShellRoot {{
   }}
 }}
 '''
-
-
-def place_render_window() -> None:
-    output = next((item for item in json.loads(run(["hyprctl", "-j", "monitors", "all"]).stdout)
-                   if item.get("name") == output_name), None)
-    if not output:
-        raise AssertionError(f"headless output disappeared: {output_name}")
-    deadline = time.monotonic() + 8
-    while time.monotonic() < deadline:
-        matches = [
-            client for client in json.loads(run(["hyprctl", "-j", "clients"]).stdout)
-            if str(client.get("title")) == window_title
-        ]
-        if len(matches) > 1:
-            raise AssertionError(f"expected one render window, found {len(matches)}")
-        if matches:
-            address = str(matches[0].get("address", ""))
-            if not address.startswith("0x") or any(char not in "0123456789abcdefABCDEF" for char in address[2:]):
-                raise AssertionError(f"invalid compositor address: {address}")
-            selector = f"address:{address}"
-            expression = (
-                'hl.dsp.window.move({'
-                f'monitor = "{output_name}", follow = false, window = "{selector}"'
-                '})'
-            )
-            run(["hyprctl", "dispatch", expression])
-            move_deadline = time.monotonic() + 5
-            while time.monotonic() < move_deadline:
-                current = next((client for client in json.loads(run(["hyprctl", "-j", "clients"]).stdout)
-                                if str(client.get("title")) == window_title), None)
-                if current and int(current.get("monitor", -1)) == int(output["id"]):
-                    return
-                time.sleep(0.1)
-            raise AssertionError(f"render window did not move to {output_name}")
-        time.sleep(0.1)
-    raise AssertionError("render window did not appear")
 
 
 def process_cpu_ticks(pid: int) -> int:
@@ -548,7 +515,6 @@ try:
             stderr=subprocess.STDOUT,
             text=True,
         )
-        place_render_window()
         start_ticks = process_cpu_ticks(proc.pid)
         end_ticks = start_ticks
         peak_rss_kib = 0

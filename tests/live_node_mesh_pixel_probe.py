@@ -71,12 +71,12 @@ def capture(case_id: str, source: str, *, production: bool, distance: int, opaci
 '''
     qml = f'''
 import Quickshell
+import Quickshell.Wayland
 import QtQuick
-import QtQuick.Window
 ShellRoot {{
   function screenFor(name) {{
-    for (var i = 0; i < Qt.application.screens.length; i++)
-      if (String(Qt.application.screens[i].name) === name) return Qt.application.screens[i]
+    for (var i = 0; i < Quickshell.screens.length; i++)
+      if (String(Quickshell.screens[i].name) === name) return Quickshell.screens[i]
     return null
   }}
   QtObject {{
@@ -85,12 +85,17 @@ ShellRoot {{
       return name === "accent" ? "#88c0d0" : (name === "color12" ? "#81a1c1" : fallback)
     }}
   }}
-  Window {{
+  PanelWindow {{
     id: window
     screen: screenFor("{OUTPUT}")
-    width: {WIDTH}; height: {HEIGHT}; visible: true
-    flags: Qt.Tool | Qt.WindowDoesNotAcceptFocus
+    visible: true
     color: "#101315"
+    WlrLayershell.namespace: "jobo-node-mesh-pixel-probe"
+    WlrLayershell.layer: WlrLayer.Overlay
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+    exclusionMode: ExclusionMode.Ignore
+    mask: Region {{}}
+    anchors {{ top: true; bottom: true; left: true; right: true }}
     Item {{
       id: host; anchors.fill: parent
       Rectangle {{ anchors.fill: parent; color: "#101315" }}

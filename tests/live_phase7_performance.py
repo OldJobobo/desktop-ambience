@@ -146,14 +146,17 @@ def make_qml(
     windows = []
     for index, name in enumerate(output_names):
         windows.append(f'''
-  Window {{
+  PanelWindow {{
     id: renderWindow{index}
-    screen: root.windowScreen("{name}")
-    visibility: Window.FullScreen
+    screen: root.renderScreen("{name}")
     visible: true
-    flags: Qt.Tool | Qt.WindowDoesNotAcceptFocus
     color: "#101315"
-    title: "jobo-phase7-{case_id}-{index}"
+    WlrLayershell.namespace: "jobo-phase7-{case_id}-{index}"
+    WlrLayershell.layer: WlrLayer.Overlay
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+    exclusionMode: ExclusionMode.Ignore
+    mask: Region {{}}
+    anchors {{ top: true; bottom: true; left: true; right: true }}
     Loader {{
       anchors.fill: parent
       source: "{source_url}"
@@ -179,8 +182,8 @@ def make_qml(
 
     return f'''
 import Quickshell
+import Quickshell.Wayland
 import QtQuick
-import QtQuick.Window
 import "{registry_url}" as EffectRegistry
 
 ShellRoot {{
