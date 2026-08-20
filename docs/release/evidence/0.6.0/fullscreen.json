@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "output": "JOBO-PHASE6-FS-16a6f367",
+  "liveSettingsModified": false,
+  "coexistsWithInstalledPlugin": true,
+  "clientStates": {
+    "normal": {
+      "internal": 0,
+      "client": 0
+    },
+    "fakeFullscreen": {
+      "internal": 0,
+      "client": 2
+    },
+    "realFullscreen": {
+      "internal": 2,
+      "client": 2
+    },
+    "restored": {
+      "internal": 0,
+      "client": 0
+    }
+  },
+  "suppressionSequence": [
+    false,
+    true,
+    false
+  ],
+  "surfaceRemainedMapped": true
+}

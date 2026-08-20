@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "pluginVersion": "0.6.0",
+  "repositoryHead": "638402eaa2493aa3bb63de92983d37cc9fb28b14",
+  "cleanCloneHead": "638402eaa2493aa3bb63de92983d37cc9fb28b14",
+  "liveSettingsModified": false,
+  "shellConfigModified": false,
+  "monitors": [
+    {
+      "name": "DP-1",
+      "width": 2560,
+      "height": 1440,
+      "refreshRate": 60.0,
+      "scale": 1,
+      "transform": 0
+    },
+    {
+      "name": "DP-2",
+      "width": 1920,
+      "height": 1080,
+      "refreshRate": 60.0,
+      "scale": 1,
+      "transform": 0
+    },
+    {
+      "name": "DP-3",
+      "width": 2560,
+      "height": 1440,
+      "refreshRate": 60.0,
+      "scale": 1,
+      "transform": 1
+    }
+  ],
+  "hardwareCoverage": {
+    "outputCount": 3,
+    "multipleOutputs": true,
+    "mixedResolution": true,
+    "mixedScale": false,
+    "mixedOrientation": true,
+    "mixedRefreshRate": false
+  },
+  "initial": {
+    "surfaceCount": 3,
+    "mappedSurfaceCount": 3,
+    "mode": "overlay"
+  },
+  "pluginRescan": {
+    "surfaceCount": 3,
+    "mappedSurfaceCount": 3
+  },
+  "shellRestart": {
+    "surfaceCount": 3,
+    "mappedSurfaceCount": 3,
+    "oneLayerPerOutput": true
+  },
+  "headlessHotplug": {
+    "baseline": 3,
+    "observedAdd": true,
+    "finalScreens": 3,
+    "finalSurfaces": 3,
+    "finalMapped": 3,
+    "names": [
+      "DP-1",
+      "DP-2",
+      "DP-3"
+    ]
+  },
+  "final": {
+    "surfaceCount": 3,
+    "mappedSurfaceCount": 3
+  }
+}

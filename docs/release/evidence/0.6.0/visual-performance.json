@@ -1,0 +1,173 @@
+{
+  "schemaVersion": 1,
+  "pluginVersion": "0.6.0",
+  "headlessOutput": "JOBO-PHASE6-d75e5861",
+  "isolatedConfig": true,
+  "liveSettingsModified": false,
+  "renderCases": [
+    "auroraDrift",
+    "cinematicLight",
+    "crt",
+    "dustMotes",
+    "filmGrain",
+    "godRays",
+    "rainfall",
+    "tacticalGrid",
+    "trackingLines",
+    "backgroundVignette",
+    "threeEffectStack",
+    "threeEffectStackThemeSwitch"
+  ],
+  "themeSwitchChangedPixels": true,
+  "rainfallStartupCoverage": {
+    "topBrightFraction": 0.162818,
+    "bottomBrightFraction": 0.315273
+  },
+  "qmlFrameCadence": {
+    "sampleFrames": 240,
+    "meanMs": 16.676688412500003,
+    "maxMs": 21.514906,
+    "over20ms": 5
+  },
+  "isolatedProcess": {
+    "elapsedSeconds": 15.37960014201235,
+    "averageCpuPercent": 31.340216621323197,
+    "peakRssKiB": 362352,
+    "scope": "isolated Quickshell process rendering the release matrix; not the full desktop shell"
+  },
+  "contactSheet": "contact-sheet.webp",
+  "images": [
+    {
+      "case": "auroraDrift",
+      "file": "auroraDrift.png",
+      "bytes": 604909,
+      "sha256": "cc79efcd96071617e70323f325fdbc3d2d75953b1eb79fcdc65bb1065f836d1e",
+      "width": 1920,
+      "height": 1080,
+      "mean": 0.376799,
+      "standardDeviation": 0.181203,
+      "entropy": 0.868073
+    },
+    {
+      "case": "cinematicLight",
+      "file": "cinematicLight.png",
+      "bytes": 49669,
+      "sha256": "70ca582570a26128c48c62552fbea2c54b1e4f95a2989e45231963fd1978da65",
+      "width": 1920,
+      "height": 1080,
+      "mean": 0.302393,
+      "standardDeviation": 0.202829,
+      "entropy": 0.834017
+    },
+    {
+      "case": "crt",
+      "file": "crt.png",
+      "bytes": 55378,
+      "sha256": "31d0333216e8771f822db134a78edcce3c2d7d60460eb82f758796014f3905e1",
+      "width": 1920,
+      "height": 1080,
+      "mean": 0.315004,
+      "standardDeviation": 0.23798,
+      "entropy": 0.701837
+    },
+    {
+      "case": "dustMotes",
+      "file": "dustMotes.png",
+      "bytes": 11634,
+      "sha256": "1726dee2d2ce89ef176fb4e4f7ace1674afd41f6f922a4e1a163c131f6180d18",
+      "width": 1920,
+      "height": 1080,
+      "mean": 0.000217226,
+      "standardDeviation": 0.0118912,
+      "entropy": 0.00122211
+    },
+    {
+      "case": "filmGrain",
+      "file": "filmGrain.png",
+      "bytes": 11755,
+      "sha256": "ad005497c2ef7d10c67c81650fec824438a95f16fb466aef6eaa725138b53b60",
+      "width": 1920,
+      "height": 1080,
+      "mean": 0.000249531,
+      "standardDeviation": 0.0128635,
+      "entropy": 0.00133186
+    },
+    {
+      "case": "godRays",
+      "file": "godRays.png",
+      "bytes": 639512,
+      "sha256": "8763caf488e8f1aa86f54ed9fade4b0fa6e3784ba022b31d2d750cd6ab38aa1a",
+      "width": 1920,
+      "height": 1080,
+      "mean": 0.449379,
+      "standardDeviation": 0.281554,
+      "entropy": 0.737032
+    },
+    {
+      "case": "rainfall",
+      "file": "rainfall.png",
+      "bytes": 140103,
+      "sha256": "b24ba231b3ff1f0d900dacea555ec5e9e3468317b34bc14919b2ab4c7c4c49a6",
+      "width": 1920,
+      "height": 1080,
+      "mean": 0.131268,
+      "standardDeviation": 0.230517,
+      "entropy": 0.374387
+    },
+    {
+      "case": "tacticalGrid",
+      "file": "tacticalGrid.png",
+      "bytes": 13835,
+      "sha256": "79a7e258222b4629431f8c7e1e7406bc5167cbe593f65e0e3c92cd74039d6947",
+      "width": 1920,
+      "height": 1080,
+      "mean": 0.0181505,
+      "standardDeviation": 0.0992046,
+      "entropy": 0.0793439
+    },
+    {
+      "case": "trackingLines",
+      "file": "trackingLines.png",
+      "bytes": 63137,
+      "sha256": "9dcf2698e27b4fffa23c9ab70ddb8bbfcb455724dfa4cb1ec76c6127bc01f383",
+      "width": 1920,
+      "height": 1080,
+      "mean": 0.355496,
+      "standardDeviation": 0.159253,
+      "entropy": 0.636994
+    },
+    {
+      "case": "backgroundVignette",
+      "file": "backgroundVignette.png",
+      "bytes": 160414,
+      "sha256": "d995c0cc361f6d176b204ac388139b7d50ca529325309a19e0438bcd690a3d44",
+      "width": 1920,
+      "height": 1080,
+      "mean": 0.0520006,
+      "standardDeviation": 0.0465749,
+      "entropy": 0.22527
+    },
+    {
+      "case": "threeEffectStack",
+      "file": "threeEffectStack.png",
+      "bytes": 803874,
+      "sha256": "88d130464886927687abd6a473b3015363c6a881f9816442e656483fe5380c33",
+      "width": 1920,
+      "height": 1080,
+      "mean": 0.379336,
+      "standardDeviation": 0.16865,
+      "entropy": 0.889273
+    },
+    {
+      "case": "threeEffectStackThemeSwitch",
+      "file": "threeEffectStackThemeSwitch.png",
+      "bytes": 813328,
+      "sha256": "739cf6037d48f47e447845b79952fd8f73ad368820a656cd3c26525ac4afc250",
+      "width": 1920,
+      "height": 1080,
+      "mean": 0.369364,
+      "standardDeviation": 0.157734,
+      "entropy": 0.88091
+    }
+  ]
+}
