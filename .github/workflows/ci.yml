@@ -23,4 +23,8 @@ jobs:
       - name: Run host-independent checks
         run: ./scripts/check-contracts.sh
       - name: Validate release metadata
+        if: github.ref_type != 'tag'
         run: ./scripts/release-check.sh
+      - name: Validate tagged release
+        if: github.ref_type == 'tag'
+        run: ./scripts/release-check.sh --tagged

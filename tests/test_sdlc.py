@@ -35,6 +35,8 @@ def test_ci_runs_host_independent_contract_and_release_checks():
     assert "permissions:\n  contents: read" in workflow
     assert "./scripts/check-contracts.sh" in workflow
     assert "./scripts/release-check.sh" in workflow
+    assert "github.ref_type != 'tag'" in workflow
+    assert "./scripts/release-check.sh --tagged" in workflow
     assert "timeout-minutes:" in workflow
 
 
@@ -46,6 +48,8 @@ def test_release_process_requires_semver_changelog_clean_tree_and_live_evidence(
         "docs/release/v$version.md", "tag already exists",
     ):
         assert contract in release or contract in contributing
+    assert "--tagged" in release
+    assert 'refs/tags/v$version^{commit}' in release
     assert "./scripts/check-contracts.sh" in contributing
     assert "./scripts/check.sh" in contributing
     assert "Never tag a release with skipped runtime tests" in contributing

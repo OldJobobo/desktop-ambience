@@ -5,11 +5,14 @@ repo_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$repo_root"
 
 stable=0
-case "${1:-}" in
-  "") ;;
-  --stable) stable=1 ;;
-  *) echo "Usage: $0 [--stable]" >&2; exit 2 ;;
-esac
+tagged=0
+for option in "$@"; do
+  case "$option" in
+    --stable) stable=1 ;;
+    --tagged) tagged=1; stable=1 ;;
+    *) echo "Usage: $0 [--stable] [--tagged]" >&2; exit 2 ;;
+  esac
+done
 
 version=$(python - <<'PY'
 import json
@@ -54,8 +57,21 @@ if (( stable )); then
 fi
 
 if git rev-parse -q --verify "refs/tags/v$version" >/dev/null; then
-  echo "tag already exists: v$version" >&2
+  if (( ! tagged )); then
+    echo "tag already exists: v$version" >&2
+    exit 1
+  fi
+  if [[ $(git rev-parse "refs/tags/v$version^{commit}") != $(git rev-parse HEAD) ]]; then
+    echo "tag v$version does not point to HEAD" >&2
+    exit 1
+  fi
+elif (( tagged )); then
+  echo "tag is missing: v$version" >&2
   exit 1
 fi
 
-printf 'Release metadata ready for v%s\n' "$version"
+if (( tagged )); then
+  printf 'Tagged release verified for v%s\n' "$version"
+else
+  printf 'Release metadata ready for v%s\n' "$version"
+fi
