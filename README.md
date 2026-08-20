@@ -5,6 +5,8 @@ Eight ordered renderers share one persistent surface per output, while a
 separate vignette can sit above or below the stack. The plugin owns its settings,
 theme adaptation, settings window, and runtime status endpoint.
 
+[![Desktop Ambience settings window showing the active effect stack and VHS controls](preview.png)](preview.png)
+
 ## Included effects
 
 1. Aurora Drift
