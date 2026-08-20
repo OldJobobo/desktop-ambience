@@ -31,11 +31,10 @@ Review third-party plugin code before enabling it.
 
 ## Install
 
-Install from the repository's Git URL, then enable it:
+Install from the public Git repository and enable it:
 
 ```bash
-PLUGIN_GIT_URL='<repository-git-url>'
-omarchy plugin add "$PLUGIN_GIT_URL" --enable
+omarchy plugin add "https://github.com/OldJobobo/desktop-ambience.git" --enable
 ```
 
 For a reviewed local checkout, run this from the repository root. This performs
@@ -284,6 +283,8 @@ JOBO_AMBIENCE_LIVE_PHASE7=1 ./scripts/check-phase7.sh
 
 Findings and current machine evidence are documented in
 [`docs/performance/phase7.md`](docs/performance/phase7.md).
+
+Desktop Ambience is available under the [MIT License](LICENSE).
 
 Versioning, pull-request checks, and the release process are defined in
 [`CONTRIBUTING.md`](CONTRIBUTING.md). Release notes are kept in
