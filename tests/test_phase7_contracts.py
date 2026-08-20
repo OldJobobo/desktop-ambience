@@ -74,6 +74,17 @@ def test_aurora_secondary_glows_start_at_their_animated_floor():
     assert "PauseAnimation" not in aurora
 
 
+def test_god_rays_start_together_from_their_animated_low_state():
+    rays = read("effects/GodRaysEffect.qml")
+    assert "initialDelay" not in rays
+    assert "PauseAnimation" not in rays
+    assert "property real ambientPulse: 0.58" in rays
+    assert "opacity: root.shimmer ? baseOpacity * 0.7 : baseOpacity" in rays
+    assert "opacity: root.shimmer ? moteOpacity * 0.25 : moteOpacity" in rays
+    assert "function restartStartupReveal()" in rays
+    assert "opacity: root.effectiveIntensity * root.startupOpacity" in rays
+
+
 def test_rainfall_seeds_full_length_loops_at_distributed_startup_phases():
     rain = read("effects/RainfallEffect.qml")
     assert "phaseOffset" not in rain

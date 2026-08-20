@@ -10,6 +10,7 @@ Item {
   property var theme: null
   property bool runtimeEnabled: true
   property real runtimeIntensity: -1
+  property real startupOpacity: 1
 
   readonly property var overlaySettings: effectSettings
   readonly property bool configuredEnabled: overlaySettings.enabled === true
@@ -97,6 +98,38 @@ Item {
     runtimeEnabled = false
   }
 
+  function restartStartupReveal() {
+    startupReveal.stop()
+    startupOpacity = reducedMotion ? 1 : 0.06
+    if (effectVisible && !reducedMotion) startupReveal.restart()
+  }
+
+  onEffectVisibleChanged: restartStartupReveal()
+  onReducedMotionChanged: restartStartupReveal()
+  Component.onCompleted: restartStartupReveal()
+
+  SequentialAnimation {
+    id: startupReveal
+
+    NumberAnimation {
+      target: root
+      property: "startupOpacity"
+      from: 0.06
+      to: 0.12
+      duration: 1400
+      easing.type: Easing.InOutSine
+    }
+
+    NumberAnimation {
+      target: root
+      property: "startupOpacity"
+      from: 0.12
+      to: 1
+      duration: 900
+      easing.type: Easing.OutCubic
+    }
+  }
+
   Item {
     id: raysWindow
 
@@ -109,8 +142,8 @@ Item {
 
       anchors.fill: parent
       enabled: false
-      opacity: root.effectiveIntensity
-      property real ambientPulse: 0.7
+      opacity: root.effectiveIntensity * root.startupOpacity
+      property real ambientPulse: 0.58
 
       SequentialAnimation on ambientPulse {
         loops: Animation.Infinite
@@ -209,13 +242,12 @@ Item {
           readonly property real baseOpacity: root.rayLowOpacity + root.seededNoise(seed + 23) * 0.18
           readonly property color rayColor: root.colorForRay(index)
           readonly property color companionColor: root.colorForRay(index + 1)
-          readonly property int initialDelay: Math.round(root.seededNoise(seed + 29) * 8600)
 
           x: xA
           y: yA
           width: rayWidth + blurPad * 2
           height: rayLength + blurPad * 2
-          opacity: baseOpacity
+          opacity: root.shimmer ? baseOpacity * 0.7 : baseOpacity
           rotation: angle
           transformOrigin: root.originTop ? Item.Top : Item.Bottom
           layer.enabled: true
@@ -230,7 +262,6 @@ Item {
           SequentialAnimation on x {
             loops: Animation.Infinite
             running: root.effectVisible && !root.reducedMotion
-            PauseAnimation { duration: ray.initialDelay }
             NumberAnimation {
               from: ray.xA
               to: ray.xB
@@ -248,7 +279,6 @@ Item {
           SequentialAnimation on y {
             loops: Animation.Infinite
             running: root.effectVisible && !root.reducedMotion
-            PauseAnimation { duration: Math.round(ray.initialDelay * 0.41) }
             NumberAnimation {
               from: ray.yA
               to: ray.yB
@@ -266,7 +296,6 @@ Item {
           SequentialAnimation on opacity {
             loops: Animation.Infinite
             running: root.effectVisible && !root.reducedMotion && root.shimmer
-            PauseAnimation { duration: Math.round(ray.initialDelay * 0.62) }
             NumberAnimation {
               from: ray.baseOpacity * 0.7
               to: Math.min(root.rayHighOpacity, ray.baseOpacity * 1.42)
@@ -335,7 +364,7 @@ Item {
           height: moteSize
           radius: width / 2
           color: Qt.rgba(root.rayCore.r, root.rayCore.g, root.rayCore.b, 0.8)
-          opacity: moteOpacity
+          opacity: root.shimmer ? moteOpacity * 0.25 : moteOpacity
           visible: root.shimmer
           layer.enabled: true
           layer.smooth: true
