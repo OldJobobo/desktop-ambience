@@ -17,7 +17,9 @@ All notable changes are recorded here. This project follows [Semantic Versioning
 - Suspended cursor sampling when Dust Motes is inactive, reduced motion is enabled, or every ambience output is unable to paint.
 - Delayed renderer animation startup until the host geometry is stable so first loops use the full output dimensions.
 - Seeded Rainfall drops across their complete travel path on startup instead of cascading from partial first cycles.
-- Initialized Aurora Drift secondary glows at their animated opacity floor so startup no longer briefly over-stacks fully opaque extras.
+- Initialized Aurora Drift secondary glows at their animated opacity floor and removed staggered startup pauses so every ribbon begins smoothly together.
+- Reworked God Rays around a persistent motion clock so activation, speed changes, and ray-count changes no longer restart or destroy individual animated layers.
+- Refined active-stack selection and hover styling into one Omarchy-native semantic surface without nested borders.
 
 ## [0.4.0] - 2026-08-19
 

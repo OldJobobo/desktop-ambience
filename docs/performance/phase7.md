@@ -39,12 +39,12 @@ Dust Motes was repeated five times for each output count using a two-second stea
 
 | Measurement | `v0.4.0`, 1 output | Shared tracker, 1 output | `v0.4.0`, 3 outputs | Shared tracker, 3 outputs |
 | --- | ---: | ---: | ---: | ---: |
-| Median CPU | 4.99% | 4.99% | 8.97% | 6.65% |
-| Median peak RSS | 287.0 MiB | 286.9 MiB | 304.1 MiB | 304.4 MiB |
-| Median frame callback | 16.61 ms | 16.64 ms | 16.95 ms | 16.61 ms |
+| Median CPU | 4.99% | 7.84% | 8.97% | 10.59% |
+| Median peak RSS | 287.0 MiB | 286.8 MiB | 304.1 MiB | 303.8 MiB |
+| Median frame callback | 16.61 ms | 17.26 ms | 16.95 ms | 17.14 ms |
 | Cursor launches in each sample | estimated 17 | 17 exact | estimated 50 | 17 exact |
 
-The three-output median CPU fell by approximately 26%. More importantly, cursor process launches no longer multiply by output count: all five candidate runs launched exactly 17 samplers for both one and three outputs. The released design would schedule approximately 50 launches across three independent 120 ms timers during the same two-second interval.
+The final short-sample rerun did not reproduce the earlier candidate CPU reduction, reinforcing that these CPU figures are directional and session-sensitive rather than release targets. The architectural result remained exact: all five candidate runs launched 17 samplers for both one and three outputs. Sampling therefore no longer multiplies with output count; the released design would schedule approximately 50 launches across three independent 120 ms timers during the same two-second interval.
 
 ## Activation and ownership
 
@@ -62,7 +62,7 @@ Runtime status exposes active/running state, launch count, failure count, and th
 ## Evidence
 
 - `evidence/phase7/v0.4.0-baseline.json`
-- `evidence/phase7/shared-cursor.json`
+- `evidence/0.5.0/phase7-performance.json`
 - `evidence/phase7/v0.4.0-dust-repeated.json`
 - `evidence/phase7/shared-cursor-dust-repeated.json`
 
