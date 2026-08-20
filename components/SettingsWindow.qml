@@ -1039,8 +1039,17 @@ Item {
 
     implicitHeight: Style.space(50)
     radius: Style.cornerRadius
-    color: selected ? root.accentWash : "transparent"
-    borderSpec: Border.controlSpec(selected ? "selected" : "normal", Color.foreground, Color.accent)
+    color: selected ? root.accentWash
+      : rowHover.hovered ? Style.hoverFillFor(Color.foreground, Color.accent)
+      : "transparent"
+    borderSpec: Border.controlSpec(selected ? "selected" : rowHover.hovered ? "hover-cursor" : "normal",
+      Color.foreground, Color.accent)
+
+    Behavior on color { ColorAnimation { duration: 120 } }
+
+    HoverHandler {
+      id: rowHover
+    }
 
     Item {
       anchors.left: parent.left
