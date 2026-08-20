@@ -1010,16 +1010,31 @@ Item {
     color: selected ? root.accentWash : "transparent"
     borderSpec: Border.controlSpec(selected ? "selected" : "normal", Color.foreground, Color.accent)
 
-    Button {
+    Item {
       anchors.left: parent.left
       anchors.right: actions.left
       anchors.top: parent.top
       anchors.bottom: parent.bottom
-      text: String(stackRow.position + 1).padStart(2, "0") + "  " + stackRow.label
-      leftAlign: true
-      focusable: true
-      selected: stackRow.selected
-      onClicked: stackRow.selectedEffect()
+
+      Text {
+        anchors.left: parent.left
+        anchors.leftMargin: Style.space(12)
+        anchors.right: parent.right
+        anchors.rightMargin: Style.space(8)
+        anchors.verticalCenter: parent.verticalCenter
+        text: String(stackRow.position + 1).padStart(2, "0") + "  " + stackRow.label
+        color: stackRow.selected ? Color.accent : Color.foreground
+        font.family: Style.font.family
+        font.pixelSize: Style.font.body
+        font.bold: stackRow.selected
+        elide: Text.ElideRight
+      }
+
+      MouseArea {
+        anchors.fill: parent
+        cursorShape: Qt.PointingHandCursor
+        onClicked: stackRow.selectedEffect()
+      }
     }
 
     Row {
