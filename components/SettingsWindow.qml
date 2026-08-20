@@ -1007,7 +1007,7 @@ Item {
 
     implicitHeight: Style.space(50)
     radius: Style.cornerRadius
-    color: selected ? root.accentWash : "transparent"
+    color: "transparent"
     borderSpec: selected ? Border.none() : Border.controlSpec("normal", Color.foreground, Color.accent)
 
     Rectangle {
