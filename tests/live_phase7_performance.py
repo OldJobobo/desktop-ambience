@@ -39,6 +39,20 @@ CASES = [
     ("filmGrain", "effects/FilmGrainEffect.qml"),
     ("godRays", "effects/GodRaysEffect.qml"),
     ("rainfall", "effects/RainfallEffect.qml"),
+    ("rainDefault", "effects/RainfallEffect.qml"),
+    ("snowDefault", "effects/RainfallEffect.qml"),
+    ("rainMaximumPopulation", "effects/RainfallEffect.qml"),
+    ("snowMaximumPopulation", "effects/RainfallEffect.qml"),
+    ("snowMaximumSizeCrystal", "effects/RainfallEffect.qml"),
+    ("rainMistSplashMinimum", "effects/RainfallEffect.qml"),
+    ("rainMistSplashMaximum", "effects/RainfallEffect.qml"),
+    ("rainReducedMotion", "effects/RainfallEffect.qml"),
+    ("snowReducedMotion", "effects/RainfallEffect.qml"),
+    ("precipitationStyleSwitchChurn", "effects/RainfallEffect.qml"),
+    ("rainHidden", "effects/RainfallEffect.qml"),
+    ("snowHidden", "effects/RainfallEffect.qml"),
+    ("rainFullscreenSuppressed", "effects/RainfallEffect.qml"),
+    ("snowFullscreenSuppressed", "effects/RainfallEffect.qml"),
     ("tacticalGrid", "effects/TacticalGridEffect.qml"),
     ("trackingLines", "effects/VhsEffect.qml"),
     ("bokeh", "effects/BokehEffect.qml"),
@@ -180,6 +194,12 @@ ShellRoot {{
   property var loadedItems: []
   property int nodeMeshBaselineUpdates: 0
   property int nodeMeshBaselinePaints: 0
+  property int precipitationBaselineUpdates: 0
+  property int precipitationSwitchCount: 0
+  property var precipitationRootIdentities: []
+  property var precipitationBeforeShutdown: ({{}})
+  readonly property bool precipitationCase: caseId.indexOf("rain") === 0
+    || caseId.indexOf("snow") === 0 || caseId === "precipitationStyleSwitchChurn"
 
   QtObject {{
     id: state
@@ -240,6 +260,75 @@ ShellRoot {{
       animatedOutputs: animatedOutputs, visibleOutputs: visibleOutputs}}
   }}
 
+  function precipitationMetrics() {{
+    var loadedStyles = 0
+    var rainOutputs = 0
+    var snowOutputs = 0
+    var particles = 0
+    var crystals = 0
+    var primitives = 0
+    var animationObjects = 0
+    var runningAnimations = 0
+    var clockObjects = 0
+    var runningClocks = 0
+    var clockUpdates = 0
+    var autonomousOutputs = 0
+    var visibleOutputs = 0
+    var generations = 0
+    var destructions = 0
+    var rootsStable = true
+    for (var i = 0; i < loadedItems.length; i++) {{
+      var item = loadedItems[i]
+      if (!item || item.selectedStyle === undefined) continue
+      loadedStyles += Number(item.loadedStyleCount)
+      if (item.selectedStyle === "snow") snowOutputs += 1
+      else rainOutputs += 1
+      particles += Number(item.boundedParticleCount)
+      crystals += Number(item.snowCrystalCount)
+      primitives += item.selectedStyle === "snow"
+        ? Number(item.snowPrimitiveCount) : Number(item.boundedParticleCount)
+      animationObjects += Number(item.animationObjectCount)
+      runningAnimations += Number(item.runningAnimationCount)
+      clockObjects += Number(item.clockObjectCount)
+      runningClocks += Number(item.runningClockCount)
+      clockUpdates += Number(item.snowClockUpdateCount)
+      if (item.autonomousMotionRunning) autonomousOutputs += 1
+      if (item.effectVisible) visibleOutputs += 1
+      generations += Number(item.styleGeneration)
+      destructions += Number(item.destroyedStyleCount)
+      if (precipitationRootIdentities.length > i
+          && precipitationRootIdentities[i] !== item) rootsStable = false
+    }}
+    return {{loadedStyleCount: loadedStyles, rainOutputs: rainOutputs, snowOutputs: snowOutputs,
+      particleCount: particles, crystalCount: crystals, primitiveCount: primitives,
+      animationObjectCount: animationObjects, runningAnimationCount: runningAnimations,
+      clockObjectCount: clockObjects, runningClockCount: runningClocks,
+      clockUpdates: clockUpdates,
+      clockUpdateDelta: Math.max(0, clockUpdates - precipitationBaselineUpdates),
+      autonomousOutputs: autonomousOutputs, visibleOutputs: visibleOutputs,
+      styleGeneration: generations, destroyedStyleCount: destructions,
+      rootIdentityStable: rootsStable, styleSwitchCount: precipitationSwitchCount}}
+  }}
+
+  function togglePrecipitationStyle() {{
+    if (!precipitationCase) return
+    for (var i = 0; i < loadedItems.length; i++) {{
+      var item = loadedItems[i]
+      if (!item || item.selectedStyle === undefined) continue
+      var next = Object.assign({{}}, item.effectSettings)
+      next.precipitationStyle = item.selectedStyle === "snow" ? "rain" : "snow"
+      item.effectSettings = next
+    }}
+    precipitationSwitchCount += 1
+  }}
+
+  function stopPrecipitation() {{
+    for (var i = 0; i < loadedItems.length; i++) {{
+      var item = loadedItems[i]
+      if (item && item.selectedStyle !== undefined) item.runtimeEnabled = false
+    }}
+  }}
+
   function nodeMeshMetrics() {{
     var updates = 0
     var paints = 0
@@ -268,6 +357,26 @@ ShellRoot {{
       pointerOwnedOutputs: pointerOwnedOutputs, pointerActiveOutputs: pointerActiveOutputs}}
   }}
 
+  function reportResult() {{
+    var nodeMetrics = root.nodeMeshMetrics()
+    nodeMetrics.updateDelta = nodeMetrics.updates - root.nodeMeshBaselineUpdates
+    nodeMetrics.paintDelta = nodeMetrics.paints - root.nodeMeshBaselinePaints
+    console.log("BEHAVE " + JSON.stringify({{
+      caseId: caseId,
+      outputs: {len(output_names)},
+      frameCount: frameCount,
+      meanFrameMs: frameCount > 0 ? frameTotalMs / frameCount : 0,
+      maxFrameMs: frameMaxMs,
+      framesOver20Ms: framesOver20Ms,
+      cursorLaunchCount: {tracker_count},
+      bokeh: root.bokehMetrics(),
+      nodeMesh: nodeMetrics,
+      precipitation: root.precipitationCase ? root.precipitationBeforeShutdown : ({{}}),
+      precipitationAfterShutdown: root.precipitationCase ? root.precipitationMetrics() : ({{}})
+    }}))
+    Qt.quit()
+  }}
+
   function configure(item, outputName) {{
     if (caseId === "backgroundVignette") {{
       item.settings = EffectRegistry.vignetteDefaults()
@@ -287,7 +396,8 @@ ShellRoot {{
       item.paintEnabled = true
     }} else {{
       var registryId = caseId.indexOf("bokeh") === 0 ? "bokeh"
-        : (caseId.indexOf("nodeMesh") === 0 ? "nodeMesh" : caseId)
+        : (caseId.indexOf("nodeMesh") === 0 ? "nodeMesh"
+          : (root.precipitationCase ? "rainfall" : caseId))
       var effectSettings = EffectRegistry.defaultsFor(registryId)
       if (caseId === "bokehMaximumPopulation") effectSettings.lightCount = 72
       else if (caseId === "bokehMaximumSoftness") {{
@@ -307,11 +417,30 @@ ShellRoot {{
       }} else if (caseId === "nodeMeshPointerRepel") {{
         effectSettings.pointerMode = "repel"
         effectSettings.mouseInfluence = 1
+      }} else if (root.precipitationCase) {{
+        effectSettings.precipitationStyle = caseId.indexOf("snow") === 0 ? "snow" : "rain"
+        if (caseId === "rainMaximumPopulation" || caseId === "snowMaximumPopulation"
+            || caseId === "snowMaximumSizeCrystal") effectSettings.dropCount = 320
+        if (caseId === "snowMaximumSizeCrystal") {{
+          effectSettings.flakeSize = 18
+          effectSettings.flakeDetail = "crystal"
+          effectSettings.flutterAmount = 1
+        }}
+        if (caseId === "rainMistSplashMinimum") {{
+          effectSettings.mistAmount = 0
+          effectSettings.splashAmount = 0
+        }} else if (caseId === "rainMistSplashMaximum") {{
+          effectSettings.mistAmount = 1
+          effectSettings.splashAmount = 1
+        }}
       }}
       item.effectSettings = effectSettings
-      item.globalOpacity = (caseId === "bokehHidden" || caseId === "nodeMeshHidden") ? 0 : 1
+      item.globalOpacity = (caseId === "bokehHidden" || caseId === "nodeMeshHidden"
+        || caseId === "rainHidden" || caseId === "snowHidden") ? 0 : 1
       item.reducedMotion = caseId === "bokehReducedMotion" || caseId === "nodeMeshStatic"
-      if (caseId === "bokehFullscreenSuppressed" || caseId === "nodeMeshFullscreenSuppressed")
+        || caseId === "rainReducedMotion" || caseId === "snowReducedMotion"
+      if (caseId === "bokehFullscreenSuppressed" || caseId === "nodeMeshFullscreenSuppressed"
+          || caseId === "rainFullscreenSuppressed" || caseId === "snowFullscreenSuppressed")
         item.runtimeEnabled = false
       if ("theme" in item) item.theme = theme
       {tracker_assign}
@@ -332,6 +461,10 @@ ShellRoot {{
       var nodeMetrics = root.nodeMeshMetrics()
       root.nodeMeshBaselineUpdates = nodeMetrics.updates
       root.nodeMeshBaselinePaints = nodeMetrics.paints
+      var precipitation = root.precipitationMetrics()
+      root.precipitationBaselineUpdates = precipitation.clockUpdates
+      root.precipitationRootIdentities = root.loadedItems.slice()
+      if (caseId === "precipitationStyleSwitchChurn") styleChurn.start()
       root.measuring = true
       sample.stop()
       sample.start()
@@ -350,27 +483,31 @@ ShellRoot {{
   }}
 
   Timer {{
+    id: styleChurn
+    interval: 120
+    repeat: true
+    onTriggered: root.togglePrecipitationStyle()
+  }}
+
+  Timer {{
     id: sample
     interval: {duration_ms}
     onTriggered: {{
       root.measuring = false
       {tracker_stop}
-      var nodeMetrics = root.nodeMeshMetrics()
-      nodeMetrics.updateDelta = nodeMetrics.updates - root.nodeMeshBaselineUpdates
-      nodeMetrics.paintDelta = nodeMetrics.paints - root.nodeMeshBaselinePaints
-      console.log("BEHAVE " + JSON.stringify({{
-        caseId: caseId,
-        outputs: {len(output_names)},
-        frameCount: frameCount,
-        meanFrameMs: frameCount > 0 ? frameTotalMs / frameCount : 0,
-        maxFrameMs: frameMaxMs,
-        framesOver20Ms: framesOver20Ms,
-        cursorLaunchCount: {tracker_count},
-        bokeh: root.bokehMetrics(),
-        nodeMesh: nodeMetrics
-      }}))
-      Qt.quit()
+      styleChurn.stop()
+      if (root.precipitationCase) {{
+        root.precipitationBeforeShutdown = root.precipitationMetrics()
+        root.stopPrecipitation()
+        shutdownProbe.start()
+      }} else root.reportResult()
     }}
+  }}
+
+  Timer {{
+    id: shutdownProbe
+    interval: 180
+    onTriggered: root.reportResult()
   }}
 
   {''.join(windows)}
@@ -463,6 +600,52 @@ def profile_case(
         if case_id == "nodeMeshPointerOff":
             if metrics["pointerActiveOutputs"] != 0 or row["cursorLaunchCount"] != 0:
                 raise AssertionError(row)
+    precipitation_case = (
+        case_id.startswith("rain") or case_id.startswith("snow")
+        or case_id == "precipitationStyleSwitchChurn"
+    )
+    if precipitation_case:
+        metrics = row["precipitation"]
+        stopped_metrics = row["precipitationAfterShutdown"]
+        outputs = len(output_names)
+        if metrics["loadedStyleCount"] != outputs or not metrics["rootIdentityStable"]:
+            raise AssertionError(row)
+        if not 16 * outputs <= metrics["particleCount"] <= 500 * outputs:
+            raise AssertionError(row)
+        if not metrics["particleCount"] <= metrics["primitiveCount"] <= 1280 * outputs:
+            raise AssertionError(row)
+        if metrics["animationObjectCount"] > 520 * outputs or metrics["clockObjectCount"] > outputs:
+            raise AssertionError(row)
+        stopped = case_id in {
+            "rainReducedMotion", "snowReducedMotion", "rainHidden", "snowHidden",
+            "rainFullscreenSuppressed", "snowFullscreenSuppressed",
+        }
+        if stopped:
+            if any(metrics[key] != 0 for key in (
+                "autonomousOutputs", "runningAnimationCount", "runningClockCount", "clockUpdateDelta"
+            )):
+                raise AssertionError(row)
+        elif metrics["autonomousOutputs"] != outputs:
+            raise AssertionError(row)
+        if case_id.startswith("snow"):
+            if metrics["snowOutputs"] != outputs or metrics["clockObjectCount"] != outputs:
+                raise AssertionError(row)
+            if not stopped and metrics["clockUpdateDelta"] <= 0:
+                raise AssertionError(row)
+        if case_id.startswith("rain") or case_id == "rainfall":
+            if metrics["rainOutputs"] != outputs or metrics["clockObjectCount"] != 0:
+                raise AssertionError(row)
+        if case_id == "precipitationStyleSwitchChurn":
+            if (metrics["styleSwitchCount"] < 4
+                    or metrics["styleGeneration"] <= outputs
+                    or metrics["destroyedStyleCount"] < outputs):
+                raise AssertionError(row)
+        if any(stopped_metrics[key] != 0 for key in (
+            "autonomousOutputs", "visibleOutputs", "runningAnimationCount", "runningClockCount"
+        )):
+            raise AssertionError(row)
+        if stopped_metrics["loadedStyleCount"] != outputs or not stopped_metrics["rootIdentityStable"]:
+            raise AssertionError(row)
     return row
 
 

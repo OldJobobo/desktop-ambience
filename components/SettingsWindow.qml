@@ -188,6 +188,34 @@ Item {
     return EffectRegistry.fieldDefinitions(effectId)
   }
 
+  function fieldIsVisible(effectId, field) {
+    if (!field || !field.visibleWhen) return true
+    var condition = field.visibleWhen
+    if (!condition || typeof condition !== "object"
+        || typeof condition.field !== "string" || !Array.isArray(condition.values)) return true
+    var definitions = fieldsFor(effectId)
+    var controller = null
+    for (var i = 0; i < definitions.length; i++) {
+      if (definitions[i].key === condition.field && definitions[i].type === "enum") {
+        controller = definitions[i]
+        break
+      }
+    }
+    if (!controller) return true
+    for (var valueIndex = 0; valueIndex < condition.values.length; valueIndex++)
+      if (controller.values.indexOf(String(condition.values[valueIndex])) < 0) return true
+    var currentValue = effectValue(effectId, condition.field)
+    return condition.values.indexOf(String(currentValue === undefined ? "" : currentValue)) >= 0
+  }
+
+  function visibleFieldsFor(effectId) {
+    var fields = fieldsFor(effectId)
+    var visible = []
+    for (var i = 0; i < fields.length; i++)
+      if (fieldIsVisible(effectId, fields[i])) visible.push(fields[i])
+    return visible
+  }
+
   function effectLabel(effectId) {
     var definition = EffectRegistry.definition(effectId)
     return definition ? definition.label : String(effectId || "")
@@ -441,6 +469,7 @@ Item {
             borderSpec: Border.controlSpec("normal", Color.foreground, Color.accent)
 
             Flickable {
+              id: compositionFlickable
               anchors.top: parent.top
               anchors.left: parent.left
               anchors.right: parent.right
@@ -503,6 +532,7 @@ Item {
 
                 SliderSetting {
                   width: parent.width
+                  scrollTarget: compositionFlickable
                   label: "Global Opacity"
                   hint: "Sets the opacity of every stacked effect."
                   value: root.settings ? root.settings.opacity : 1
@@ -618,6 +648,7 @@ Item {
             borderSpec: Border.controlSpec("normal", Color.foreground, Color.accent)
 
             Flickable {
+              id: detailFlickable
               anchors.fill: parent
               anchors.margins: Style.space(18)
               contentWidth: width
@@ -683,6 +714,8 @@ Item {
                   Loader {
                     required property var modelData
                     width: detailColumn.width
+                    visible: root.fieldIsVisible(root.selectedEffectId, modelData)
+                    active: visible
                     sourceComponent: modelData.type === "bool" ? boolFieldComponent
                       : modelData.type === "enum" ? enumFieldComponent : numericFieldComponent
 
@@ -703,6 +736,7 @@ Item {
                       id: numericFieldComponent
                       SliderSetting {
                         width: parent.width
+                        scrollTarget: detailFlickable
                         label: parent.modelData.label
                         hint: parent.modelData.hint
                         value: Number(root.effectValue(root.selectedEffectId, parent.modelData.key))
@@ -763,6 +797,7 @@ Item {
 
                 SliderSetting {
                   width: parent.width
+                  scrollTarget: detailFlickable
                   label: "Vignette Intensity"
                   hint: "Sets how dark the display edges become."
                   value: Number(root.vignetteValue("intensity"))
@@ -877,7 +912,19 @@ Item {
     property real maximum: 1
     property real step: 0.01
     property bool integer: false
+    property var scrollTarget: null
     signal committed(real value)
+
+    function forwardWheel(pixelDeltaY, angleDeltaY) {
+      if (!scrollTarget) return
+      var delta = Number(pixelDeltaY)
+      if (!isFinite(delta) || Math.abs(delta) < 0.001)
+        delta = Number(angleDeltaY) / 120 * Style.space(48)
+      if (!isFinite(delta) || Math.abs(delta) < 0.001) return
+      var maximumContentY = Math.max(0, scrollTarget.contentHeight - scrollTarget.height)
+      scrollTarget.contentY = Math.max(0,
+        Math.min(maximumContentY, scrollTarget.contentY - delta))
+    }
 
     implicitHeight: Style.space(82)
     radius: Style.cornerRadius
@@ -922,7 +969,7 @@ Item {
       elide: Text.ElideRight
     }
 
-    PanelSlider {
+    DragOnlySlider {
       anchors.left: parent.left
       anchors.right: parent.right
       anchors.bottom: parent.bottom
@@ -936,6 +983,9 @@ Item {
       step: sliderRow.step
       integer: sliderRow.integer
       onReleased: function(value) { sliderRow.committed(value) }
+      onWheelScrolled: function(pixelDeltaY, angleDeltaY) {
+        sliderRow.forwardWheel(pixelDeltaY, angleDeltaY)
+      }
     }
   }
 

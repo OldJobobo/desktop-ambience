@@ -50,6 +50,25 @@ CASES = [
     ("filmGrain", "effects/FilmGrainEffect.qml"),
     ("godRays", "effects/GodRaysEffect.qml"),
     ("rainfall", "effects/RainfallEffect.qml"),
+    ("rainExtractionParity", "effects/RainfallEffect.qml"),
+    ("rainMistSplashMinimum", "effects/RainfallEffect.qml"),
+    ("rainMistSplashMaximum", "effects/RainfallEffect.qml"),
+    ("rainReducedMotion", "effects/RainfallEffect.qml"),
+    ("snowMinimumPopulation", "effects/RainfallEffect.qml"),
+    ("snowDefault", "effects/RainfallEffect.qml"),
+    ("snowMaximumPopulation", "effects/RainfallEffect.qml"),
+    ("snowMinimumSize", "effects/RainfallEffect.qml"),
+    ("snowMaximumSize", "effects/RainfallEffect.qml"),
+    ("snowLowFlutterNegativeSlant", "effects/RainfallEffect.qml"),
+    ("snowHighFlutterPositiveSlant", "effects/RainfallEffect.qml"),
+    ("snowSoft", "effects/RainfallEffect.qml"),
+    ("snowCrystal", "effects/RainfallEffect.qml"),
+    ("snowMixed", "effects/RainfallEffect.qml"),
+    ("snowReducedMotion", "effects/RainfallEffect.qml"),
+    ("rainBackground", "components/AmbienceStack.qml"),
+    ("rainForeground", "components/AmbienceStack.qml"),
+    ("snowBackground", "components/AmbienceStack.qml"),
+    ("snowForeground", "components/AmbienceStack.qml"),
     ("tacticalGrid", "effects/TacticalGridEffect.qml"),
     ("trackingLines", "effects/VhsEffect.qml"),
     ("bokeh", "effects/BokehEffect.qml"),
@@ -99,6 +118,26 @@ def wait_for_output(present: bool, timeout: float = 8) -> None:
             return
         time.sleep(0.1)
     raise AssertionError(f"headless output {output_name} present={present} did not settle")
+
+
+def configure_output() -> dict:
+    expression = (
+        "hl.monitor({"
+        f'output = "{output_name}", mode = "1920x1080@60", position = "-1920x-1080", '
+        "scale = 1, transform = 0"
+        "})"
+    )
+    run(["hyprctl", "eval", expression])
+    deadline = time.monotonic() + 8
+    while time.monotonic() < deadline:
+        monitors = json.loads(run(["hyprctl", "-j", "monitors", "all"]).stdout)
+        monitor = next((item for item in monitors if str(item.get("name")) == output_name), None)
+        if monitor and int(monitor.get("x", 0)) == -1920 and int(monitor.get("y", 0)) == -1080:
+            return {key: monitor.get(key) for key in (
+                "name", "x", "y", "width", "height", "scale", "transform"
+            )}
+        time.sleep(0.1)
+    raise AssertionError("headless output geometry did not settle at its negative origin")
 
 
 def make_qml() -> str:
@@ -190,11 +229,14 @@ ShellRoot {{
       item.settings.enabled = true
       item.paintEnabled = true
     }} else if (caseId === "threeEffectStack"
-        || caseId === "nodeMeshBackground" || caseId === "nodeMeshForeground") {{
+        || caseId === "nodeMeshBackground" || caseId === "nodeMeshForeground"
+        || caseId === "rainBackground" || caseId === "rainForeground"
+        || caseId === "snowBackground" || caseId === "snowForeground") {{
       var ids = EffectRegistry.orderedIds()
       var values = {{}}
       for (var i = 0; i < ids.length; i++) values[ids[i]] = EffectRegistry.defaultsFor(ids[i])
       values.dustMotes.mouseReactive = false
+      if (caseId.indexOf("snow") === 0) values.rainfall.precipitationStyle = "snow"
       state.effects = values
       state.reduceMotion = false
       item.settings = state
@@ -202,13 +244,17 @@ ShellRoot {{
       item.cursorTracker = tracker
       item.targetScreen = root.renderScreen
       item.activeEffects = caseId.indexOf("nodeMesh") === 0
-        ? ["nodeMesh"] : ["auroraDrift", "rainfall", "filmGrain"]
+        ? ["nodeMesh"] : (caseId.indexOf("rain") === 0 || caseId.indexOf("snow") === 0
+          ? ["rainfall"] : ["auroraDrift", "rainfall", "filmGrain"])
       item.foregroundOverlay = caseId === "nodeMeshForeground"
+        || caseId === "rainForeground" || caseId === "snowForeground"
       item.productionEffectsEnabled = true
       item.paintEnabled = true
     }} else {{
+      var precipitationCase = caseId.indexOf("rain") === 0 || caseId.indexOf("snow") === 0
       var registryId = caseId.indexOf("bokeh") === 0 ? "bokeh"
-        : (caseId.indexOf("nodeMesh") === 0 ? "nodeMesh" : caseId)
+        : (caseId.indexOf("nodeMesh") === 0 ? "nodeMesh"
+          : (precipitationCase ? "rainfall" : caseId))
       var settings = EffectRegistry.defaultsFor(registryId)
       if (caseId === "dustMotes") settings.mouseReactive = false
       if (caseId === "bokehMinimum") settings.lightCount = 6
@@ -245,10 +291,33 @@ ShellRoot {{
       }} else if (caseId.indexOf("nodeMeshRepel") === 0) {{
         settings.pointerMode = "repel"
         settings.mouseInfluence = 1
+      }} else if (precipitationCase) {{
+        settings.precipitationStyle = caseId.indexOf("snow") === 0 ? "snow" : "rain"
+        if (caseId === "rainMistSplashMinimum") {{
+          settings.mistAmount = 0
+          settings.splashAmount = 0
+        }} else if (caseId === "rainMistSplashMaximum") {{
+          settings.mistAmount = 1
+          settings.splashAmount = 1
+        }} else if (caseId === "snowMinimumPopulation") settings.dropCount = 16
+        else if (caseId === "snowMaximumPopulation") settings.dropCount = 320
+        else if (caseId === "snowMinimumSize") settings.flakeSize = 2
+        else if (caseId === "snowMaximumSize") settings.flakeSize = 18
+        else if (caseId === "snowLowFlutterNegativeSlant") {{
+          settings.flutterAmount = 0
+          settings.slant = -0.2
+        }} else if (caseId === "snowHighFlutterPositiveSlant") {{
+          settings.flutterAmount = 1
+          settings.slant = 0.35
+        }} else if (caseId === "snowSoft") settings.flakeDetail = "soft"
+        else if (caseId === "snowCrystal") settings.flakeDetail = "crystal"
+        else if (caseId === "snowMixed") settings.flakeDetail = "mixed"
       }}
       item.effectSettings = settings
       item.globalOpacity = 1
       item.reducedMotion = caseId !== "rainfall" && caseId !== "tacticalGrid"
+      if (precipitationCase) item.reducedMotion = caseId === "rainExtractionParity"
+        || caseId === "rainReducedMotion" || caseId === "snowReducedMotion"
       if (caseId.indexOf("bokeh") === 0) item.reducedMotion = caseId === "bokehReducedMotion"
       if (caseId.indexOf("nodeMesh") === 0) item.reducedMotion = caseId === "nodeMeshReducedMotion"
       if ("theme" in item) item.theme = theme
@@ -284,12 +353,14 @@ ShellRoot {{
     effectLoader.item.grabToImage(function(result) {{
       var caseId = cases[caseIndex].id
       var themeSwitchCase = caseId === "threeEffectStack" || caseId === "bokehReducedMotion"
-        || caseId === "nodeMeshReducedMotion"
+        || caseId === "nodeMeshReducedMotion" || caseId === "snowReducedMotion"
       var themeSwitchFile = caseId === "bokehReducedMotion"
         ? "{str((ARTIFACT_DIR / 'bokehThemeSwitch.png').resolve())}"
         : (caseId === "nodeMeshReducedMotion"
           ? "{str((ARTIFACT_DIR / 'nodeMeshThemeSwitch.png').resolve())}"
-          : "{str((ARTIFACT_DIR / 'threeEffectStackThemeSwitch.png').resolve())}")
+          : (caseId === "snowReducedMotion"
+            ? "{str((ARTIFACT_DIR / 'snowThemeSwitch.png').resolve())}"
+            : "{str((ARTIFACT_DIR / 'threeEffectStackThemeSwitch.png').resolve())}"))
       var outputFile = themeSwitchCase && root.themeSwitchPending
         ? themeSwitchFile : cases[caseIndex].file
       var saved = result.saveToFile(outputFile)
@@ -452,6 +523,7 @@ for old in ARTIFACT_DIR.glob("*.png"):
 try:
     run(["hyprctl", "output", "create", "headless", output_name])
     wait_for_output(True)
+    output_geometry = configure_output()
 
     with tempfile.TemporaryDirectory() as shell_dir, tempfile.TemporaryDirectory() as config_dir, tempfile.TemporaryDirectory() as state_dir:
         shell_root = Path(shell_dir)
@@ -479,7 +551,7 @@ try:
         start_ticks = process_cpu_ticks(proc.pid)
         end_ticks = start_ticks
         peak_rss_kib = 0
-        deadline = started + 45
+        deadline = started + max(45, len(CASES) * 1.1 + 15)
         while proc.poll() is None and time.monotonic() < deadline:
             time.sleep(0.2)
             if Path(f"/proc/{proc.pid}/stat").exists():
@@ -510,7 +582,8 @@ try:
 
     images = []
     image_case_ids = [case_id for case_id, _ in CASES] + [
-        "bokehThemeSwitch", "nodeMeshThemeSwitch", "threeEffectStackThemeSwitch",
+        "bokehThemeSwitch", "nodeMeshThemeSwitch", "snowThemeSwitch",
+        "threeEffectStackThemeSwitch",
     ]
     for case_id in image_case_ids:
         path = ARTIFACT_DIR / f"{case_id}.png"
@@ -533,6 +606,12 @@ try:
         raise AssertionError("active stack pixels did not change after the theme switch")
     if bokeh_hash == bokeh_switched_hash:
         raise AssertionError("static Bokeh pixels did not change after the theme switch")
+    snow_hash = next(image["sha256"] for image in images if image["case"] == "snowReducedMotion")
+    snow_switched_hash = next(
+        image["sha256"] for image in images if image["case"] == "snowThemeSwitch"
+    )
+    if snow_hash == snow_switched_hash:
+        raise AssertionError("static Snow pixels did not change after the theme switch")
     node_mesh_hash = next(
         image["sha256"] for image in images if image["case"] == "nodeMeshReducedMotion"
     )
@@ -554,7 +633,7 @@ try:
     run([
         "magick", "montage",
         *[str(ARTIFACT_DIR / f"{case_id}.png") for case_id in image_case_ids],
-        "-thumbnail", "360x203", "-tile", "5x8", "-geometry", "+8+24",
+        "-thumbnail", "360x203", "-tile", "6x10", "-geometry", "+8+24",
         "-background", "#111318", "-fill", "white", "-pointsize", "17",
         "-set", "label", "%t", str(contact_sheet),
     ], timeout=60)
@@ -563,12 +642,23 @@ try:
         "schemaVersion": 1,
         "pluginVersion": VERSION,
         "headlessOutput": output_name,
+        "headlessOutputGeometry": output_geometry,
+        "negativeOriginCovered": int(output_geometry["x"]) < 0 or int(output_geometry["y"]) < 0,
         "isolatedConfig": True,
         "liveSettingsModified": False,
         "renderCases": image_case_ids,
         "themeSwitchChangedPixels": stack_hash != switched_hash,
         "bokehThemeSwitchChangedPixels": bokeh_hash != bokeh_switched_hash,
         "nodeMeshThemeSwitchChangedPixels": node_mesh_hash != node_mesh_switched_hash,
+        "precipitationThemeSwitchChangedPixels": snow_hash != snow_switched_hash,
+        "precipitationPresentationCases": [
+            "rainBackground", "rainForeground", "snowBackground", "snowForeground"
+        ],
+        "precipitationVisualCases": [
+            case_id for case_id, _ in CASES
+            if case_id.startswith("rain") or case_id.startswith("snow")
+        ],
+        "rainExtractionParityEvidence": "rainfall-extraction-parity.json",
         "nodeMeshPresentationCases": ["nodeMeshBackground", "nodeMeshForeground"],
         "rainfallStartupCoverage": {
             "topBrightFraction": rainfall_top,

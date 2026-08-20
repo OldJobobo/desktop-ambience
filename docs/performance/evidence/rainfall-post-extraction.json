@@ -1,0 +1,353 @@
+{
+  "schemaVersion": 1,
+  "pluginVersion": "0.6.0",
+  "targetRoot": "/home/oldjobobo/Projects/desktop-ambience/.pi/worktrees/precipitation-styles",
+  "isolatedConfig": true,
+  "liveSettingsModified": false,
+  "durationMs": 3000,
+  "repetitions": 3,
+  "cases": [
+    "rainfall"
+  ],
+  "temporaryOutputLayout": [
+    {
+      "name": "JOBO-PHASE7-PERF-aa1ca324-0",
+      "x": -5760,
+      "y": 0,
+      "width": 1920,
+      "height": 1080,
+      "scale": 1.0
+    },
+    {
+      "name": "JOBO-PHASE7-PERF-43df9f89-1",
+      "x": -3840,
+      "y": 0,
+      "width": 1920,
+      "height": 1080,
+      "scale": 1.0
+    },
+    {
+      "name": "JOBO-PHASE7-PERF-bf2d4a9e-2",
+      "x": -1920,
+      "y": 0,
+      "width": 1920,
+      "height": 1080,
+      "scale": 1.0
+    }
+  ],
+  "negativeOriginCovered": true,
+  "results": [
+    {
+      "caseId": "rainfall",
+      "outputs": 1,
+      "frameCount": 180,
+      "meanFrameMs": 16.65105611666666,
+      "maxFrameMs": 18.562825,
+      "framesOver20Ms": 0,
+      "cursorLaunchCount": 0,
+      "bokeh": {
+        "delegateCount": 0,
+        "blurLayerCount": 0,
+        "animatedOutputs": 0,
+        "visibleOutputs": 0
+      },
+      "nodeMesh": {
+        "updates": 0,
+        "paints": 0,
+        "nodeCount": 0,
+        "edgeCount": 0,
+        "pathCount": 0,
+        "runningOutputs": 0,
+        "visibleOutputs": 0,
+        "pointerOwnedOutputs": 0,
+        "pointerActiveOutputs": 0,
+        "updateDelta": 0,
+        "paintDelta": 0
+      },
+      "averageCpuPercent": 33.48683567028452,
+      "peakRssKiB": 305752,
+      "processSamples": 28,
+      "sharedCursorTracker": true,
+      "legacyExpectedCursorLaunchesPerSecond": 0,
+      "repetition": 1,
+      "outputGeometry": [
+        {
+          "name": "JOBO-PHASE7-PERF-aa1ca324-0",
+          "x": -5760,
+          "y": 0,
+          "width": 1920,
+          "height": 1080,
+          "scale": 1.0
+        }
+      ]
+    },
+    {
+      "caseId": "rainfall",
+      "outputs": 3,
+      "frameCount": 180,
+      "meanFrameMs": 16.753535494444442,
+      "maxFrameMs": 30.657996999999998,
+      "framesOver20Ms": 6,
+      "cursorLaunchCount": 0,
+      "bokeh": {
+        "delegateCount": 0,
+        "blurLayerCount": 0,
+        "animatedOutputs": 0,
+        "visibleOutputs": 0
+      },
+      "nodeMesh": {
+        "updates": 0,
+        "paints": 0,
+        "nodeCount": 0,
+        "edgeCount": 0,
+        "pathCount": 0,
+        "runningOutputs": 0,
+        "visibleOutputs": 0,
+        "pointerOwnedOutputs": 0,
+        "pointerActiveOutputs": 0,
+        "updateDelta": 0,
+        "paintDelta": 0
+      },
+      "averageCpuPercent": 44.53890636411315,
+      "peakRssKiB": 352092,
+      "processSamples": 32,
+      "sharedCursorTracker": true,
+      "legacyExpectedCursorLaunchesPerSecond": 0,
+      "repetition": 1,
+      "outputGeometry": [
+        {
+          "name": "JOBO-PHASE7-PERF-aa1ca324-0",
+          "x": -5760,
+          "y": 0,
+          "width": 1920,
+          "height": 1080,
+          "scale": 1.0
+        },
+        {
+          "name": "JOBO-PHASE7-PERF-43df9f89-1",
+          "x": -3840,
+          "y": 0,
+          "width": 1920,
+          "height": 1080,
+          "scale": 1.0
+        },
+        {
+          "name": "JOBO-PHASE7-PERF-bf2d4a9e-2",
+          "x": -1920,
+          "y": 0,
+          "width": 1920,
+          "height": 1080,
+          "scale": 1.0
+        }
+      ]
+    },
+    {
+      "caseId": "rainfall",
+      "outputs": 1,
+      "frameCount": 180,
+      "meanFrameMs": 16.64619276666668,
+      "maxFrameMs": 23.851271999999998,
+      "framesOver20Ms": 6,
+      "cursorLaunchCount": 0,
+      "bokeh": {
+        "delegateCount": 0,
+        "blurLayerCount": 0,
+        "animatedOutputs": 0,
+        "visibleOutputs": 0
+      },
+      "nodeMesh": {
+        "updates": 0,
+        "paints": 0,
+        "nodeCount": 0,
+        "edgeCount": 0,
+        "pathCount": 0,
+        "runningOutputs": 0,
+        "visibleOutputs": 0,
+        "pointerOwnedOutputs": 0,
+        "pointerActiveOutputs": 0,
+        "updateDelta": 0,
+        "paintDelta": 0
+      },
+      "averageCpuPercent": 50.45318960214696,
+      "peakRssKiB": 306336,
+      "processSamples": 30,
+      "sharedCursorTracker": true,
+      "legacyExpectedCursorLaunchesPerSecond": 0,
+      "repetition": 2,
+      "outputGeometry": [
+        {
+          "name": "JOBO-PHASE7-PERF-aa1ca324-0",
+          "x": -5760,
+          "y": 0,
+          "width": 1920,
+          "height": 1080,
+          "scale": 1.0
+        }
+      ]
+    },
+    {
+      "caseId": "rainfall",
+      "outputs": 3,
+      "frameCount": 180,
+      "meanFrameMs": 16.66403656666667,
+      "maxFrameMs": 29.738975,
+      "framesOver20Ms": 16,
+      "cursorLaunchCount": 0,
+      "bokeh": {
+        "delegateCount": 0,
+        "blurLayerCount": 0,
+        "animatedOutputs": 0,
+        "visibleOutputs": 0
+      },
+      "nodeMesh": {
+        "updates": 0,
+        "paints": 0,
+        "nodeCount": 0,
+        "edgeCount": 0,
+        "pathCount": 0,
+        "runningOutputs": 0,
+        "visibleOutputs": 0,
+        "pointerOwnedOutputs": 0,
+        "pointerActiveOutputs": 0,
+        "updateDelta": 0,
+        "paintDelta": 0
+      },
+      "averageCpuPercent": 71.67452197827716,
+      "peakRssKiB": 352328,
+      "processSamples": 36,
+      "sharedCursorTracker": true,
+      "legacyExpectedCursorLaunchesPerSecond": 0,
+      "repetition": 2,
+      "outputGeometry": [
+        {
+          "name": "JOBO-PHASE7-PERF-aa1ca324-0",
+          "x": -5760,
+          "y": 0,
+          "width": 1920,
+          "height": 1080,
+          "scale": 1.0
+        },
+        {
+          "name": "JOBO-PHASE7-PERF-43df9f89-1",
+          "x": -3840,
+          "y": 0,
+          "width": 1920,
+          "height": 1080,
+          "scale": 1.0
+        },
+        {
+          "name": "JOBO-PHASE7-PERF-bf2d4a9e-2",
+          "x": -1920,
+          "y": 0,
+          "width": 1920,
+          "height": 1080,
+          "scale": 1.0
+        }
+      ]
+    },
+    {
+      "caseId": "rainfall",
+      "outputs": 1,
+      "frameCount": 180,
+      "meanFrameMs": 16.66923282777778,
+      "maxFrameMs": 26.259067,
+      "framesOver20Ms": 14,
+      "cursorLaunchCount": 0,
+      "bokeh": {
+        "delegateCount": 0,
+        "blurLayerCount": 0,
+        "animatedOutputs": 0,
+        "visibleOutputs": 0
+      },
+      "nodeMesh": {
+        "updates": 0,
+        "paints": 0,
+        "nodeCount": 0,
+        "edgeCount": 0,
+        "pathCount": 0,
+        "runningOutputs": 0,
+        "visibleOutputs": 0,
+        "pointerOwnedOutputs": 0,
+        "pointerActiveOutputs": 0,
+        "updateDelta": 0,
+        "paintDelta": 0
+      },
+      "averageCpuPercent": 47.50821363198791,
+      "peakRssKiB": 306544,
+      "processSamples": 31,
+      "sharedCursorTracker": true,
+      "legacyExpectedCursorLaunchesPerSecond": 0,
+      "repetition": 3,
+      "outputGeometry": [
+        {
+          "name": "JOBO-PHASE7-PERF-aa1ca324-0",
+          "x": -5760,
+          "y": 0,
+          "width": 1920,
+          "height": 1080,
+          "scale": 1.0
+        }
+      ]
+    },
+    {
+      "caseId": "rainfall",
+      "outputs": 3,
+      "frameCount": 180,
+      "meanFrameMs": 16.646886594444435,
+      "maxFrameMs": 24.549516,
+      "framesOver20Ms": 8,
+      "cursorLaunchCount": 0,
+      "bokeh": {
+        "delegateCount": 0,
+        "blurLayerCount": 0,
+        "animatedOutputs": 0,
+        "visibleOutputs": 0
+      },
+      "nodeMesh": {
+        "updates": 0,
+        "paints": 0,
+        "nodeCount": 0,
+        "edgeCount": 0,
+        "pathCount": 0,
+        "runningOutputs": 0,
+        "visibleOutputs": 0,
+        "pointerOwnedOutputs": 0,
+        "pointerActiveOutputs": 0,
+        "updateDelta": 0,
+        "paintDelta": 0
+      },
+      "averageCpuPercent": 58.46031054197904,
+      "peakRssKiB": 351484,
+      "processSamples": 40,
+      "sharedCursorTracker": true,
+      "legacyExpectedCursorLaunchesPerSecond": 0,
+      "repetition": 3,
+      "outputGeometry": [
+        {
+          "name": "JOBO-PHASE7-PERF-aa1ca324-0",
+          "x": -5760,
+          "y": 0,
+          "width": 1920,
+          "height": 1080,
+          "scale": 1.0
+        },
+        {
+          "name": "JOBO-PHASE7-PERF-43df9f89-1",
+          "x": -3840,
+          "y": 0,
+          "width": 1920,
+          "height": 1080,
+          "scale": 1.0
+        },
+        {
+          "name": "JOBO-PHASE7-PERF-bf2d4a9e-2",
+          "x": -1920,
+          "y": 0,
+          "width": 1920,
+          "height": 1080,
+          "scale": 1.0
+        }
+      ]
+    }
+  ]
+}

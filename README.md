@@ -23,10 +23,13 @@ theme adaptation, settings window, and runtime status endpoint.
 12. Dedicated background vignette
 
 The ordered list is front-to-back: position 1 is topmost. The dedicated vignette
-is intentionally outside that list. Node Mesh renders a bounded deterministic
-field with nearby connections, selectable theme roles, reduced-motion static
-output, and optional pointer attraction or repulsion through the shared cursor
-tracker.
+is intentionally outside that list. Rainfall now selects between the compatible
+layered rain renderer and a bounded snow renderer with configurable flake size,
+flutter, slant, and soft/crystal detail. This remains one ordered `rainfall`
+effect, so the production renderer count stays at eleven. Node Mesh renders a
+bounded deterministic field with nearby connections, selectable theme roles,
+reduced-motion static output, and optional pointer attraction or repulsion
+through the shared cursor tracker.
 
 ## Requirements
 
@@ -124,6 +127,8 @@ When `XDG_CONFIG_HOME` is unset, the path falls back to
 Writes are normalized, serialized, and atomically replaced. Unknown JSON-safe
 fields are retained for forward compatibility. A malformed external edit keeps
 the last valid runtime state and surfaces a repairable persistence error.
+Rain and snow share the persisted `effects.rainfall.dropCount` population key
+for backward compatibility; the settings window labels it **Precipitation Count**.
 
 ## Upgrade
 
@@ -276,11 +281,17 @@ JOBO_AMBIENCE_LIVE_PHASE6=1 ./scripts/check-phase6.sh
 ```
 
 Profile the Phase 7 per-effect matrix with isolated settings and reversible
-headless outputs:
+headless outputs. Its precipitation cases cover rain and snow defaults, maxima,
+reduced motion, rain mist/splash extremes, style-switch churn, hidden state, and
+fullscreen suppression on one and three negative-origin outputs:
 
 ```bash
 JOBO_AMBIENCE_LIVE_PHASE7=1 python tests/live_phase7_performance.py
 ```
+
+The Phase 6 matrix also captures rain/snow visual variants and a dedicated
+reversible two-output precipitation probe; neither harness reads or writes live
+plugin settings.
 
 Use `--target-root <worktree>` to compare another revision, or combine `--cases
 dustMotes --repetitions 5` for a repeatable focused sample. Run the complete

@@ -98,7 +98,7 @@ def test_bokeh_is_registered_in_visual_performance_and_load_harnesses():
     assert '"outputGeometry"' in performance
     assert "bokehThemeSwitch.png" in visual
     assert '"bokehThemeSwitchChangedPixels"' in visual
-    assert '"activeEffects": ["bokeh", "nodeMesh"]' in fullscreen
+    assert '"activeEffects": ["bokeh", "nodeMesh", "rainfall"]' in fullscreen
     assert 'next.presentation = "background"' in fullscreen
     assert '"presentationModes": ["foreground", "background"]' in fullscreen
     assert '"bokehIdentityPreservedAcrossPresentation": True' in fullscreen

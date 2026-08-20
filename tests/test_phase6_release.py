@@ -18,10 +18,41 @@ def test_phase6_orchestrator_runs_complete_release_matrix():
         "tests/live_phase6_fullscreen.py",
         "tests/live_phase6_visual.py",
         "tests/live_node_mesh_multi_output_visual.py",
+        "tests/live_precipitation_multi_output_visual.py",
         "tests/live_node_mesh_pixel_probe.py",
     ):
         assert command in script
     assert "docs/release/evidence/$version" in script
+    assert "write_versioned_json" in script
+    for artifact in (
+        "rainfall-extraction-parity.json",
+        "node-mesh-pixels.json",
+        "node-mesh-multi-output.json",
+        "precipitation-multi-output.json",
+    ):
+        assert artifact in script
+
+
+def test_versioned_release_evidence_is_durable_and_matches_manifest_version():
+    import json
+
+    version = json.loads(read("manifest.json"))["version"]
+    paths = [
+        f"docs/performance/evidence/{version}/phase7-performance.json",
+        f"docs/release/evidence/{version}/lifecycle-hardware.json",
+        f"docs/release/evidence/{version}/output-modes.json",
+        f"docs/release/evidence/{version}/fullscreen.json",
+        f"docs/release/evidence/{version}/visual-performance.json",
+        f"docs/release/evidence/{version}/rainfall-extraction-parity.json",
+        f"docs/release/evidence/{version}/node-mesh-pixels.json",
+        f"docs/release/evidence/{version}/node-mesh-multi-output.json",
+        f"docs/release/evidence/{version}/precipitation-multi-output.json",
+    ]
+    for path in paths:
+        payload = json.loads(read(path))
+        assert payload["pluginVersion"] == version, path
+    visual = json.loads(read(f"docs/release/evidence/{version}/visual-performance.json"))
+    assert visual["rainExtractionParityEvidence"] == "rainfall-extraction-parity.json"
 
 
 def test_phase6_live_checks_are_opt_in_and_restore_temporary_resources():
@@ -70,7 +101,7 @@ def test_fullscreen_matrix_distinguishes_fake_and_real_fullscreen():
     assert "set_fullscreen_state(address, 0, 2)" in source
     assert "set_fullscreen_state(address, 2, 2)" in source
     assert '"surfaceRemainedMapped": True' in source
-    assert '"activeEffects": ["bokeh", "nodeMesh"]' in source
+    assert '"activeEffects": ["bokeh", "nodeMesh", "rainfall"]' in source
     assert '"nodeMeshIdentityPreservedAcrossPresentation": True' in source
     assert 'next.presentation = "background"' in source
     assert '"bokehIdentityPreservedAcrossPresentation": True' in source

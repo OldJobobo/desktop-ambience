@@ -131,6 +131,7 @@ Item {
       var surface = productionSurfaces[i]
       if (!surface) continue
       var stack = surface.stackObject
+      var rainfall = stack ? stack.productionEffectObject("rainfall") : null
       var tacticalGrid = stack ? stack.productionEffectObject("tacticalGrid") : null
       var nodeMesh = stack ? stack.productionEffectObject("nodeMesh") : null
       result.push({
@@ -140,6 +141,20 @@ Item {
         fullscreenSuppressed: surface.fullscreenSuppressed,
         paintAllowed: surface.paintAllowed,
         loadedEffectCount: stack ? Number(stack.activeProductionEffectCount || 0) : 0,
+        rainfall: rainfall ? {
+          selectedStyle: rainfall.selectedStyle,
+          loadedStyle: rainfall.loadedStyleName,
+          styleGeneration: rainfall.styleGeneration,
+          autonomousMotionRunning: rainfall.autonomousMotionRunning,
+          particleCount: rainfall.boundedParticleCount,
+          snowCrystalCount: rainfall.snowCrystalCount,
+          primitiveCount: rainfall.snowPrimitiveCount,
+          animationObjectCount: rainfall.animationObjectCount,
+          runningAnimationCount: rainfall.runningAnimationCount,
+          clockObjectCount: rainfall.clockObjectCount,
+          runningClockCount: rainfall.runningClockCount,
+          clockUpdateCount: rainfall.snowClockUpdateCount
+        } : null,
         tacticalGrid: tacticalGrid ? {
           width: tacticalGrid.width,
           height: tacticalGrid.height,

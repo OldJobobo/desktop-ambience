@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "7bcef9657cf15dbc99a1f48108bab32d8b75b431",
+  "defaults": {
+    "enabled": true,
+    "intensity": 0.72,
+    "speed": 0.62,
+    "dropCount": 180,
+    "slant": 0.08,
+    "mistAmount": 0.34,
+    "splashAmount": 0.38,
+    "accentBlend": 0.42,
+    "vignette": true
+  },
+  "visualEvidence": "docs/release/evidence/rainfall-baseline/visual.json",
+  "performanceEvidence": "docs/performance/evidence/rainfall-baseline.json",
+  "staticImageSha256": "2c02caeb6095e9d922f3a7729f86745799d099c558f76190bd9006715f87754a",
+  "animatedImageSha256": "56a4891f64887a1f18aa43fe32010ec458658fe3d0f299ade885aefe40753958",
+  "outputGeometry": {"width": 1920, "height": 1080, "x": -1920, "y": -1080},
+  "defaultPopulationAt1920x1080": {
+    "primaryDrops": 180,
+    "sheetDrops": 56,
+    "foregroundDrops": 32,
+    "splashes": 12,
+    "mistBands": 5
+  },
+  "enabledFalseSemantics": "disables input inheritance without suppressing rendering or autonomous animations"
+}

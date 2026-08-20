@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "7bcef9657cf15dbc99a1f48108bab32d8b75b431",
+  "isolatedConfig": true,
+  "liveSettingsModified": false,
+  "temporaryOutput": {
+    "name": "JOBO-RAIN-BASELINE-e6697526",
+    "x": -1920,
+    "y": -1080,
+    "width": 1920,
+    "height": 1080,
+    "scale": 1,
+    "transform": 0
+  },
+  "defaults": {
+    "enabled": true,
+    "intensity": 0.72,
+    "speed": 0.62,
+    "dropCount": 180,
+    "slant": 0.08,
+    "mistAmount": 0.34,
+    "splashAmount": 0.38,
+    "accentBlend": 0.42,
+    "vignette": true
+  },
+  "population": {
+    "primaryDrops": 180,
+    "sheetDrops": 56,
+    "foregroundDrops": 32,
+    "splashes": 12,
+    "mistBands": 5
+  },
+  "visualLayerEnabledFalseStillRendered": true,
+  "autonomousMotionRunning": true,
+  "movedPrimaryDrops": 180,
+  "startupCoverage": {
+    "staticTop": 0.165562,
+    "staticBottom": 0.31363,
+    "animatedTop": 0.162894,
+    "animatedBottom": 0.315238
+  },
+  "images": [
+    {
+      "file": "rainfall-static.png",
+      "bytes": 148877,
+      "sha256": "2c02caeb6095e9d922f3a7729f86745799d099c558f76190bd9006715f87754a",
+      "width": 1920,
+      "height": 1080,
+      "mean": 0.131625,
+      "standardDeviation": 0.230721,
+      "entropy": 0.376545
+    },
+    {
+      "file": "rainfall-animated.png",
+      "bytes": 140112,
+      "sha256": "56a4891f64887a1f18aa43fe32010ec458658fe3d0f299ade885aefe40753958",
+      "width": 1920,
+      "height": 1080,
+      "mean": 0.13118,
+      "standardDeviation": 0.230341,
+      "entropy": 0.374998
+    }
+  ]
+}

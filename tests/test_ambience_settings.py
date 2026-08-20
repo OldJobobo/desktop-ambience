@@ -86,7 +86,9 @@ class AmbienceSettingsBehaviorTests(unittest.TestCase):
                 "dustMotes": {"moteCount": 999, "moteSize": 99, "mouseInfluence": 9},
                 "filmGrain": {"speed": 99, "grainCount": 999, "grainSize": 99},
                 "godRays": {"rayCount": 99, "raySpread": 9, "origin": "bad"},
-                "rainfall": {"dropCount": 999, "slant": 9},
+                "rainfall": {"dropCount": 999, "slant": 9, "precipitationStyle": "hail",
+                             "flakeSize": 999, "flutterAmount": 9, "flakeDetail": "invalid",
+                             "futureStyle": {"hailSize": 7}},
                 "tacticalGrid": {"gridSpacing": 999, "gridLineWidth": 99, "mouseInfluence": 9,
                                  "reticleStyle": "invalid", "reticleSize": 999, "colorRole": "invalid"},
                 "trackingLines": {"lineSpacing": 99, "trackingBands": 99},
@@ -109,7 +111,8 @@ class AmbienceSettingsBehaviorTests(unittest.TestCase):
                 "dustMotes": {"moteCount": -9, "moteSize": -9},
                 "filmGrain": {"speed": -9, "grainCount": -9, "grainSize": -9},
                 "godRays": {"rayCount": -9, "raySpread": -9, "origin": "bottom-right"},
-                "rainfall": {"dropCount": -9, "slant": -9},
+                "rainfall": {"dropCount": -9, "slant": -9, "precipitationStyle": "snow",
+                             "flakeSize": -9, "flutterAmount": -9, "flakeDetail": "crystal"},
                 "tacticalGrid": {"gridSpacing": -9, "gridLineWidth": -9,
                                  "mouseInfluence": -9, "reticleSize": -9,
                                  "reticleStyle": "ring", "colorRole": "color14"},
@@ -129,6 +132,13 @@ class AmbienceSettingsBehaviorTests(unittest.TestCase):
         self.assertEqual(defaults["effects"]["tacticalGrid"]["reticleStyle"], "brackets")
         self.assertEqual(defaults["effects"]["tacticalGrid"]["colorRole"], "accent")
         self.assertEqual(defaults["effects"]["trackingLines"]["trackingBands"], 4)
+        self.assertEqual(defaults["effects"]["rainfall"], {
+            "enabled": True, "intensity": 0.72, "speed": 0.62,
+            "precipitationStyle": "rain", "dropCount": 180, "slant": 0.08,
+            "accentBlend": 0.42, "vignette": True, "mistAmount": 0.34,
+            "splashAmount": 0.38, "flakeSize": 6, "flutterAmount": 0.58,
+            "flakeDetail": "mixed",
+        })
         self.assertEqual(defaults["effects"]["bokeh"], {
             "enabled": True, "intensity": 0.52, "speed": 0.65, "lightCount": 28,
             "lightSize": 88, "blurSoftness": 0.82, "driftAmount": 0.42,
@@ -160,6 +170,11 @@ class AmbienceSettingsBehaviorTests(unittest.TestCase):
         self.assertEqual(upper["effects"]["filmGrain"]["grainCount"], 520)
         self.assertEqual(upper["effects"]["godRays"]["origin"], "top-left")
         self.assertEqual(upper["effects"]["rainfall"]["slant"], 0.35)
+        self.assertEqual(upper["effects"]["rainfall"]["precipitationStyle"], "rain")
+        self.assertEqual(upper["effects"]["rainfall"]["flakeSize"], 18)
+        self.assertEqual(upper["effects"]["rainfall"]["flutterAmount"], 1)
+        self.assertEqual(upper["effects"]["rainfall"]["flakeDetail"], "mixed")
+        self.assertEqual(upper["effects"]["rainfall"]["futureStyle"], {"hailSize": 7})
         self.assertEqual(upper["effects"]["tacticalGrid"]["gridSpacing"], 160)
         self.assertEqual(upper["effects"]["tacticalGrid"]["gridLineWidth"], 4)
         self.assertEqual(upper["effects"]["tacticalGrid"]["mouseInfluence"], 1)
@@ -185,6 +200,10 @@ class AmbienceSettingsBehaviorTests(unittest.TestCase):
         self.assertEqual(lower["effects"]["filmGrain"]["grainCount"], 32)
         self.assertEqual(lower["effects"]["godRays"]["origin"], "bottom-right")
         self.assertEqual(lower["effects"]["rainfall"]["slant"], -0.2)
+        self.assertEqual(lower["effects"]["rainfall"]["precipitationStyle"], "snow")
+        self.assertEqual(lower["effects"]["rainfall"]["flakeSize"], 2)
+        self.assertEqual(lower["effects"]["rainfall"]["flutterAmount"], 0)
+        self.assertEqual(lower["effects"]["rainfall"]["flakeDetail"], "crystal")
         self.assertEqual(lower["effects"]["tacticalGrid"]["gridSpacing"], 24)
         self.assertEqual(lower["effects"]["tacticalGrid"]["gridLineWidth"], 0.5)
         self.assertEqual(lower["effects"]["tacticalGrid"]["mouseInfluence"], 0)

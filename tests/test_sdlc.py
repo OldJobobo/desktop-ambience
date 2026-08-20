@@ -50,6 +50,13 @@ def test_release_process_requires_semver_changelog_clean_tree_and_live_evidence(
         assert contract in release or contract in contributing
     assert "--tagged" in release
     assert 'refs/tags/v$version^{commit}' in release
+    assert "required_evidence=(" in release
+    assert "phase7-performance.json" in release
+    assert "node-mesh-pixels.json" in release
+    assert "node-mesh-multi-output.json" in release
+    assert "precipitation-multi-output.json" in release
+    assert 'git ls-files --error-unmatch "$artifact"' in release
+    assert 'payload.get("pluginVersion") != version' in release
     assert "./scripts/check-contracts.sh" in contributing
     assert "./scripts/check.sh" in contributing
     assert "Never tag a release with skipped runtime tests" in contributing

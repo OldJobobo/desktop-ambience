@@ -139,6 +139,7 @@ ShellRoot {{
   property bool backgroundReported: false
   property var bokehIdentity: null
   property var nodeMeshIdentity: null
+  property var precipitationIdentity: null
 
   function findScreen() {{
     for (var i = 0; i < Quickshell.screens.length; i++)
@@ -208,12 +209,15 @@ ShellRoot {{
         ? surface.stackObject.productionEffectObject("bokeh") : null
       var nodeMesh = surface.stackObject
         ? surface.stackObject.productionEffectObject("nodeMesh") : null
-      if (!bokeh || !nodeMesh) return
+      var precipitation = surface.stackObject
+        ? surface.stackObject.productionEffectObject("rainfall") : null
+      if (!bokeh || !nodeMesh || !precipitation) return
       panelLoader.item.fullscreenService.refresh()
       var suppressed = surface.fullscreenSuppressed === true
       if (!root.reportedInitial && !suppressed && !bokeh.effectVisible) return
       if (!root.bokehIdentity) root.bokehIdentity = bokeh
       if (!root.nodeMeshIdentity) root.nodeMeshIdentity = nodeMesh
+      if (!root.precipitationIdentity) root.precipitationIdentity = precipitation
       var backgroundReady = root.requestedBackground && !root.backgroundReported
         && panelLoader.item.presentation === "background" && surface.layerName === "bottom"
       if (!root.reportedInitial || suppressed !== root.lastSuppressed || backgroundReady) {{
@@ -236,7 +240,14 @@ ShellRoot {{
           sameNodeMeshObject: root.nodeMeshIdentity === nodeMesh,
           nodeMeshVisible: nodeMesh.effectVisible,
           nodeMeshSimulationRunning: nodeMesh.simulationRunning,
-          nodeMeshUpdateCount: nodeMesh.simulationUpdateCount
+          nodeMeshUpdateCount: nodeMesh.simulationUpdateCount,
+          precipitationLoaded: precipitation !== null,
+          samePrecipitationObject: root.precipitationIdentity === precipitation,
+          precipitationStyle: precipitation.selectedStyle,
+          precipitationVisible: precipitation.effectVisible,
+          precipitationMotionRunning: precipitation.autonomousMotionRunning,
+          precipitationRunningClockCount: precipitation.runningClockCount,
+          precipitationClockUpdateCount: precipitation.snowClockUpdateCount
         }}))
       }}
       if (root.sawSuppressed && !suppressed && !root.requestedBackground) {{
@@ -267,10 +278,12 @@ try:
             "presentation": "foreground",
             "opacity": 1,
             "reduceMotion": False,
-            "activeEffects": ["bokeh", "nodeMesh"],
+            "activeEffects": ["bokeh", "nodeMesh", "rainfall"],
             "effects": {
                 "bokeh": {"enabled": True, "intensity": 0.52},
                 "nodeMesh": {"enabled": True, "intensity": 0.48, "pointerMode": "off"},
+                "rainfall": {"enabled": True, "intensity": 0.72,
+                             "precipitationStyle": "snow", "dropCount": 180},
             },
             "backgroundVignette": {"enabled": False, "intensity": 0},
         }), encoding="utf-8")
@@ -335,6 +348,10 @@ try:
         raise AssertionError(states)
     if any(state["nodeMeshLoaded"] is not True or state["sameNodeMeshObject"] is not True for state in states):
         raise AssertionError(states)
+    if any(state["precipitationLoaded"] is not True
+           or state["samePrecipitationObject"] is not True
+           or state["precipitationStyle"] != "snow" for state in states):
+        raise AssertionError(states)
     if not any(state["presentation"] == "foreground" and state["layerName"] == "overlay" for state in states):
         raise AssertionError(states)
     if not any(state["presentation"] == "background" and state["layerName"] == "bottom" for state in states):
@@ -355,6 +372,16 @@ try:
         raise AssertionError(states)
     if any(state["suppressed"] and state["bokehAnimationsRunning"] is not False for state in states):
         raise AssertionError(states)
+    if states[0]["precipitationVisible"] is not True or states[-1]["precipitationVisible"] is not True:
+        raise AssertionError(states)
+    if not any(state["suppressed"] and state["precipitationVisible"] is False
+               and state["precipitationMotionRunning"] is False
+               and state["precipitationRunningClockCount"] == 0 for state in states):
+        raise AssertionError(states)
+    if not any(not state["suppressed"] and state["precipitationMotionRunning"] is True
+               and state["precipitationRunningClockCount"] == 1
+               and state["precipitationClockUpdateCount"] > 0 for state in states):
+        raise AssertionError(states)
 
     evidence = {
         "schemaVersion": 1,
@@ -370,7 +397,7 @@ try:
         "suppressionSequence": suppression,
         "surfaceRemainedMapped": True,
         "presentationModes": ["foreground", "background"],
-        "activeEffects": ["bokeh", "nodeMesh"],
+        "activeEffects": ["bokeh", "nodeMesh", "rainfall"],
         "bokehLoadedThroughout": True,
         "bokehIdentityPreservedAcrossPresentation": True,
         "bokehAnimatedWhilePaintable": True,
@@ -379,10 +406,18 @@ try:
         "nodeMeshIdentityPreservedAcrossPresentation": True,
         "nodeMeshAnimatedWhilePaintable": True,
         "nodeMeshStoppedWhileSuppressed": True,
+        "precipitationStyle": "snow",
+        "precipitationLoadedThroughout": True,
+        "precipitationIdentityPreservedAcrossPresentation": True,
+        "precipitationAnimatedWhilePaintable": True,
+        "precipitationStoppedWhileSuppressed": True,
     }
-    evidence_dir = ROOT / "docs/release/evidence" / VERSION
-    evidence_dir.mkdir(parents=True, exist_ok=True)
-    (evidence_dir / "fullscreen.json").write_text(json.dumps(evidence, indent=2) + "\n", encoding="utf-8")
+    evidence_path = Path(os.environ.get(
+        "JOBO_AMBIENCE_FULLSCREEN_EVIDENCE",
+        ROOT / "docs/release/evidence" / VERSION / "fullscreen.json",
+    )).resolve()
+    evidence_path.parent.mkdir(parents=True, exist_ok=True)
+    evidence_path.write_text(json.dumps(evidence, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(evidence, indent=2))
 finally:
     if address:

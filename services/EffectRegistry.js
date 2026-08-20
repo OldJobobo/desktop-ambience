@@ -67,10 +67,16 @@ var orderedEffects = [
     id: "rainfall", label: "Rainfall",
     fields: {
       enabled: boolField(true), intensity: realField(0.72, 0, 1),
-      speed: realField(0.62, 0.15, 4), dropCount: intField(180, 16, 320),
-      slant: realField(0.08, -0.2, 0.35), mistAmount: realField(0.34, 0, 1),
-      splashAmount: realField(0.38, 0, 1), accentBlend: realField(0.42, 0, 1),
-      vignette: boolField(true)
+      speed: realField(0.62, 0.15, 4),
+      precipitationStyle: enumField("rain", ["rain", "snow"]),
+      dropCount: intField(180, 16, 320), slant: realField(0.08, -0.2, 0.35),
+      accentBlend: realField(0.42, 0, 1), vignette: boolField(true),
+      mistAmount: conditionalField(realField(0.34, 0, 1), "precipitationStyle", ["rain"]),
+      splashAmount: conditionalField(realField(0.38, 0, 1), "precipitationStyle", ["rain"]),
+      flakeSize: conditionalField(realField(6, 2, 18), "precipitationStyle", ["snow"]),
+      flutterAmount: conditionalField(realField(0.58, 0, 1), "precipitationStyle", ["snow"]),
+      flakeDetail: conditionalField(enumField("mixed", ["soft", "crystal", "mixed"]),
+        "precipitationStyle", ["snow"])
     }
   },
   {
@@ -143,7 +149,9 @@ var fieldLabels = {
   moteSize: "Mote Size", mouseReactive: "Mouse Reactive", mouseInfluence: "Mouse Influence",
   grainCount: "Grain Count", grainSize: "Grain Size", rayCount: "Ray Count",
   raySpread: "Ray Spread", shimmer: "Shimmer", origin: "Ray Origin", dropCount: "Drop Count",
-  slant: "Slant", mistAmount: "Mist Amount", splashAmount: "Splash Amount",
+  precipitationStyle: "Precipitation Style", slant: "Slant", mistAmount: "Mist Amount",
+  splashAmount: "Splash Amount", flakeSize: "Flake Size", flutterAmount: "Flutter Amount",
+  flakeDetail: "Flake Detail",
   gridSpacing: "Grid Spacing", gridLineWidth: "Grid Line Width", gridOpacity: "Grid Opacity",
   guideOpacity: "Guide Opacity", parallaxEnabled: "Pointer Parallax",
   mouseGuides: "Pointer Guides", reticleStyle: "Reticle Style", reticleSize: "Reticle Size",
@@ -160,6 +168,13 @@ var fieldLabels = {
 }
 
 var effectFieldLabels = {
+  rainfall: {
+    enabled: "Enabled", intensity: "Precipitation Intensity", speed: "Precipitation Speed",
+    precipitationStyle: "Precipitation Style", dropCount: "Precipitation Count",
+    slant: "Wind Slant", accentBlend: "Accent Tint", vignette: "Built-in Vignette",
+    mistAmount: "Mist Amount", splashAmount: "Splash Amount", flakeSize: "Flake Size",
+    flutterAmount: "Flutter Amount", flakeDetail: "Flake Detail"
+  },
   nodeMesh: {
     enabled: "Enabled", intensity: "Mesh Intensity", speed: "Mesh Speed",
     nodeCount: "Node Count", nodeSize: "Node Size", connectionDistance: "Connection Distance",
@@ -201,10 +216,14 @@ var fieldHints = {
   raySpread: "Sets the width of the ray fan.",
   shimmer: "Varies the ray brightness over time.",
   origin: "Chooses the corner where the rays begin.",
-  dropCount: "Sets the number of raindrops.",
-  slant: "Sets the angle of the falling rain.",
+  precipitationStyle: "Chooses the precipitation renderer.",
+  dropCount: "Sets the bounded precipitation population.",
+  slant: "Sets the wind bias applied to precipitation.",
   mistAmount: "Sets the opacity of the rain mist.",
   splashAmount: "Sets the number of rain splashes.",
+  flakeSize: "Sets the base snowflake diameter before depth variation.",
+  flutterAmount: "Sets the amount of lateral snow movement.",
+  flakeDetail: "Chooses soft, crystal, or mixed snowflake shapes.",
   gridSpacing: "Sets the distance between tactical grid lines.",
   gridLineWidth: "Sets the thickness of tactical grid lines.",
   gridOpacity: "Sets the visibility of the tactical grid.",
@@ -238,6 +257,21 @@ var fieldHints = {
 }
 
 var effectFieldHints = {
+  rainfall: {
+    enabled: "Shows or hides precipitation without removing Rainfall from the stack.",
+    intensity: "Sets the overall visibility of the selected precipitation style.",
+    speed: "Sets the shared motion speed for rain or snow.",
+    precipitationStyle: "Chooses rain or snow while preserving each style's saved tuning.",
+    dropCount: "Sets the bounded number of rain drops or snowflakes rendered on each display.",
+    slant: "Sets rain angle and the lateral wind bias applied to snow.",
+    accentBlend: "Sets how much of the Omarchy accent color appears in precipitation.",
+    vignette: "Darkens the selected precipitation style near the screen edges.",
+    mistAmount: "Sets background mist visibility for rain.",
+    splashAmount: "Sets the bounded foreground splash population for rain.",
+    flakeSize: "Sets the base snowflake diameter before deterministic depth variation.",
+    flutterAmount: "Sets the bounded lateral flutter applied to falling snow.",
+    flakeDetail: "Chooses soft flakes, crystal flakes, or a bounded mixture of both."
+  },
   nodeMesh: {
     enabled: "Shows or hides Node Mesh without removing it from the stack.",
     intensity: "Sets the overall visibility of Node Mesh nodes and connections.",
@@ -269,6 +303,11 @@ function intField(defaultValue, minimum, maximum) {
 
 function enumField(defaultValue, values) {
   return { type: "enum", defaultValue: defaultValue, values: values.slice() }
+}
+
+function conditionalField(field, conditionField, values) {
+  field.visibleWhen = { field: String(conditionField || ""), values: values.slice() }
+  return field
 }
 
 function deepCopy(value) {

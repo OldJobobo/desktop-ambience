@@ -54,6 +54,45 @@ if (( stable )); then
     echo "stable release evidence is missing: $evidence" >&2
     exit 1
   fi
+
+  required_evidence=(
+    "docs/performance/evidence/$version/phase7-performance.json"
+    "docs/release/evidence/$version/contract-checks.txt"
+    "docs/release/evidence/$version/automated-checks.txt"
+    "docs/release/evidence/$version/lifecycle-hardware.json"
+    "docs/release/evidence/$version/output-modes.json"
+    "docs/release/evidence/$version/fullscreen.json"
+    "docs/release/evidence/$version/visual-performance.json"
+    "docs/release/evidence/$version/contact-sheet.webp"
+    "docs/release/evidence/$version/rainfall-extraction-parity.json"
+    "docs/release/evidence/$version/node-mesh-pixels.json"
+    "docs/release/evidence/$version/node-mesh-multi-output.json"
+    "docs/release/evidence/$version/precipitation-multi-output.json"
+  )
+  for artifact in "${required_evidence[@]}"; do
+    if [[ ! -s $artifact ]]; then
+      echo "required release artifact is missing: $artifact" >&2
+      exit 1
+    fi
+    if ! git ls-files --error-unmatch "$artifact" >/dev/null 2>&1; then
+      echo "required release artifact is not tracked: $artifact" >&2
+      exit 1
+    fi
+  done
+
+  python - "$version" "${required_evidence[@]}" <<'PY'
+import json
+import sys
+from pathlib import Path
+version = sys.argv[1]
+for value in sys.argv[2:]:
+    path = Path(value)
+    if path.suffix != ".json":
+        continue
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if payload.get("pluginVersion") != version:
+        raise SystemExit(f"release artifact version mismatch: {path}")
+PY
 fi
 
 if git rev-parse -q --verify "refs/tags/v$version" >/dev/null; then

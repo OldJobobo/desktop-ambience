@@ -139,7 +139,7 @@ def test_god_rays_start_together_from_their_animated_low_state():
 
 
 def test_rainfall_seeds_full_length_loops_at_distributed_startup_phases():
-    rain = read("effects/RainfallEffect.qml")
+    rain = read("effects/RainPrecipitationStyle.qml")
     assert "phaseOffset" not in rain
     assert rain.count("readonly property real initialProgress:") == 3
     assert rain.count("readonly property real initialY:") == 3

@@ -86,8 +86,31 @@ def test_effect_editor_is_driven_by_registry_metadata_for_every_field_type():
     assert 'modelData.type === "enum"' in window
     assert "numericFieldComponent" in window
     assert "ToggleSwitch" in window
-    assert "PanelSlider" in window
+    assert "DragOnlySlider" in window
     assert "Dropdown" in window
+
+
+def test_slider_wheel_input_scrolls_the_panel_without_changing_values():
+    window = read("components/SettingsWindow.qml")
+    drag_only = read("components/DragOnlySlider.qml")
+    slider = window.split("component SliderSetting:", 1)[1].split("component EnumSetting:", 1)[0]
+    assert "property var scrollTarget: null" in slider
+    assert "function forwardWheel(pixelDeltaY, angleDeltaY)" in slider
+    assert "scrollTarget.contentY" in slider
+    assert "DragOnlySlider {" in slider
+    assert "onWheelScrolled: function(pixelDeltaY, angleDeltaY)" in slider
+    assert "sliderRow.forwardWheel(pixelDeltaY, angleDeltaY)" in slider
+    assert "function snapValue(candidate)" in drag_only
+    assert "Math.round((snapped - minimum) / configuredStep) * configuredStep" in drag_only
+    assert "return root.snapValue(raw)" in drag_only
+    wheel_handler = drag_only.split("onWheel: function(wheel)", 1)[1]
+    assert "root.wheelScrolled(wheel.pixelDelta.y, wheel.angleDelta.y)" in wheel_handler
+    assert "wheel.accepted = true" in wheel_handler
+    assert "root.liveValue" not in wheel_handler
+    assert "root.moved" not in wheel_handler
+    assert "root.released" not in wheel_handler
+    assert "scrollTarget: compositionFlickable" in window
+    assert window.count("scrollTarget: detailFlickable") == 2
 
 
 def test_reset_and_controls_never_target_unrelated_configuration():

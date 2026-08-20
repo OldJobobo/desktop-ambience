@@ -132,7 +132,7 @@ def test_node_mesh_visual_performance_and_settings_matrices_are_complete():
     assert 'windowLoader.item.addEffect("nodeMesh")' in settings_behavior
     assert 'window.fieldsFor("nodeMesh")' in settings_behavior
     assert 'self.assertNotIn("nodeMesh"' in settings_behavior
-    assert '"activeEffects": ["bokeh", "nodeMesh"]' in fullscreen
+    assert '"activeEffects": ["bokeh", "nodeMesh", "rainfall"]' in fullscreen
     assert '"nodeMeshIdentityPreservedAcrossPresentation": True' in fullscreen
     assert '"nodeMeshStoppedWhileSuppressed": True' in fullscreen
     assert '"singleOutputPointerOwnership"' in multi_output

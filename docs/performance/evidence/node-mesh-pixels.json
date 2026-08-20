@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "renderProven": true,
-  "productionLineOpacityChangedPixels": 2779,
-  "productionConnectionDistanceChangedPixels": 14112,
-  "productionShortVisiblePixels": 3368,
-  "productionLongVisiblePixels": 14525,
-  "canvasVisiblePixels": 4673,
-  "shapeVisiblePixels": 2779,
-  "canvasShapeMaskJaccard": 0.5940106951871658,
-  "canvasShapeSmallerMaskOverlap": 0.9992803166606693,
-  "canvasShapeChangedPixels": 4376,
+  "productionLineOpacityChangedPixels": 2784,
+  "productionConnectionDistanceChangedPixels": 13884,
+  "productionShortVisiblePixels": 3383,
+  "productionLongVisiblePixels": 14307,
+  "canvasVisiblePixels": 4724,
+  "shapeVisiblePixels": 2784,
+  "canvasShapeMaskJaccard": 0.5879864636209814,
+  "canvasShapeSmallerMaskOverlap": 0.9985632183908046,
+  "canvasShapeChangedPixels": 4446,
   "captures": [
     {
       "caseId": "production-lines-off",
@@ -26,7 +26,7 @@
     {
       "caseId": "production-long-distance",
       "saved": true,
-      "edgeCount": 92,
+      "edgeCount": 91,
       "pathCount": 8
     },
     {

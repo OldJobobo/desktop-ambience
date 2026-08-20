@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "isolatedConfig": true,
+  "liveSettingsModified": false,
+  "persistentHyprlandConfigModified": false,
+  "temporaryOutputLayout": [
+    {
+      "name": "JOBO-PRECIP-VIS-dab09d3f-0",
+      "x": -3840,
+      "y": -180,
+      "width": 1920,
+      "height": 1080,
+      "scale": 1.0
+    },
+    {
+      "name": "JOBO-PRECIP-VIS-0852320a-1",
+      "x": -1920,
+      "y": 0,
+      "width": 1920,
+      "height": 1080,
+      "scale": 1.0
+    }
+  ],
+  "negativeOriginCovered": true,
+  "styles": [
+    "rain",
+    "snow"
+  ],
+  "reducedMotion": true,
+  "metrics": [
+    {
+      "output": "JOBO-PRECIP-VIS-dab09d3f-0",
+      "style": "rain",
+      "loadedStyleCount": 1,
+      "particleCount": 280,
+      "primitiveCount": 280,
+      "autonomousMotionRunning": false,
+      "runningAnimationCount": 0,
+      "runningClockCount": 0
+    },
+    {
+      "output": "JOBO-PRECIP-VIS-0852320a-1",
+      "style": "snow",
+      "loadedStyleCount": 1,
+      "particleCount": 180,
+      "primitiveCount": 333,
+      "autonomousMotionRunning": false,
+      "runningAnimationCount": 0,
+      "runningClockCount": 0
+    }
+  ],
+  "compositorPlacementVerified": true,
+  "screenshotsNonBlankAndDistinct": true,
+  "images": [
+    {
+      "file": "precipitation-output-0.png",
+      "bytes": 82776,
+      "sha256": "9e3aced6d6ef5a06f7bdb26adf04d92f7e5ac2ef63e7ca28072c34f94aa49222",
+      "width": 1920,
+      "height": 1080,
+      "standardDeviation": 5.020086847075582,
+      "markerObserved": [
+        255,
+        23,
+        68
+      ],
+      "markerMatched": true
+    },
+    {
+      "file": "precipitation-output-1.png",
+      "bytes": 32620,
+      "sha256": "b9b8a3708394675061961f8c7274c574c8a1e5de6cde5696e76761f72e610492",
+      "width": 1920,
+      "height": 1080,
+      "standardDeviation": 4.794601245017574,
+      "markerObserved": [
+        0,
+        230,
+        118
+      ],
+      "markerMatched": true
+    }
+  ]
+}

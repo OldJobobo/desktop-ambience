@@ -62,6 +62,10 @@ python -m pytest -q \
   tests/test_bokeh_contracts.py \
   tests/test_node_mesh_renderer_contracts.py \
   tests/test_node_mesh_contracts.py \
+  tests/test_rainfall_baseline_contracts.py \
+  tests/test_precipitation_settings.py \
+  tests/test_precipitation_styles.py \
+  tests/test_precipitation_release.py \
   tests/test_sdlc.py \
   -k 'not BarWidgetBehaviorTests'
 

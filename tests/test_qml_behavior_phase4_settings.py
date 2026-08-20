@@ -10,6 +10,51 @@ from qml_harness import HAVE_SESSION, parse_behave, qml_url, require_no_qml_erro
 
 @unittest.skipUnless(HAVE_SESSION, "needs a quickshell binary and a Wayland session")
 class Phase4SettingsBehaviorTests(unittest.TestCase):
+    def test_drag_only_slider_snaps_real_and_integer_values_to_declared_steps(self):
+        qml = f'''
+import Quickshell
+import QtQuick
+ShellRoot {{
+  Loader {{
+    id: slider
+    source: "{qml_url('components/DragOnlySlider.qml')}"
+    onLoaded: {{
+      item.minimum = 0.1
+      item.maximum = 1.1
+      item.step = 0.25
+      probe.start()
+    }}
+  }}
+  Timer {{
+    id: probe
+    interval: 20
+    onTriggered: {{
+      var realLow = slider.item.snapValue(0.68)
+      var realHigh = slider.item.snapValue(0.99)
+      slider.item.minimum = 12
+      slider.item.maximum = 42
+      slider.item.step = 5
+      slider.item.integer = true
+      console.log("BEHAVE " + JSON.stringify({{
+        realLow: realLow,
+        realHigh: realHigh,
+        integerLow: slider.item.snapValue(24),
+        integerHigh: slider.item.snapValue(25)
+      }}))
+      Qt.quit()
+    }}
+  }}
+}}
+'''
+        with tempfile.TemporaryDirectory() as config_dir:
+            output = run_quickshell(qml, config_home=Path(config_dir), timeout=10)
+        require_no_qml_errors(output)
+        row = parse_behave(output)[-1]
+        self.assertAlmostEqual(row["realLow"], 0.6)
+        self.assertAlmostEqual(row["realHigh"], 1.1)
+        self.assertEqual(row["integerLow"], 22)
+        self.assertEqual(row["integerHigh"], 27)
+
     def test_node_mesh_add_effect_metadata_and_immediate_save_are_registry_driven(self):
         qml = f'''
 import Quickshell
