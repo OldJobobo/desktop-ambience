@@ -69,6 +69,8 @@ def test_phase6_live_checks_are_opt_in_and_restore_temporary_resources():
     assert "liveSettingsModified" in visual
     assert "liveSettingsModified" in fullscreen
     assert "liveSettingsModified" in lifecycle
+    assert "run_when_shell_ready" in lifecycle
+    assert '"not responding" not in (last.stdout + last.stderr).lower()' in lifecycle
     assert "configure(\n            physical_target,\n            original_mode" in output_modes
     assert 'run(["hyprctl", "output", "remove", headless_name], check=False)' in output_modes
     assert 'run(["hyprctl", "output", "remove", name], check=False)' in node_mesh_multi

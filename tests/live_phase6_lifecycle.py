@@ -41,8 +41,26 @@ def run(
     return proc
 
 
+def run_when_shell_ready(command: list[str], timeout: float = 20) -> subprocess.CompletedProcess[str]:
+    deadline = time.monotonic() + timeout
+    last: subprocess.CompletedProcess[str] | None = None
+    while time.monotonic() < deadline:
+        last = subprocess.run(command, capture_output=True, text=True, timeout=10)
+        if last.returncode == 0:
+            return last
+        if "not responding" not in (last.stdout + last.stderr).lower():
+            break
+        time.sleep(0.15)
+    raise AssertionError(
+        f"{command} did not become ready\nstdout:\n{last.stdout if last else ''}"
+        f"\nstderr:\n{last.stderr if last else ''}"
+    )
+
+
 def status() -> dict:
-    return json.loads(run(["omarchy-shell", "jobo-desktop-ambience", "status"]).stdout)
+    return json.loads(run_when_shell_ready(
+        ["omarchy-shell", "jobo-desktop-ambience", "status"]
+    ).stdout)
 
 
 def wait_for_status(timeout: float = 20) -> dict:
@@ -102,7 +120,7 @@ for output in (surface["output"] for surface in initial["surfaces"]):
     if len(initial_layers.get(output, [])) != 1:
         raise AssertionError(f"expected one ambience layer on {output}: {initial_layers}")
 
-run(["omarchy-shell", "shell", "rescanPlugins"])
+run_when_shell_ready(["omarchy-shell", "shell", "rescanPlugins"])
 rescanned = wait_for_status()
 
 run(["omarchy", "restart", "shell"], timeout=90)
