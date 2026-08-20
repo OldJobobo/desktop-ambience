@@ -88,7 +88,9 @@ ShellRoot {{
   Window {{
     id: window
     screen: screenFor("{OUTPUT}")
-    width: {WIDTH}; height: {HEIGHT}; visible: true; color: "#101315"
+    width: {WIDTH}; height: {HEIGHT}; visible: true
+    flags: Qt.Tool | Qt.WindowDoesNotAcceptFocus
+    color: "#101315"
     Item {{
       id: host; anchors.fill: parent
       Rectangle {{ anchors.fill: parent; color: "#101315" }}

@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
-"""Opt-in real Hyprland fullscreen matrix on a temporary headless output.
+"""Opt-in real Hyprland fullscreen matrix on an isolated test output/workspace.
 
 The test runs an isolated foreground-mode Panel with temporary XDG homes beside
-the installed plugin, creates one disposable test window, and verifies normal,
-client-only (fake), and real fullscreen suppression. Live settings are untouched.
+the installed plugin, creates one non-focusable disposable test window, and
+verifies normal, client-only (fake), and real fullscreen suppression. Live
+settings are untouched. Set JOBO_AMBIENCE_TEST_OUTPUT and
+JOBO_AMBIENCE_TEST_WORKSPACE to keep the client on a dedicated physical workspace;
+otherwise a temporary headless output is used.
 """
 
 from __future__ import annotations
@@ -30,7 +33,10 @@ for tool in ("quickshell", "hyprctl"):
 
 ROOT = Path(__file__).resolve().parents[1]
 VERSION = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))["version"]
-output_name = f"JOBO-PHASE6-FS-{uuid.uuid4().hex[:8]}"
+configured_output = os.environ.get("JOBO_AMBIENCE_TEST_OUTPUT", "").strip()
+configured_workspace = os.environ.get("JOBO_AMBIENCE_TEST_WORKSPACE", "").strip()
+output_name = configured_output or f"JOBO-PHASE6-FS-{uuid.uuid4().hex[:8]}"
+owns_output = not configured_output
 window_title = f"jobo-phase6-fullscreen-{uuid.uuid4().hex[:8]}"
 
 
@@ -101,6 +107,29 @@ def move_to_output(address: str) -> dict:
             return current
         time.sleep(0.1)
     raise AssertionError(f"test client did not move to {output_name}")
+
+
+def move_to_workspace(address: str) -> dict:
+    if not configured_workspace:
+        client = matching_client()
+        if not client:
+            raise AssertionError("test client disappeared")
+        return client
+    selector = validated_selector(address)
+    expression = (
+        'hl.dsp.window.move({'
+        f'workspace = "{configured_workspace}", follow = false, window = "{selector}"'
+        '})'
+    )
+    run(["hyprctl", "dispatch", expression])
+    deadline = time.monotonic() + 5
+    while time.monotonic() < deadline:
+        current = matching_client()
+        workspace = current.get("workspace", {}) if current else {}
+        if current and str(workspace.get("name")) == configured_workspace:
+            return current
+        time.sleep(0.1)
+    raise AssertionError(f"test client did not move to workspace {configured_workspace}")
 
 
 def set_fullscreen_state(address: str, internal: int, client: int) -> dict:
@@ -194,6 +223,7 @@ ShellRoot {{
     width: 800
     height: 450
     visible: false
+    flags: Qt.Tool | Qt.WindowDoesNotAcceptFocus
     title: "{window_title}"
     color: "#20242a"
   }}
@@ -265,8 +295,11 @@ ShellRoot {{
 proc: subprocess.Popen[str] | None = None
 address = ""
 try:
-    run(["hyprctl", "output", "create", "headless", output_name])
-    wait_for_output(True)
+    if owns_output:
+        run(["hyprctl", "output", "create", "headless", output_name])
+        wait_for_output(True)
+    elif not any(str(item.get("name")) == output_name for item in monitors()):
+        raise AssertionError(f"configured test output is unavailable: {output_name}")
 
     with tempfile.TemporaryDirectory() as shell_dir, tempfile.TemporaryDirectory() as config_dir, tempfile.TemporaryDirectory() as state_dir:
         config_home = Path(config_dir)
@@ -315,6 +348,7 @@ try:
         test_client = wait_for_client()
         address = str(test_client["address"])
         test_client = move_to_output(address)
+        test_client = move_to_workspace(address)
 
         normal = set_fullscreen_state(address, 0, 0)
         time.sleep(0.5)
@@ -386,6 +420,8 @@ try:
     evidence = {
         "schemaVersion": 1,
         "output": output_name,
+        "workspace": configured_workspace or str(normal.get("workspace", {}).get("name", "")),
+        "windowAcceptedFocus": False,
         "liveSettingsModified": False,
         "coexistsWithInstalledPlugin": True,
         "clientStates": {
@@ -431,8 +467,9 @@ finally:
             proc.wait(timeout=5)
         except subprocess.TimeoutExpired:
             proc.kill()
-    run(["hyprctl", "output", "remove", output_name], check=False)
-    try:
-        wait_for_output(False, timeout=5)
-    except Exception:
-        pass
+    if owns_output:
+        run(["hyprctl", "output", "remove", output_name], check=False)
+        try:
+            wait_for_output(False, timeout=5)
+        except Exception:
+            pass

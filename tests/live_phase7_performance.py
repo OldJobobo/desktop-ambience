@@ -151,6 +151,7 @@ def make_qml(
     screen: root.windowScreen("{name}")
     visibility: Window.FullScreen
     visible: true
+    flags: Qt.Tool | Qt.WindowDoesNotAcceptFocus
     color: "#101315"
     title: "jobo-phase7-{case_id}-{index}"
     Loader {{

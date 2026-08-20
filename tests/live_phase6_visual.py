@@ -397,6 +397,7 @@ ShellRoot {{
     screen: root.windowScreen
     visibility: Window.FullScreen
     visible: false
+    flags: Qt.Tool | Qt.WindowDoesNotAcceptFocus
     title: "{window_title}"
     color: "#101315"
 

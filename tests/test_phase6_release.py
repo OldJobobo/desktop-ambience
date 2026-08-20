@@ -105,6 +105,10 @@ def test_fullscreen_matrix_distinguishes_fake_and_real_fullscreen():
     assert '"nodeMeshIdentityPreservedAcrossPresentation": True' in source
     assert 'next.presentation = "background"' in source
     assert '"bokehIdentityPreservedAcrossPresentation": True' in source
+    assert 'JOBO_AMBIENCE_TEST_OUTPUT' in source
+    assert 'JOBO_AMBIENCE_TEST_WORKSPACE' in source
+    assert 'workspace = "{configured_workspace}", follow = false' in source
+    assert "Qt.WindowDoesNotAcceptFocus" in source
 
 
 def test_output_matrix_covers_fractional_scale_rotation_and_refresh_restore():
