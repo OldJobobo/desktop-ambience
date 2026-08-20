@@ -40,6 +40,18 @@ Item {
     && dustMotesSettings.mouseReactive === true
     && Number(dustMotesSettings.intensity) * Number(ambienceSettings.opacity) > 0.001
     && !ambienceSettings.reduceMotion
+  readonly property var tacticalGridSettings: ambienceSettings.effects
+    && ambienceSettings.effects.tacticalGrid ? ambienceSettings.effects.tacticalGrid : ({})
+  readonly property bool tacticalGridRequested: ambienceEnabled
+    && normalizedOrder().indexOf("tacticalGrid") >= 0
+    && tacticalGridSettings.enabled === true
+    && Number(tacticalGridSettings.intensity) * Number(ambienceSettings.opacity) > 0.001
+    && (Number(tacticalGridSettings.guideOpacity) > 0.001
+      || (Number(tacticalGridSettings.gridOpacity) > 0.001
+        && tacticalGridSettings.parallaxEnabled === true
+        && Number(tacticalGridSettings.mouseInfluence) > 0.001
+        && !ambienceSettings.reduceMotion))
+  readonly property bool cursorTrackingRequested: dustMotesRequested || tacticalGridRequested
   readonly property string mappingMode: !visualSurfaceEnabled
     ? "none" : (foregroundOverlay ? "overlay" : "bottom")
 
@@ -108,14 +120,27 @@ Item {
     for (var i = 0; i < productionSurfaces.length; i++) {
       var surface = productionSurfaces[i]
       if (!surface) continue
+      var stack = surface.stackObject
+      var tacticalGrid = stack ? stack.productionEffectObject("tacticalGrid") : null
       result.push({
         output: surface.outputName,
         mapped: surface.visible,
         mode: surface.layerName,
         fullscreenSuppressed: surface.fullscreenSuppressed,
         paintAllowed: surface.paintAllowed,
-        loadedEffectCount: surface.stackObject
-          ? Number(surface.stackObject.activeProductionEffectCount || 0) : 0
+        loadedEffectCount: stack ? Number(stack.activeProductionEffectCount || 0) : 0,
+        tacticalGrid: tacticalGrid ? {
+          width: tacticalGrid.width,
+          height: tacticalGrid.height,
+          hasCursorSample: tacticalGrid.hasCursorSample,
+          cursorInsideOutput: tacticalGrid.cursorInsideOutput,
+          rawCursorX: tacticalGrid.rawCursorX,
+          rawCursorY: tacticalGrid.rawCursorY,
+          rawCursorLocalX: tacticalGrid.rawCursorLocalX,
+          rawCursorLocalY: tacticalGrid.rawCursorLocalY,
+          screenOriginX: tacticalGrid.screenOriginX,
+          screenOriginY: tacticalGrid.screenOriginY
+        } : null
       })
     }
     return result
@@ -160,7 +185,7 @@ Item {
         confirmedRevision: ambienceSettings.confirmedSaveRevision
       },
       theme: themeAdapter.status(),
-      cursorTracker: cursorTracker.status()
+      cursorTracker: sharedCursorTracker.status()
     }
   }
 
@@ -172,8 +197,9 @@ Item {
   ThemeAdapter { id: themeAdapter }
   FullscreenGuard { id: fullscreenGuard }
   CursorTracker {
-    id: cursorTracker
-    active: root.dustMotesRequested && root.paintAllowedSurfaceCount > 0
+    id: sharedCursorTracker
+    active: root.cursorTrackingRequested && root.paintAllowedSurfaceCount > 0
+    pollIntervalMs: root.tacticalGridRequested ? 60 : 120
   }
 
   SettingsWindow {
@@ -239,7 +265,7 @@ Item {
         targetScreen: ambienceSurface.modelData
         settings: ambienceSettings
         theme: themeAdapter
-        cursorTracker: cursorTracker
+        cursorTracker: sharedCursorTracker
         activeEffects: root.activeEffects
         foregroundOverlay: root.foregroundOverlay
         paintEnabled: ambienceSurface.paintAllowed

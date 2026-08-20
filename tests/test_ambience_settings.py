@@ -87,6 +87,8 @@ class AmbienceSettingsBehaviorTests(unittest.TestCase):
                 "filmGrain": {"speed": 99, "grainCount": 999, "grainSize": 99},
                 "godRays": {"rayCount": 99, "raySpread": 9, "origin": "bad"},
                 "rainfall": {"dropCount": 999, "slant": 9},
+                "tacticalGrid": {"gridSpacing": 999, "gridLineWidth": 99, "mouseInfluence": 9,
+                                 "reticleStyle": "invalid", "reticleSize": 999, "colorRole": "invalid"},
                 "trackingLines": {"lineSpacing": 99, "trackingBands": 99},
                 "vhs": {"enabled": True},
                 "backgroundVignette": {"enabled": True},
@@ -105,6 +107,9 @@ class AmbienceSettingsBehaviorTests(unittest.TestCase):
                 "filmGrain": {"speed": -9, "grainCount": -9, "grainSize": -9},
                 "godRays": {"rayCount": -9, "raySpread": -9, "origin": "bottom-right"},
                 "rainfall": {"dropCount": -9, "slant": -9},
+                "tacticalGrid": {"gridSpacing": -9, "gridLineWidth": -9,
+                                 "mouseInfluence": -9, "reticleSize": -9,
+                                 "reticleStyle": "ring", "colorRole": "color14"},
                 "trackingLines": {"lineSpacing": -9, "trackingBands": -9},
             },
             "backgroundVignette": {"intensity": -9},
@@ -114,7 +119,9 @@ class AmbienceSettingsBehaviorTests(unittest.TestCase):
         self.assertTrue(defaults["enabled"])
         self.assertEqual(defaults["presentation"], "background")
         self.assertEqual(defaults["activeEffects"], ["trackingLines"])
-        self.assertEqual(set(defaults["effects"]), {"auroraDrift", "cinematicLight", "crt", "dustMotes", "filmGrain", "godRays", "rainfall", "trackingLines"})
+        self.assertEqual(set(defaults["effects"]), {"auroraDrift", "cinematicLight", "crt", "dustMotes", "filmGrain", "godRays", "rainfall", "tacticalGrid", "trackingLines"})
+        self.assertEqual(defaults["effects"]["tacticalGrid"]["reticleStyle"], "brackets")
+        self.assertEqual(defaults["effects"]["tacticalGrid"]["colorRole"], "accent")
         self.assertEqual(defaults["effects"]["trackingLines"]["trackingBands"], 4)
         self.assertFalse(defaults["backgroundVignette"]["enabled"])
         self.assertEqual(defaults["backgroundVignette"]["intensity"], 0.85)
@@ -135,6 +142,11 @@ class AmbienceSettingsBehaviorTests(unittest.TestCase):
         self.assertEqual(upper["effects"]["filmGrain"]["grainCount"], 520)
         self.assertEqual(upper["effects"]["godRays"]["origin"], "top-left")
         self.assertEqual(upper["effects"]["rainfall"]["slant"], 0.35)
+        self.assertEqual(upper["effects"]["tacticalGrid"]["gridSpacing"], 160)
+        self.assertEqual(upper["effects"]["tacticalGrid"]["gridLineWidth"], 4)
+        self.assertEqual(upper["effects"]["tacticalGrid"]["mouseInfluence"], 1)
+        self.assertEqual(upper["effects"]["tacticalGrid"]["reticleStyle"], "brackets")
+        self.assertEqual(upper["effects"]["tacticalGrid"]["colorRole"], "accent")
         self.assertEqual(upper["effects"]["trackingLines"]["trackingBands"], 7)
         self.assertEqual(upper["effects"]["auroraDrift"]["future"], {"ok": True})
         self.assertEqual(upper["backgroundVignette"]["futureVignette"], [1, None])
@@ -148,6 +160,12 @@ class AmbienceSettingsBehaviorTests(unittest.TestCase):
         self.assertEqual(lower["effects"]["filmGrain"]["grainCount"], 32)
         self.assertEqual(lower["effects"]["godRays"]["origin"], "bottom-right")
         self.assertEqual(lower["effects"]["rainfall"]["slant"], -0.2)
+        self.assertEqual(lower["effects"]["tacticalGrid"]["gridSpacing"], 24)
+        self.assertEqual(lower["effects"]["tacticalGrid"]["gridLineWidth"], 0.5)
+        self.assertEqual(lower["effects"]["tacticalGrid"]["mouseInfluence"], 0)
+        self.assertEqual(lower["effects"]["tacticalGrid"]["reticleSize"], 12)
+        self.assertEqual(lower["effects"]["tacticalGrid"]["reticleStyle"], "ring")
+        self.assertEqual(lower["effects"]["tacticalGrid"]["colorRole"], "color14")
         self.assertEqual(lower["effects"]["trackingLines"]["trackingBands"], 0)
         self.assertEqual(lower["backgroundVignette"]["intensity"], 0)
 

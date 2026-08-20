@@ -10,6 +10,9 @@ Item {
   property int pollIntervalMs: 120
   property real cursorX: -1
   property real cursorY: -1
+  property real displayCursorX: -1
+  property real displayCursorY: -1
+  property bool hasCursorSample: false
   property real cursorVelocityX: 0
   property real cursorVelocityY: 0
   property real cursorKick: 0
@@ -32,6 +35,14 @@ Item {
     cursorProcess.running = true
   }
 
+  function invalidateSample() {
+    hasCursorSample = false
+    cursorX = -1
+    cursorY = -1
+    displayCursorX = -1
+    displayCursorY = -1
+  }
+
   function applyPayload(raw) {
     try {
       var parsed = JSON.parse(raw || "{}")
@@ -39,7 +50,7 @@ Item {
       var nextY = Number(parsed.y)
       if (isNaN(nextX) || isNaN(nextY)) throw new Error("cursor payload has no coordinates")
 
-      if (cursorX >= 0 && cursorY >= 0) {
+      if (hasCursorSample) {
         var dx = nextX - cursorX
         var dy = nextY - cursorY
         var distance = Math.sqrt(dx * dx + dy * dy)
@@ -53,10 +64,14 @@ Item {
 
       cursorX = nextX
       cursorY = nextY
+      displayCursorX = nextX
+      displayCursorY = nextY
+      hasCursorSample = true
       lastError = ""
     } catch (error) {
       failureCount += 1
       lastError = String(error)
+      invalidateSample()
     }
   }
 
@@ -67,13 +82,24 @@ Item {
       healthy: healthy,
       launchCount: launchCount,
       failureCount: failureCount,
+      hasCursorSample: hasCursorSample,
+      cursorX: cursorX,
+      cursorY: cursorY,
+      displayCursorX: displayCursorX,
+      displayCursorY: displayCursorY,
+      velocityX: cursorVelocityX,
+      velocityY: cursorVelocityY,
+      kick: cursorKick,
       error: lastError
     }
   }
 
   onActiveChanged: {
     if (active) poll()
-    else cursorDecayTimer.restart()
+    else {
+      invalidateSample()
+      cursorDecayTimer.restart()
+    }
   }
 
   Timer {
@@ -92,6 +118,16 @@ Item {
       root.cursorVelocityY = 0
       root.cursorKick = 0
     }
+  }
+
+  Behavior on displayCursorX {
+    enabled: root.hasCursorSample
+    NumberAnimation { duration: Math.max(45, root.pollIntervalMs + 20); easing.type: Easing.OutCubic }
+  }
+
+  Behavior on displayCursorY {
+    enabled: root.hasCursorSample
+    NumberAnimation { duration: Math.max(45, root.pollIntervalMs + 20); easing.type: Easing.OutCubic }
   }
 
   Behavior on cursorVelocityX {
@@ -118,11 +154,12 @@ Item {
     }
 
     onExited: function(exitCode) {
-      if (exitCode === 0) root.applyPayload(cursorProcess.output)
-      else {
+      if (exitCode === 0 && root.active) root.applyPayload(cursorProcess.output)
+      else if (exitCode !== 0) {
         root.failureCount += 1
         root.lastError = "hyprctl cursorpos exited with status " + exitCode
-      }
+        root.invalidateSample()
+      } else root.invalidateSample()
     }
   }
 }

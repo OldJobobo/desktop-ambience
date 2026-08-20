@@ -24,6 +24,7 @@ Item {
     "filmGrain",
     "godRays",
     "rainfall",
+    "tacticalGrid",
     "trackingLines"
   ]
   readonly property var normalizedActiveEffects: normalizeActiveEffects(activeEffects)
@@ -37,6 +38,7 @@ Item {
     filmGrainLoader,
     godRaysLoader,
     rainfallLoader,
+    tacticalGridLoader,
     vhsLoader
   ].filter(function(loader) { return loader.active && loader.item !== null }).length
 
@@ -101,6 +103,7 @@ Item {
       filmGrain: filmGrainLoader,
       godRays: godRaysLoader,
       rainfall: rainfallLoader,
+      tacticalGrid: tacticalGridLoader,
       trackingLines: vhsLoader
     }
     var loader = loaders[String(effectId || "")]
@@ -201,6 +204,21 @@ Item {
   }
 
   Component {
+    id: tacticalGridComponent
+    TacticalGridEffect {
+      objectName: "tacticalGridEffect"
+      anchors.fill: parent
+      targetScreen: root.targetScreen
+      cursorTracker: root.cursorTracker
+      effectSettings: root.settingsFor("tacticalGrid")
+      globalOpacity: root.settings ? root.settings.opacity : 1
+      reducedMotion: root.settings ? root.settings.reduceMotion : false
+      theme: root.theme
+      runtimeEnabled: root.rendererPaintEnabled && root.productionEffectsEnabled
+    }
+  }
+
+  Component {
     id: vhsComponent
     VhsEffect {
       objectName: "vhsEffect"
@@ -266,6 +284,14 @@ Item {
     active: root.productionEffectActive("rainfall")
     sourceComponent: rainfallComponent
     z: root.zForEffect("rainfall")
+  }
+
+  Loader {
+    id: tacticalGridLoader
+    anchors.fill: parent
+    active: root.productionEffectActive("tacticalGrid")
+    sourceComponent: tacticalGridComponent
+    z: root.zForEffect("tacticalGrid")
   }
 
   Loader {

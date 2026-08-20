@@ -50,6 +50,7 @@ CASES = [
     ("filmGrain", "effects/FilmGrainEffect.qml"),
     ("godRays", "effects/GodRaysEffect.qml"),
     ("rainfall", "effects/RainfallEffect.qml"),
+    ("tacticalGrid", "effects/TacticalGridEffect.qml"),
     ("trackingLines", "effects/VhsEffect.qml"),
     ("backgroundVignette", "effects/VignetteEffect.qml"),
     ("threeEffectStack", "components/AmbienceStack.qml"),
@@ -116,6 +117,15 @@ ShellRoot {{
   }}
 
   QtObject {{
+    id: tracker
+    property real cursorX: root.renderScreen ? Number(root.renderScreen.x) + renderWindow.width * 0.68 : -1
+    property real cursorY: root.renderScreen ? Number(root.renderScreen.y) + renderWindow.height * 0.42 : -1
+    property real displayCursorX: cursorX
+    property real displayCursorY: cursorY
+    property bool hasCursorSample: root.renderScreen !== null
+  }}
+
+  QtObject {{
     id: theme
     property bool alternate: false
     function colorFor(name, fallback) {{
@@ -166,8 +176,9 @@ ShellRoot {{
       if (caseId === "dustMotes") settings.mouseReactive = false
       item.effectSettings = settings
       item.globalOpacity = 1
-      item.reducedMotion = caseId !== "rainfall"
+      item.reducedMotion = caseId !== "rainfall" && caseId !== "tacticalGrid"
       if ("theme" in item) item.theme = theme
+      if ("cursorTracker" in item) item.cursorTracker = tracker
     }}
     if ("targetScreen" in item) item.targetScreen = root.renderScreen
   }}

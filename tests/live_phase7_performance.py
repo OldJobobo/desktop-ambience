@@ -39,6 +39,7 @@ CASES = [
     ("filmGrain", "effects/FilmGrainEffect.qml"),
     ("godRays", "effects/GodRaysEffect.qml"),
     ("rainfall", "effects/RainfallEffect.qml"),
+    ("tacticalGrid", "effects/TacticalGridEffect.qml"),
     ("trackingLines", "effects/VhsEffect.qml"),
     ("backgroundVignette", "effects/VignetteEffect.qml"),
     ("threeEffectStack", "components/AmbienceStack.qml"),
@@ -115,7 +116,7 @@ def make_qml(
 
     tracker_assign = 'if ("cursorTracker" in item) item.cursorTracker = trackerLoader.item' if shared_tracker else ""
     stack_tracker_assign = "item.cursorTracker = trackerLoader.item" if shared_tracker else ""
-    tracker_start = 'if (trackerLoader.item) trackerLoader.item.active = caseId === "dustMotes"' if shared_tracker else ""
+    tracker_start = 'if (trackerLoader.item) trackerLoader.item.active = caseId === "dustMotes" || caseId === "tacticalGrid"' if shared_tracker else ""
     tracker_stop = "if (trackerLoader.item) trackerLoader.item.active = false" if shared_tracker else ""
     tracker_count = "trackerLoader.item ? trackerLoader.item.launchCount : -1" if shared_tracker else "-1"
 

@@ -1,7 +1,7 @@
 # Desktop Ambience
 
 A standalone Omarchy Shell plugin for composing animated desktop atmosphere.
-Eight ordered renderers share one persistent surface per output, while a
+Nine ordered renderers share one persistent surface per output, while a
 separate vignette can sit above or below the stack. The plugin owns its settings,
 theme adaptation, settings window, and runtime status endpoint.
 
@@ -16,8 +16,9 @@ theme adaptation, settings window, and runtime status endpoint.
 5. Film Grain
 6. God Rays
 7. Rainfall
-8. VHS (`trackingLines` in the settings file)
-9. Dedicated background vignette
+8. Tactical Grid
+9. VHS (`trackingLines` in the settings file)
+10. Dedicated background vignette
 
 The ordered list is front-to-back: position 1 is topmost. The dedicated vignette
 is intentionally outside that list.

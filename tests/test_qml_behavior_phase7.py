@@ -20,7 +20,7 @@ class Phase7BehaviorTests(unittest.TestCase):
             "accentBlend": 0,
             "mouseReactive": True,
             "mouseInfluence": 0.28,
-        }).lower()
+        })
         qml = f'''
 import Quickshell
 import QtQuick
@@ -29,6 +29,7 @@ ShellRoot {{
     id: tracker
     property real cursorX: 101
     property real cursorY: 202
+    property bool hasCursorSample: true
     property real cursorVelocityX: 3
     property real cursorVelocityY: 4
     property real cursorKick: 0.75
@@ -50,7 +51,8 @@ ShellRoot {{
       console.log("BEHAVE " + JSON.stringify({{
         x: effect.cursorX, y: effect.cursorY,
         vx: effect.cursorVelocityX, vy: effect.cursorVelocityY,
-        speed: effect.cursorSpeed, kick: effect.cursorKick
+        speed: effect.cursorSpeed, kick: effect.cursorKick,
+        mouseInfluence: effect.mouseInfluence, moteCount: effect.moteCount
       }}))
       Qt.quit()
     }}
@@ -63,9 +65,106 @@ ShellRoot {{
         payload = parse_behave(output)[-1]
         self.assertEqual(
             payload,
-            {"x": 101, "y": 202, "vx": 3, "vy": 4, "speed": 5, "kick": 0.75},
+            {
+                "x": 101, "y": 202, "vx": 3, "vy": 4, "speed": 5,
+                "kick": 0.75, "mouseInfluence": 0.28, "moteCount": 0,
+            },
             output[-2000:],
         )
+
+    def test_mouse_influence_pushes_nearby_motes_after_cursor_impulse_decays(self):
+        settings = json.dumps({
+            "enabled": True,
+            "intensity": 1,
+            "speed": 1,
+            "moteCount": 1,
+            "moteSize": 4,
+            "accentBlend": 0,
+            "mouseReactive": True,
+            "mouseInfluence": 1,
+        })
+        qml = f'''
+import Quickshell
+import QtQuick
+ShellRoot {{
+  id: root
+  property var mote: null
+  QtObject {{
+    id: screen
+    property real x: -400
+    property real y: -300
+  }}
+  QtObject {{
+    id: tracker
+    property real cursorX: -1
+    property real cursorY: -1
+    property bool hasCursorSample: false
+    property real cursorVelocityX: 0
+    property real cursorVelocityY: 0
+    property real cursorKick: 0
+  }}
+  function findPersistentMote(item) {{
+    if (!item) return null
+    if ("airOffsetX" in item && "airVelocityX" in item) return item
+    var children = item.children || []
+    for (var i = 0; i < children.length; i++) {{
+      var found = findPersistentMote(children[i])
+      if (found) return found
+    }}
+    return null
+  }}
+  Item {{
+    width: 320
+    height: 180
+    Loader {{
+      id: effectLoader
+      anchors.fill: parent
+      source: "{qml_url('effects/DustMotesEffect.qml')}"
+      onLoaded: {{
+        item.effectSettings = {settings}
+        item.cursorTracker = tracker
+        item.targetScreen = screen
+        locate.start()
+      }}
+    }}
+  }}
+  Timer {{
+    id: locate
+    interval: 180
+    onTriggered: {{
+      root.mote = root.findPersistentMote(effectLoader.item)
+      tracker.cursorX = screen.x + root.mote.x + root.mote.width / 2 - 80
+      tracker.cursorY = screen.y + root.mote.y + root.mote.height / 2
+      tracker.hasCursorSample = true
+      inspect.start()
+    }}
+  }}
+  Timer {{
+    id: inspect
+    interval: 330
+    onTriggered: {{
+      console.log("BEHAVE " + JSON.stringify({{
+        offsetX: root.mote.airOffsetX,
+        offsetY: root.mote.airOffsetY,
+        cursorX: effectLoader.item.cursorX,
+        cursorY: effectLoader.item.cursorY,
+        speed: effectLoader.item.cursorSpeed,
+        kick: effectLoader.item.cursorKick
+      }}))
+      Qt.quit()
+    }}
+  }}
+}}
+'''
+        with tempfile.TemporaryDirectory() as config_home:
+            output = run_quickshell(qml, config_home=Path(config_home), timeout=10)
+        require_no_qml_errors(output)
+        payload = parse_behave(output)[-1]
+        self.assertLess(payload["cursorX"], 0, output[-2000:])
+        self.assertLess(payload["cursorY"], 0, output[-2000:])
+        self.assertEqual(payload["speed"], 0, output[-2000:])
+        self.assertEqual(payload["kick"], 0, output[-2000:])
+        self.assertGreater(abs(payload["offsetX"]) + abs(payload["offsetY"]), 1, output[-2000:])
 
     def test_stack_waits_for_nonzero_stable_geometry_before_painting(self):
         settings = json.dumps({
@@ -78,7 +177,7 @@ ShellRoot {{
             "splashAmount": 0,
             "accentBlend": 0,
             "vignette": False,
-        }).lower()
+        })
         qml = f'''
 import Quickshell
 import QtQuick
@@ -174,7 +273,7 @@ ShellRoot {{
       id: effectLoader
       anchors.fill: parent
       source: "{qml_url('effects/GodRaysEffect.qml')}"
-      onLoaded: {{ item.effectSettings = {json.dumps(settings).lower()}; firstProbe.start() }}
+      onLoaded: {{ item.effectSettings = {json.dumps(settings)}; firstProbe.start() }}
     }}
   }}
   Timer {{
@@ -212,6 +311,55 @@ ShellRoot {{
         self.assertGreater(payload["afterClock"], payload["beforeClock"], output[-2000:])
         self.assertEqual(payload["speed"], 3.5)
         self.assertEqual(payload["rayCount"], 12)
+
+    def test_cursor_tracker_handles_negative_origins_and_invalidates_stale_samples(self):
+        qml = f'''
+import Quickshell
+import QtQuick
+ShellRoot {{
+  property var motion: ({{}})
+  Loader {{
+    id: trackerLoader
+    source: "{qml_url('services/CursorTracker.qml')}"
+    onLoaded: {{
+      item.applyPayload('{{"x":-400,"y":-200}}')
+      item.applyPayload('{{"x":-370,"y":-180}}')
+      motionProbe.start()
+    }}
+  }}
+  Timer {{
+    id: motionProbe
+    interval: 180
+    onTriggered: {{
+      var tracker = trackerLoader.item
+      motion = {{
+        valid: tracker.hasCursorSample,
+        vx: tracker.cursorVelocityX,
+        vy: tracker.cursorVelocityY,
+        kick: tracker.cursorKick
+      }}
+      tracker.invalidateSample()
+      console.log("BEHAVE " + JSON.stringify({{
+        motion: motion,
+        invalid: {{valid: tracker.hasCursorSample, x: tracker.cursorX, y: tracker.cursorY,
+          displayX: tracker.displayCursorX, displayY: tracker.displayCursorY}}
+      }}))
+      Qt.quit()
+    }}
+  }}
+}}
+'''
+        with tempfile.TemporaryDirectory() as config_home:
+            output = run_quickshell(qml, config_home=Path(config_home), timeout=10)
+        require_no_qml_errors(output)
+        payload = parse_behave(output)[-1]
+        self.assertTrue(payload["motion"]["valid"], output[-2000:])
+        self.assertGreater(payload["motion"]["vx"], 0, output[-2000:])
+        self.assertGreater(payload["motion"]["vy"], 0, output[-2000:])
+        self.assertGreater(payload["motion"]["kick"], 0, output[-2000:])
+        self.assertEqual(payload["invalid"], {
+            "valid": False, "x": -1, "y": -1, "displayX": -1, "displayY": -1,
+        })
 
     def test_cursor_tracker_stays_idle_until_activated(self):
         qml = f'''

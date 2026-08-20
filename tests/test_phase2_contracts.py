@@ -19,6 +19,7 @@ ORDERED_EFFECTS = {
     "filmGrain": "FilmGrainEffect.qml",
     "godRays": "GodRaysEffect.qml",
     "rainfall": "RainfallEffect.qml",
+    "tacticalGrid": "TacticalGridEffect.qml",
     "trackingLines": "VhsEffect.qml",
 }
 
@@ -51,10 +52,13 @@ def test_stack_injects_normalized_state_without_duplicate_defaults():
 
     for effect_id in ORDERED_EFFECTS:
         assert f'effectSettings: root.settingsFor("{effect_id}")' in stack
-    assert stack.count("globalOpacity: root.settings ? root.settings.opacity : 1") == 8
-    assert stack.count("reducedMotion: root.settings ? root.settings.reduceMotion : false") == 8
-    assert stack.count("theme: root.theme") == 6
+    assert stack.count("globalOpacity: root.settings ? root.settings.opacity : 1") == 9
+    assert stack.count("reducedMotion: root.settings ? root.settings.reduceMotion : false") == 9
+    assert stack.count("theme: root.theme") == 7
     assert "foregroundOverlay: root.foregroundOverlay" in stack
+    assert 'effectSettings: root.settingsFor("tacticalGrid")' in stack
+    assert stack.count("targetScreen: root.targetScreen") == 2
+    assert stack.count("cursorTracker: root.cursorTracker") == 2
 
 
 def test_effects_have_only_injected_adapters_and_no_file_owners():

@@ -74,6 +74,19 @@ var orderedEffects = [
     }
   },
   {
+    id: "tacticalGrid", label: "Tactical Grid",
+    fields: {
+      enabled: boolField(true), intensity: realField(0.55, 0, 1),
+      speed: realField(1, 0.15, 4), gridSpacing: intField(64, 24, 160),
+      gridLineWidth: realField(1, 0.5, 4), gridOpacity: realField(0.28, 0, 1),
+      guideOpacity: realField(0.58, 0, 1), parallaxEnabled: boolField(true),
+      mouseInfluence: realField(0.22, 0, 1), mouseGuides: boolField(true),
+      reticleStyle: enumField("brackets", ["crosshair", "brackets", "ring", "diamond"]),
+      reticleSize: intField(42, 12, 120), reticlePulse: boolField(true),
+      colorRole: enumField("accent", ["accent", "foreground", "color11", "color12", "color13", "color14"])
+    }
+  },
+  {
     id: "trackingLines", label: "VHS",
     fields: {
       enabled: boolField(true), intensity: realField(0.68, 0, 1),
@@ -106,6 +119,10 @@ var fieldLabels = {
   grainCount: "Grain Count", grainSize: "Grain Size", rayCount: "Ray Count",
   raySpread: "Ray Spread", shimmer: "Shimmer", origin: "Ray Origin", dropCount: "Drop Count",
   slant: "Slant", mistAmount: "Mist Amount", splashAmount: "Splash Amount",
+  gridSpacing: "Grid Spacing", gridLineWidth: "Grid Line Width", gridOpacity: "Grid Opacity",
+  guideOpacity: "Guide Opacity", parallaxEnabled: "Pointer Parallax",
+  mouseGuides: "Pointer Guides", reticleStyle: "Reticle Style", reticleSize: "Reticle Size",
+  reticlePulse: "Reticle Pulse", colorRole: "Theme Color",
   lineSpacing: "Line Spacing", trackingBands: "Tracking Bands", noiseAmount: "Noise Amount",
   glitchAmount: "Glitch Amount", chromaBleed: "Chroma Bleed",
   ignoreBackgroundAnimationLayer: "Place Behind Animations"
@@ -136,7 +153,7 @@ var fieldHints = {
   moteCount: "Sets the number of dust motes.",
   moteSize: "Sets the size of each dust mote.",
   mouseReactive: "Lets the pointer push nearby motes.",
-  mouseInfluence: "Sets how strongly the pointer pushes motes.",
+  mouseInfluence: "Sets how strongly the pointer influences mouse-reactive movement.",
   grainCount: "Sets the number of film-grain specks.",
   grainSize: "Sets the size of each grain speck.",
   rayCount: "Sets the number of light rays.",
@@ -147,6 +164,16 @@ var fieldHints = {
   slant: "Sets the angle of the falling rain.",
   mistAmount: "Sets the opacity of the rain mist.",
   splashAmount: "Sets the number of rain splashes.",
+  gridSpacing: "Sets the distance between tactical grid lines.",
+  gridLineWidth: "Sets the thickness of tactical grid lines.",
+  gridOpacity: "Sets the visibility of the tactical grid.",
+  guideOpacity: "Sets the visibility of the pointer guide lines and reticle.",
+  parallaxEnabled: "Lets the pointer shift the grid with a subtle depth effect.",
+  mouseGuides: "Draws horizontal and vertical guides through the pointer.",
+  reticleStyle: "Chooses the targeting reticle shape.",
+  reticleSize: "Sets the targeting reticle size.",
+  reticlePulse: "Animates the targeting reticle with a restrained pulse.",
+  colorRole: "Chooses a color from the active Omarchy theme.",
   lineSpacing: "Sets the gap between VHS scanlines.",
   trackingBands: "Sets the number of rolling tracking bands.",
   noiseAmount: "Sets the amount of VHS static.",

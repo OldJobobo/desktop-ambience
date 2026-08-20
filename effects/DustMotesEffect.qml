@@ -13,6 +13,7 @@ Item {
   property real runtimeIntensity: -1
   readonly property real cursorX: cursorTracker ? Number(cursorTracker.cursorX) : -1
   readonly property real cursorY: cursorTracker ? Number(cursorTracker.cursorY) : -1
+  readonly property bool hasCursorSample: cursorTracker && cursorTracker.hasCursorSample === true
   readonly property real cursorVelocityX: cursorTracker ? Number(cursorTracker.cursorVelocityX) : 0
   readonly property real cursorVelocityY: cursorTracker ? Number(cursorTracker.cursorVelocityY) : 0
   readonly property real cursorKick: cursorTracker ? Number(cursorTracker.cursorKick) : 0
@@ -128,10 +129,11 @@ Item {
       }
 
       function cursorInsideWindow() {
-        return dustWindow.cursorLocalX >= 0
+        return root.hasCursorSample
+          && dustWindow.cursorLocalX >= 0
           && dustWindow.cursorLocalY >= 0
-          && dustWindow.cursorLocalX <= dustWindow.width
-          && dustWindow.cursorLocalY <= dustWindow.height
+          && dustWindow.cursorLocalX < dustWindow.width
+          && dustWindow.cursorLocalY < dustWindow.height
       }
 
       function spawnTransientMote() {
@@ -231,7 +233,11 @@ Item {
 
           function applyAirDisturbance() {
             airAge += 0.033
-            if (root.mouseReactive && root.mouseInfluence > 0 && root.cursorX >= 0 && root.cursorKick > 0) {
+            // Keep a positional repulsion field around the pointer even after
+            // the sampled movement impulse decays. Mouse Influence should not
+            // silently become inert whenever the cursor moves between polls.
+            if (root.mouseReactive && root.mouseInfluence > 0
+                && dustLayer.cursorInsideWindow()) {
               var cursorDx = x + width / 2 + airOffsetX - dustWindow.cursorLocalX
               var cursorDy = y + height / 2 + airOffsetY - dustWindow.cursorLocalY
               var distanceSquared = cursorDx * cursorDx + cursorDy * cursorDy
@@ -350,7 +356,8 @@ Item {
           opacity: alpha * Math.min(1, age / 220) * Math.pow(Math.max(0, 1 - age / life), 0.95)
 
           function applyCursorInfluence() {
-            if (!root.mouseReactive || root.mouseInfluence <= 0 || root.cursorX < 0) return
+            if (!root.mouseReactive || root.mouseInfluence <= 0
+                || !dustLayer.cursorInsideWindow()) return
 
             var centerX = px + width / 2
             var centerY = py + height / 2

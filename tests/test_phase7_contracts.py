@@ -14,12 +14,16 @@ def test_cursor_sampling_has_one_panel_owned_runtime_owner():
     dust = read("effects/DustMotesEffect.qml")
     tracker = read("services/CursorTracker.qml")
 
+    tactical = read("effects/TacticalGridEffect.qml")
+
     assert panel.count("CursorTracker {") == 1
-    assert "active: root.dustMotesRequested && root.paintAllowedSurfaceCount > 0" in panel
-    assert panel.count("        cursorTracker: cursorTracker\n") == 1
+    assert "active: root.cursorTrackingRequested && root.paintAllowedSurfaceCount > 0" in panel
+    assert "dustMotesRequested || tacticalGridRequested" in panel
+    assert panel.count("        cursorTracker: sharedCursorTracker\n") == 1
     assert "property var cursorTracker: null" in stack
-    assert "cursorTracker: root.cursorTracker" in stack
+    assert stack.count("cursorTracker: root.cursorTracker") == 2
     assert "property var cursorTracker: null" in dust
+    assert "property var cursorTracker: null" in tactical
     assert "Quickshell.Io" not in dust
     assert "Process {" not in dust
     assert "hyprctl" not in dust
@@ -33,6 +37,9 @@ def test_cursor_sampling_stops_for_hidden_reduced_or_fully_suppressed_effects():
     assert "dustMotesSettings.enabled === true" in panel
     assert "dustMotesSettings.mouseReactive === true" in panel
     assert "!ambienceSettings.reduceMotion" in panel
+    assert 'normalizedOrder().indexOf("tacticalGrid") >= 0' in panel
+    assert "tacticalGridSettings.enabled === true" in panel
+    assert "cursorTrackingRequested: dustMotesRequested || tacticalGridRequested" in panel
     assert "paintAllowedSurfaceCount > 0" in panel
     assert "onPaintAllowedChanged: root.recountPaintAllowedSurfaces()" in panel
 
@@ -40,9 +47,44 @@ def test_cursor_sampling_stops_for_hidden_reduced_or_fully_suppressed_effects():
 def test_status_exposes_shared_cursor_tracker_health():
     panel = read("Panel.qml")
     tracker = read("services/CursorTracker.qml")
-    assert "cursorTracker: cursorTracker.status()" in panel
-    for field in ("active", "running", "healthy", "launchCount", "failureCount", "error"):
+    assert "cursorTracker: sharedCursorTracker.status()" in panel
+    for field in (
+        "active", "running", "healthy", "launchCount", "failureCount",
+        "hasCursorSample", "cursorX", "cursorY", "displayCursorX", "displayCursorY",
+        "velocityX", "velocityY", "kick", "error",
+    ):
         assert f"{field}:" in tracker
+
+
+def test_mouse_influence_keeps_positional_repulsion_after_movement_impulse_decays():
+    dust = read("effects/DustMotesEffect.qml")
+    assert "root.hasCursorSample" in dust
+    assert "root.cursorX >= 0" not in dust
+    assert "root.cursorY >= 0" not in dust
+    assert "root.cursorKick > 0" not in dust
+    assert "dustWindow.cursorLocalX < dustWindow.width" in dust
+    assert "dustWindow.cursorLocalY < dustWindow.height" in dust
+
+
+def test_tactical_grid_uses_bounded_primitives_and_injected_pointer_state():
+    tactical = read("effects/TacticalGridEffect.qml")
+    assert tactical.count("Repeater {") == 2
+    assert "cursorLocalX: cursorX - screenOriginX" in tactical
+    assert "cursorLocalY: cursorY - screenOriginY" in tactical
+    assert "cursorInsideOutput" in tactical
+    assert "parallaxOffsetX" in tactical
+    assert "parallaxOffsetY" in tactical
+    assert "width: parent.width" in tactical
+    assert "height: parent.height" in tactical
+    assert "readonly property real renderedGridX: gridLayer.x" in tactical
+    assert "rawCursorLocalX < width" in tactical
+    assert "rawCursorLocalY < height" in tactical
+    assert "FrameAnimation" in tactical
+    for style in ("crosshair", "brackets", "ring", "diamond"):
+        assert f'root.reticleStyle === "{style}"' in tactical or f'id: {style[:-1] if style.endswith("s") else style}Reticle' in tactical
+    assert "Process {" not in tactical
+    assert "FileView" not in tactical
+    assert "Canvas" not in tactical
 
 
 def test_renderers_wait_for_stable_geometry_before_first_animation_cycle():
@@ -52,7 +94,7 @@ def test_renderers_wait_for_stable_geometry_before_first_animation_cycle():
     assert "onWidthChanged: scheduleGeometryReady()" in stack
     assert "onHeightChanged: scheduleGeometryReady()" in stack
     assert "interval: 80" in stack
-    assert stack.count("runtimeEnabled: root.rendererPaintEnabled && root.productionEffectsEnabled") == 8
+    assert stack.count("runtimeEnabled: root.rendererPaintEnabled && root.productionEffectsEnabled") == 9
 
 
 def test_aurora_secondary_glows_start_at_their_animated_floor():
@@ -102,7 +144,7 @@ def test_rainfall_seeds_full_length_loops_at_distributed_startup_phases():
     assert "rainSheet.startupComplete ? -rainSheet.sheetLength : rainSheet.initialY" in rain
     assert "foregroundDrop.startupComplete ? -foregroundDrop.dropLength : foregroundDrop.initialY" in rain
     visual = read("tests/live_phase6_visual.py")
-    assert 'item.reducedMotion = caseId !== "rainfall"' in visual
+    assert 'item.reducedMotion = caseId !== "rainfall" && caseId !== "tacticalGrid"' in visual
     assert '"rainfallStartupCoverage"' in visual
     assert "rainfall_top <= 0.01 or rainfall_bottom <= 0.01" in visual
 
@@ -125,7 +167,7 @@ def test_phase7_performance_matrix_is_isolated_repeatable_and_revision_aware():
     assert 'parser.add_argument("--repetitions"' in source
     for case_id in (
         "auroraDrift", "cinematicLight", "crt", "dustMotes", "filmGrain",
-        "godRays", "rainfall", "trackingLines", "backgroundVignette",
+        "godRays", "rainfall", "tacticalGrid", "trackingLines", "backgroundVignette",
         "threeEffectStack",
     ):
         assert case_id in source

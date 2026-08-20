@@ -4,6 +4,17 @@ All notable changes are recorded here. This project follows [Semantic Versioning
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-08-20
+
+### Added
+
+- Added a theme-aware Tactical Grid effect with pointer parallax, guide lines, and four targeting-reticle styles.
+
+### Fixed
+
+- Tactical Grid now receives the shared cursor tracker so pointer guides, reticles, and parallax render in the live panel.
+- Mouse Influence now keeps a positional repulsion field around the pointer after the sampled movement impulse decays.
+
 ## [0.5.0] - 2026-08-19
 
 ### Added
