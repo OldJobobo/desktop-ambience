@@ -993,6 +993,38 @@ Item {
     }
   }
 
+  component StackAction: Item {
+    id: stackAction
+    property string text: ""
+    property string tooltipText: ""
+    signal clicked()
+
+    implicitWidth: Style.space(28)
+    implicitHeight: Style.space(34)
+
+    Text {
+      anchors.centerIn: parent
+      text: stackAction.text
+      color: actionMouse.containsMouse ? Color.accent : root.muted
+      font.family: Style.font.family
+      font.pixelSize: Style.font.body
+    }
+
+    MouseArea {
+      id: actionMouse
+      anchors.fill: parent
+      hoverEnabled: true
+      cursorShape: Qt.PointingHandCursor
+      onClicked: stackAction.clicked()
+    }
+
+    QQC.ToolTip {
+      visible: stackAction.tooltipText !== "" && actionMouse.containsMouse
+      text: stackAction.tooltipText
+      delay: 400
+    }
+  }
+
   component EffectStackRow: BorderSurface {
     id: stackRow
     property string label: ""
@@ -1007,18 +1039,8 @@ Item {
 
     implicitHeight: Style.space(50)
     radius: Style.cornerRadius
-    color: "transparent"
-    borderSpec: selected ? Border.none() : Border.controlSpec("normal", Color.foreground, Color.accent)
-
-    Rectangle {
-      visible: stackRow.selected
-      anchors.left: parent.left
-      anchors.top: parent.top
-      anchors.bottom: parent.bottom
-      width: Style.space(2)
-      radius: width / 2
-      color: Color.accent
-    }
+    color: selected ? root.accentWash : "transparent"
+    borderSpec: Border.controlSpec(selected ? "selected" : "normal", Color.foreground, Color.accent)
 
     Item {
       anchors.left: parent.left
@@ -1054,23 +1076,20 @@ Item {
       anchors.verticalCenter: parent.verticalCenter
       spacing: 1
 
-      Button {
+      StackAction {
         text: "↑"
-        focusable: stackRow.canMoveUp
         visible: stackRow.canMoveUp
         tooltipText: "Move toward the front"
         onClicked: stackRow.moveUp()
       }
-      Button {
+      StackAction {
         text: "↓"
-        focusable: stackRow.canMoveDown
         visible: stackRow.canMoveDown
         tooltipText: "Move toward the back"
         onClicked: stackRow.moveDown()
       }
-      Button {
+      StackAction {
         text: "×"
-        focusable: true
         tooltipText: "Remove from stack"
         onClicked: stackRow.remove()
       }
