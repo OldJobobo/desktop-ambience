@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Rain style extraction parity against pinned pre-extraction captures",
+  "isolatedConfig": true,
+  "liveSettingsModified": false,
+  "images": {
+    "rainfall-static.png": {
+      "baselineSha256": "2c02caeb6095e9d922f3a7729f86745799d099c558f76190bd9006715f87754a",
+      "extractedSha256": "2c02caeb6095e9d922f3a7729f86745799d099c558f76190bd9006715f87754a",
+      "changedPixels": 0,
+      "meanAbsoluteChannelDelta": 0.0,
+      "maximumChannelDelta": 0
+    },
+    "rainfall-animated.png": {
+      "baselineSha256": "56a4891f64887a1f18aa43fe32010ec458658fe3d0f299ade885aefe40753958",
+      "extractedSha256": "56a4891f64887a1f18aa43fe32010ec458658fe3d0f299ade885aefe40753958",
+      "changedPixels": 0,
+      "meanAbsoluteChannelDelta": 0.0,
+      "maximumChannelDelta": 0
+    }
+  },
+  "staticPixelExact": true,
+  "animatedGeometryComparedAtHarnessTiming": true,
+  "pluginVersion": "0.8.0"
+}

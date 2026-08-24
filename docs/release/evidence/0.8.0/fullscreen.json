@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "output": "JOBO-PHASE6-FS-2f8692b1",
+  "workspace": "9",
+  "windowAcceptedFocus": false,
+  "liveSettingsModified": false,
+  "coexistsWithInstalledPlugin": true,
+  "clientStates": {
+    "normal": {
+      "internal": 0,
+      "client": 0
+    },
+    "fakeFullscreen": {
+      "internal": 0,
+      "client": 2
+    },
+    "realFullscreen": {
+      "internal": 2,
+      "client": 2
+    },
+    "restored": {
+      "internal": 0,
+      "client": 0
+    }
+  },
+  "suppressionSequence": [
+    false,
+    true,
+    false,
+    false
+  ],
+  "surfaceRemainedMapped": true,
+  "presentationModes": [
+    "foreground",
+    "background"
+  ],
+  "activeEffects": [
+    "bokeh",
+    "nodeMesh",
+    "rainfall"
+  ],
+  "bokehLoadedThroughout": true,
+  "bokehIdentityPreservedAcrossPresentation": true,
+  "bokehAnimatedWhilePaintable": true,
+  "bokehStoppedWhileSuppressed": true,
+  "nodeMeshLoadedThroughout": true,
+  "nodeMeshIdentityPreservedAcrossPresentation": true,
+  "nodeMeshAnimatedWhilePaintable": true,
+  "nodeMeshStoppedWhileSuppressed": true,
+  "precipitationStyle": "snow",
+  "precipitationLoadedThroughout": true,
+  "precipitationIdentityPreservedAcrossPresentation": true,
+  "precipitationAnimatedWhilePaintable": true,
+  "precipitationStoppedWhileSuppressed": true,
+  "pluginVersion": "0.8.0"
+}

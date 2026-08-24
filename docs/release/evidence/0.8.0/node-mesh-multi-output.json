@@ -124,5 +124,6 @@
       "visiblePixels": 16460
     }
   ],
-  "artifactDirectory": ".pi/artifacts/node-mesh-multi-output"
+  "artifactDirectory": ".pi/artifacts/node-mesh-multi-output",
+  "pluginVersion": "0.8.0"
 }
