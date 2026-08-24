@@ -4,6 +4,8 @@ All notable changes are recorded here. This project follows [Semantic Versioning
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-08-23
+
 ### Added
 
 - Added Drip as a theme-aware ordered effect with bar-aware downward and upward travel, explicit direction overrides, screen-edge fallbacks, and a quiet reduced-motion state.
