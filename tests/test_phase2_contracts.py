@@ -16,6 +16,7 @@ ORDERED_EFFECTS = {
     "cinematicLight": "CinematicLightEffect.qml",
     "crt": "CrtEffect.qml",
     "dustMotes": "DustMotesEffect.qml",
+    "drip": "DripEffect.qml",
     "filmGrain": "FilmGrainEffect.qml",
     "godRays": "GodRaysEffect.qml",
     "rainfall": "RainfallEffect.qml",
@@ -54,11 +55,14 @@ def test_stack_injects_normalized_state_without_duplicate_defaults():
 
     for effect_id in ORDERED_EFFECTS:
         assert f'effectSettings: root.settingsFor("{effect_id}")' in stack
-    assert stack.count("globalOpacity: root.settings ? root.settings.opacity : 1") == 11
-    assert stack.count("reducedMotion: root.settings ? root.settings.reduceMotion : false") == 11
-    assert stack.count("theme: root.theme") == 9
+    assert stack.count("globalOpacity: root.settings ? root.settings.opacity : 1") == 12
+    assert stack.count("reducedMotion: root.settings ? root.settings.reduceMotion : false") == 12
+    assert stack.count("theme: root.theme") == 10
     assert "foregroundOverlay: root.foregroundOverlay" in stack
     assert 'effectSettings: root.settingsFor("tacticalGrid")' in stack
+    assert 'effectSettings: root.settingsFor("drip")' in stack
+    assert "property var barState: null" in stack
+    assert "barState: root.barState" in stack
     assert stack.count("targetScreen: root.targetScreen") == 3
     assert stack.count("cursorTracker: root.cursorTracker") == 3
 

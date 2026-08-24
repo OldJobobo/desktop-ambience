@@ -267,6 +267,138 @@ ShellRoot {{
         self.assertEqual(disk, restarted)
         self.assertEqual(disk["activeEffects"], ["auroraDrift", "filmGrain"])
 
+    def test_blood_mode_label_changes_on_open_and_toggle_without_repeating(self):
+        qml = f'''
+import Quickshell
+import QtQuick
+ShellRoot {{
+  property bool ran: false
+  Loader {{ id: settingsLoader; source: "{qml_url('services/AmbienceSettings.qml')}" }}
+  Loader {{ id: windowLoader; source: "{qml_url('components/SettingsWindow.qml')}" }}
+  Connections {{
+    target: settingsLoader.item
+    function onLoaded() {{
+      if (ran || !windowLoader.item) return
+      ran = true
+      var view = windowLoader.item
+      view.settings = settingsLoader.item
+      var initial = view.bloodModeLabel
+      view.open('{{"effect":"drip"}}')
+      var opened = view.bloodModeLabel
+      view.setEffectField("drip", "bloodMode", true)
+      var toggled = view.bloodModeLabel
+      view.close()
+      view.open('{{"effect":"drip"}}')
+      var reopened = view.bloodModeLabel
+      var phrases = view.bloodModePhrases.slice()
+      console.log("BEHAVE " + JSON.stringify({{
+        initial: initial, opened: opened, toggled: toggled, reopened: reopened,
+        phrases: phrases, persisted: settingsLoader.item.data.effects.drip.bloodMode,
+        hint: view.fieldHintFor("drip", {{key: "bloodMode", hint: "description"}})
+      }}))
+      view.close()
+      Qt.quit()
+    }}
+  }}
+}}
+'''
+        with tempfile.TemporaryDirectory() as config_dir:
+            output = run_quickshell(qml, config_home=Path(config_dir), timeout=12)
+        require_no_qml_errors(output)
+        row = parse_behave(output)[-1]
+        self.assertNotEqual(row["initial"], row["opened"])
+        self.assertNotEqual(row["opened"], row["toggled"])
+        self.assertNotEqual(row["toggled"], row["reopened"])
+        self.assertIn("There Will Be Blood", row["phrases"])
+        self.assertIn("Blood for the Blood God!", row["phrases"])
+        self.assertIn("Fangs Out!", row["phrases"])
+        self.assertIn("If It Bleeds, We Can Kill It!", row["phrases"])
+        self.assertIn(row["reopened"], row["phrases"])
+        self.assertEqual(row["hint"], "")
+        self.assertTrue(row["persisted"])
+
+    def test_enum_options_have_human_labels_and_stable_values(self):
+        qml = f'''
+import Quickshell
+import QtQuick
+ShellRoot {{
+  Loader {{ id: view; source: "{qml_url('components/SettingsWindow.qml')}" }}
+  Timer {{ id: probe; interval: 40; running: true; onTriggered: {{
+    var fields = view.item.fieldsFor("cinematicLight")
+    var style = null
+    for (var i = 0; i < fields.length; i++) if (fields[i].key === "stylePreset") style = fields[i]
+    var dripFields = view.item.fieldsFor("drip")
+    var direction = null
+    for (var j = 0; j < dripFields.length; j++) if (dripFields[j].key === "direction") direction = dripFields[j]
+    console.log("BEHAVE " + JSON.stringify({{style: style.options, direction: direction.options}}))
+    Qt.quit()
+  }} }}
+}}
+'''
+        with tempfile.TemporaryDirectory() as config_dir:
+            output = run_quickshell(qml, config_home=Path(config_dir), timeout=10)
+        require_no_qml_errors(output)
+        row = parse_behave(output)[-1]
+        self.assertEqual(row["style"][0], {"value": "lightLeak", "label": "Light leak"})
+        self.assertEqual(row["style"][2], {"value": "anamorphicGlow", "label": "Anamorphic glow"})
+        self.assertEqual(row["direction"][0], {"value": "auto", "label": "Automatic"})
+        self.assertEqual(row["direction"][1], {"value": "down", "label": "Down"})
+
+    def test_effect_reset_is_scoped_and_preview_pause_is_session_only(self):
+        qml = f'''
+import Quickshell
+import QtQuick
+ShellRoot {{
+  property bool ran: false
+  property bool pausedBeforeClose: false
+  Loader {{ id: settingsLoader; source: "{qml_url('services/AmbienceSettings.qml')}" }}
+  Loader {{ id: windowLoader; source: "{qml_url('components/SettingsWindow.qml')}" }}
+  Connections {{
+    target: settingsLoader.item
+    function onLoaded() {{
+      if (ran || !windowLoader.item) return
+      ran = true
+      var view = windowLoader.item
+      view.settings = settingsLoader.item
+      view.addEffect("drip")
+      view.setEffectField("drip", "speed", 4)
+      view.resetEffect("drip")
+      view.setPreviewPaused(true)
+      pausedBeforeClose = view.previewPaused
+      view.close()
+      probe.start()
+    }}
+  }}
+  Timer {{
+    id: probe; interval: 30; repeat: true; property int attempts: 0
+    onTriggered: {{
+      attempts += 1
+      var service = settingsLoader.item
+      if (service && service.persistenceState === "saved"
+          && service.confirmedSaveRevision === service.requestedSaveRevision) {{
+        stop()
+        console.log("BEHAVE " + JSON.stringify({{
+          activeEffects: service.data.activeEffects,
+          drip: service.data.effects.drip,
+          pausedBeforeClose: pausedBeforeClose,
+          pausedAfterClose: windowLoader.item.previewPaused
+        }}))
+        Qt.quit()
+      }} else if (attempts > 160) {{ console.log("BEHAVE_ERR scoped reset did not settle"); Qt.quit() }}
+    }}
+  }}
+}}
+'''
+        with tempfile.TemporaryDirectory() as config_dir:
+            output = run_quickshell(qml, config_home=Path(config_dir), timeout=12)
+        require_no_qml_errors(output)
+        row = parse_behave(output)[-1]
+        self.assertEqual(row["activeEffects"], ["trackingLines", "drip"])
+        self.assertEqual(row["drip"]["speed"], 1)
+        self.assertEqual(row["drip"]["dropletCount"], 28)
+        self.assertTrue(row["pausedBeforeClose"])
+        self.assertFalse(row["pausedAfterClose"])
+
     def test_reset_restores_defaults_without_touching_unrelated_file(self):
         qml = f'''
 import Quickshell

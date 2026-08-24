@@ -86,7 +86,7 @@ def test_phase6_live_checks_are_opt_in_and_restore_temporary_resources():
 def test_visual_matrix_covers_every_effect_vignette_stack_theme_and_performance():
     source = read("tests/live_phase6_visual.py")
     for case_id in (
-        "auroraDrift", "cinematicLight", "crt", "dustMotes", "filmGrain",
+        "auroraDrift", "cinematicLight", "crt", "dustMotes", "drip", "filmGrain",
         "godRays", "rainfall", "tacticalGrid", "trackingLines", "bokeh", "nodeMesh", "backgroundVignette",
         "threeEffectStack", "threeEffectStackThemeSwitch",
     ):
@@ -95,6 +95,7 @@ def test_visual_matrix_covers_every_effect_vignette_stack_theme_and_performance(
     assert "averageCpuPercent" in source
     assert "themeSwitchChangedPixels" in source
     assert "contact-sheet.webp" in source
+    assert 'id === "drip" ? 4600 : 650' in source
 
 
 def test_fullscreen_matrix_distinguishes_fake_and_real_fullscreen():

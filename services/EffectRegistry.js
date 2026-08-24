@@ -45,6 +45,17 @@ var orderedEffects = [
     }
   },
   {
+    id: "drip", label: "Drip",
+    fields: {
+      enabled: boolField(true), intensity: realField(1, 0, 1),
+      speed: realField(1, 0.15, 4), dropletCount: intField(28, 6, 72),
+      dropletSize: realField(12, 4, 32), formationTime: intField(3800, 600, 12000),
+      fallSpeed: realField(260, 40, 900),
+      direction: enumField("auto", ["auto", "down", "up"]),
+      accentBlend: realField(0, 0, 1), bloodMode: boolField(false)
+    }
+  },
+  {
     id: "filmGrain", label: "Film Grain",
     fields: {
       enabled: boolField(true), intensity: realField(0.28, 0, 1),
@@ -147,6 +158,8 @@ var fieldLabels = {
   bloomPulseAmount: "Bloom Amount", bloomPulseInterval: "Bloom Interval",
   distortion: "Distortion", distortionAmount: "Distortion Amount", moteCount: "Mote Count",
   moteSize: "Mote Size", mouseReactive: "Mouse Reactive", mouseInfluence: "Mouse Influence",
+  dropletCount: "Droplet Count", dropletSize: "Droplet Size", formationTime: "Formation Time",
+  fallSpeed: "Fall Speed", direction: "Direction", bloodMode: "Blood Mode",
   grainCount: "Grain Count", grainSize: "Grain Size", rayCount: "Ray Count",
   raySpread: "Ray Spread", shimmer: "Shimmer", origin: "Ray Origin", dropCount: "Drop Count",
   precipitationStyle: "Precipitation Style", slant: "Slant", mistAmount: "Mist Amount",
@@ -210,6 +223,12 @@ var fieldHints = {
   moteSize: "Sets the size of each dust mote.",
   mouseReactive: "Lets the pointer push nearby motes.",
   mouseInfluence: "Sets how strongly the pointer influences mouse-reactive movement.",
+  dropletCount: "Sets the number of droplets forming along the source edge.",
+  dropletSize: "Sets the base size of each formed droplet.",
+  formationTime: "Sets how long droplets take to form before detaching.",
+  fallSpeed: "Sets how quickly detached droplets travel across the screen.",
+  direction: "Follows the horizontal bar automatically or forces upward or downward travel.",
+  bloodMode: "Overrides the bar color with cinematic blood red and strengthens the shadow and reflection.",
   grainCount: "Sets the number of film-grain specks.",
   grainSize: "Sets the size of each grain speck.",
   rayCount: "Sets the number of light rays.",
@@ -361,6 +380,34 @@ function fieldHint(key, effectId) {
   return "Adjusts the source renderer setting."
 }
 
+function enumOptionLabel(value) {
+  var normalized = String(value || "")
+  var labels = {
+    lightLeak: "Light leak", cinematicFlare: "Cinematic flare",
+    anamorphicGlow: "Anamorphic glow", auto: "Automatic",
+    down: "Down", up: "Up", rain: "Rain", snow: "Snow",
+    soft: "Soft", crystal: "Crystal", mixed: "Mixed",
+    off: "Off", attract: "Attract", repel: "Repel",
+    "top-left": "Top left", "top-right": "Top right",
+    "bottom-left": "Bottom left", "bottom-right": "Bottom right",
+    crosshair: "Crosshair", brackets: "Brackets", ring: "Ring", diamond: "Diamond",
+    accent: "Accent", foreground: "Foreground",
+    color09: "Palette 09", color10: "Palette 10", color11: "Palette 11",
+    color12: "Palette 12", color13: "Palette 13", color14: "Palette 14"
+  }
+  if (labels[normalized]) return labels[normalized]
+  var spaced = normalized.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/-/g, " ")
+  return spaced.length > 0 ? spaced.charAt(0).toUpperCase() + spaced.slice(1) : normalized
+}
+
+function enumOptions(field) {
+  var values = field && Array.isArray(field.values) ? field.values : []
+  var result = []
+  for (var i = 0; i < values.length; i++)
+    result.push({ value: String(values[i]), label: enumOptionLabel(values[i]) })
+  return result
+}
+
 function stepForField(field) {
   if (!field) return 0.01
   if (field.type === "int") {
@@ -383,6 +430,7 @@ function fieldDefinitions(value) {
     field.label = fieldLabel(key, value)
     field.hint = fieldHint(key, value)
     field.step = stepForField(field)
+    if (field.type === "enum") field.options = enumOptions(field)
     result.push(field)
   }
   return result

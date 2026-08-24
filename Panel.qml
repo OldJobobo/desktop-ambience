@@ -28,10 +28,26 @@ Item {
   readonly property real vignetteIntensity: Number(backgroundVignette.intensity)
   readonly property bool vignetteBehindEffects: backgroundVignette.ignoreBackgroundAnimationLayer === true
   readonly property bool opened: settingsWindow.opened
+  readonly property bool previewPaused: settingsWindow.previewPaused
   readonly property string pluginVersion: String(root.manifest && root.manifest.version || "")
   readonly property bool hostReady: true
   readonly property bool foregroundOverlay: presentation === "foreground"
   readonly property bool visualSurfaceEnabled: ambienceEnabled || vignetteEnabled
+  readonly property var liveBar: root.shell && root.shell.bar ? root.shell.bar : null
+  readonly property var barState: {
+    var position = liveBar ? String(liveBar.position || "") : ""
+    var size = liveBar ? Number(liveBar.barSize) : 0
+    var hidden = !liveBar || liveBar.barHidden === true
+    var horizontal = position === "top" || position === "bottom"
+    var color = liveBar && liveBar.background !== undefined ? String(liveBar.background) : ""
+    return {
+      available: !!liveBar && !hidden && horizontal && isFinite(size) && size > 0,
+      position: position,
+      size: isFinite(size) ? size : 0,
+      hidden: hidden,
+      color: color
+    }
+  }
   readonly property var dustMotesSettings: ambienceSettings.effects
     && ambienceSettings.effects.dustMotes ? ambienceSettings.effects.dustMotes : ({})
   readonly property bool dustMotesRequested: ambienceEnabled
@@ -225,6 +241,8 @@ Item {
         confirmedRevision: ambienceSettings.confirmedSaveRevision
       },
       theme: themeAdapter.status(),
+      barState: root.barState,
+      previewPaused: root.previewPaused,
       cursorRequests: {
         dustMotes: root.dustMotesRequested,
         tacticalGrid: root.tacticalGridRequested,
@@ -243,7 +261,7 @@ Item {
   FullscreenGuard { id: fullscreenGuard }
   CursorTracker {
     id: sharedCursorTracker
-    active: root.cursorTrackingRequested && root.paintAllowedSurfaceCount > 0
+    active: !root.previewPaused && root.cursorTrackingRequested && root.paintAllowedSurfaceCount > 0
     pollIntervalMs: root.tacticalGridRequested || root.nodeMeshRequested ? 60 : 120
   }
 
@@ -262,6 +280,7 @@ Item {
     height: 0
     settings: ambienceSettings
     theme: themeAdapter
+    barState: root.barState
     activeEffects: root.activeEffects
     paintEnabled: false
     productionEffectsEnabled: false
@@ -310,10 +329,11 @@ Item {
         targetScreen: ambienceSurface.modelData
         settings: ambienceSettings
         theme: themeAdapter
+        barState: root.barState
         cursorTracker: sharedCursorTracker
         activeEffects: root.activeEffects
         foregroundOverlay: root.foregroundOverlay
-        paintEnabled: ambienceSurface.paintAllowed
+        paintEnabled: ambienceSurface.paintAllowed && !root.previewPaused
         productionEffectsEnabled: root.ambienceEnabled
       }
 
@@ -322,7 +342,7 @@ Item {
         z: root.vignetteBehindEffects ? -10000 : 10000
         targetScreen: ambienceSurface.modelData
         settings: root.backgroundVignette
-        paintEnabled: ambienceSurface.paintAllowed
+        paintEnabled: ambienceSurface.paintAllowed && !root.previewPaused
       }
 
       onPaintAllowedChanged: root.recountPaintAllowedSurfaces()

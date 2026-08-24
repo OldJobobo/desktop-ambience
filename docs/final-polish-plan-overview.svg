@@ -1,0 +1,308 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Desktop Ambience final polish plan overview</title>
+  <desc id="desc">A dark editorial roadmap showing the path from repository reconciliation through composition, comfort, refinement, proof, marketplace presentation, and the flagship 1.0 release, alongside a proposed ambient composition studio interface.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#071013"/>
+      <stop offset="0.55" stop-color="#0d171a"/>
+      <stop offset="1" stop-color="#111316"/>
+    </linearGradient>
+    <radialGradient id="aurora" cx="42%" cy="25%" r="72%">
+      <stop offset="0" stop-color="#56c6bd" stop-opacity=".16"/>
+      <stop offset=".45" stop-color="#56c6bd" stop-opacity=".035"/>
+      <stop offset="1" stop-color="#56c6bd" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#d7ad52"/>
+      <stop offset="1" stop-color="#f0c96d"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#152125"/>
+      <stop offset="1" stop-color="#10181b"/>
+    </linearGradient>
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="12"/>
+    </filter>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="180%">
+      <feDropShadow dx="0" dy="14" stdDeviation="22" flood-color="#000" flood-opacity=".42"/>
+    </filter>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#9ab0b0" stroke-opacity=".045" stroke-width="1"/>
+    </pattern>
+    <style>
+      .display { font-family: "Space Grotesk", "Inter", sans-serif; }
+      .body { font-family: "Inter", "Noto Sans", sans-serif; }
+      .mono { font-family: "JetBrains Mono", "Iosevka", monospace; }
+      .muted { fill: #819095; }
+      .soft { fill: #a9b5b7; }
+      .white { fill: #edf2ef; }
+      .gold { fill: #e6bd62; }
+      .teal { fill: #6bc9c0; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  <rect width="1600" height="1000" fill="url(#aurora)"/>
+  <rect width="1600" height="1000" fill="url(#grid)"/>
+
+  <!-- Ambient ornaments -->
+  <ellipse cx="1340" cy="170" rx="260" ry="90" fill="#d7ad52" opacity=".045" filter="url(#softGlow)"/>
+  <ellipse cx="900" cy="810" rx="420" ry="120" fill="#54bdb3" opacity=".055" filter="url(#softGlow)"/>
+  <path d="M1180 35H1545" stroke="#d7ad52" stroke-opacity=".5"/>
+  <path d="M55 965H420" stroke="#56c6bd" stroke-opacity=".35"/>
+
+  <!-- Header -->
+  <g transform="translate(64 58)">
+    <text class="mono gold" font-size="14" font-weight="700" letter-spacing="3">DESKTOP AMBIENCE · FINAL POLISH</text>
+    <text class="display white" y="54" font-size="54" font-weight="650" letter-spacing="-1.8">From capable plugin to ambient composition studio.</text>
+    <text class="body soft" y="91" font-size="19">The 1.0 path: reconcile the foundation, make composition immediate, then prove and present the result.</text>
+  </g>
+
+  <!-- Roadmap rail -->
+  <g transform="translate(64 195)">
+    <text class="mono muted" font-size="12" font-weight="700" letter-spacing="2.4">THE RELEASE PATH</text>
+    <line x1="18" y1="63" x2="1454" y2="63" stroke="#3a484b" stroke-width="2"/>
+    <line x1="18" y1="63" x2="1228" y2="63" stroke="url(#gold)" stroke-width="3"/>
+
+    <g class="body">
+      <!-- 0 -->
+      <g transform="translate(0 38)">
+        <circle cx="18" cy="25" r="18" fill="#e6bd62"/>
+        <text x="18" y="30" text-anchor="middle" fill="#101416" font-size="13" font-weight="800">00</text>
+        <text class="white" x="0" y="65" font-size="14" font-weight="700">RECONCILE</text>
+        <text class="muted" x="0" y="86" font-size="12">Current baseline</text>
+      </g>
+      <!-- 1 -->
+      <g transform="translate(205 38)">
+        <circle cx="18" cy="25" r="18" fill="#d7ad52"/>
+        <text x="18" y="30" text-anchor="middle" fill="#101416" font-size="13" font-weight="800">01</text>
+        <text class="white" x="0" y="65" font-size="14" font-weight="700">TRUST</text>
+        <text class="muted" x="0" y="86" font-size="12">One truthful release</text>
+      </g>
+      <!-- 2 -->
+      <g transform="translate(405 38)">
+        <circle cx="18" cy="25" r="18" fill="#72cbc1"/>
+        <text x="18" y="30" text-anchor="middle" fill="#0a1618" font-size="13" font-weight="800">02</text>
+        <text class="white" x="0" y="65" font-size="14" font-weight="700">COMPOSE</text>
+        <text class="muted" x="0" y="86" font-size="12">Layer spine + clarity</text>
+      </g>
+      <!-- 3 -->
+      <g transform="translate(610 38)">
+        <circle cx="18" cy="25" r="18" fill="#72cbc1"/>
+        <text x="18" y="30" text-anchor="middle" fill="#0a1618" font-size="13" font-weight="800">03</text>
+        <text class="white" x="0" y="65" font-size="14" font-weight="700">DISCOVER</text>
+        <text class="muted" x="0" y="86" font-size="12">Presets + onboarding</text>
+      </g>
+      <!-- 4 -->
+      <g transform="translate(820 38)">
+        <circle cx="18" cy="25" r="18" fill="#98b7d5"/>
+        <text x="18" y="30" text-anchor="middle" fill="#0a1218" font-size="13" font-weight="800">04</text>
+        <text class="white" x="0" y="65" font-size="14" font-weight="700">COMFORT</text>
+        <text class="muted" x="0" y="86" font-size="12">Full · Reduced · Still</text>
+      </g>
+      <!-- 5 -->
+      <g transform="translate(1035 38)">
+        <circle cx="18" cy="25" r="18" fill="#bc9bcc"/>
+        <text x="18" y="30" text-anchor="middle" fill="#17101b" font-size="13" font-weight="800">05</text>
+        <text class="white" x="0" y="65" font-size="14" font-weight="700">REFINE</text>
+        <text class="muted" x="0" y="86" font-size="12">Hierarchy + access</text>
+      </g>
+      <!-- 6 -->
+      <g transform="translate(1240 38)">
+        <circle cx="18" cy="25" r="18" fill="#d7856f"/>
+        <text x="18" y="30" text-anchor="middle" fill="#1a0e0b" font-size="13" font-weight="800">06</text>
+        <text class="white" x="0" y="65" font-size="14" font-weight="700">PROVE</text>
+        <text class="muted" x="0" y="86" font-size="12">Performance + release</text>
+      </g>
+      <!-- 1.0 -->
+      <g transform="translate(1432 24)">
+        <rect x="0" y="0" width="70" height="50" rx="25" fill="#74d393"/>
+        <text x="35" y="31" text-anchor="middle" fill="#0d1911" font-size="15" font-weight="850">1.0</text>
+        <text class="white" x="35" y="79" text-anchor="middle" font-size="14" font-weight="800">FLAGSHIP</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Main composition studio concept -->
+  <g transform="translate(64 355)" filter="url(#shadow)">
+    <rect width="1010" height="535" rx="18" fill="url(#panel)" stroke="#415055"/>
+    <rect x="1" y="1" width="1008" height="64" rx="17" fill="#111b1e"/>
+    <path d="M1 65H1009" stroke="#344247"/>
+
+    <!-- Studio header -->
+    <text class="mono gold" x="28" y="27" font-size="10" font-weight="750" letter-spacing="2">DESKTOP AMBIENCE · COMPOSE</text>
+    <text class="display white" x="28" y="50" font-size="22" font-weight="650">Northern Veil</text>
+    <circle cx="795" cy="34" r="4" fill="#74d393"/>
+    <text class="body muted" x="807" y="39" font-size="12">Saved</text>
+    <rect x="864" y="18" width="118" height="32" rx="7" fill="#1a272b" stroke="#56686c"/>
+    <text class="body soft" x="923" y="39" text-anchor="middle" font-size="12" font-weight="650">Pause preview</text>
+
+    <!-- Global strip -->
+    <g transform="translate(22 84)">
+      <rect width="966" height="58" rx="10" fill="#10191c" stroke="#2f3c40"/>
+      <text class="mono muted" x="18" y="23" font-size="9" font-weight="700" letter-spacing="1.5">AMBIENCE</text>
+      <circle cx="23" cy="40" r="5" fill="#74d393"/>
+      <text class="body white" x="36" y="44" font-size="12" font-weight="700">ON</text>
+      <path d="M105 12V46M310 12V46M522 12V46M728 12V46" stroke="#28363a"/>
+      <text class="mono muted" x="126" y="23" font-size="9" letter-spacing="1.2">PRESENTATION</text>
+      <text class="body white" x="126" y="44" font-size="12" font-weight="650">Background</text>
+      <text class="mono muted" x="332" y="23" font-size="9" letter-spacing="1.2">OPACITY</text>
+      <text class="body white" x="332" y="44" font-size="12" font-weight="650">72%</text>
+      <rect x="385" y="37" width="108" height="4" rx="2" fill="#334347"/>
+      <rect x="385" y="37" width="77" height="4" rx="2" fill="#e6bd62"/>
+      <text class="mono muted" x="544" y="23" font-size="9" letter-spacing="1.2">MOTION</text>
+      <text class="body white" x="544" y="44" font-size="12" font-weight="650">Reduced</text>
+      <text class="mono muted" x="750" y="23" font-size="9" letter-spacing="1.2">WORKSPACE</text>
+      <rect x="750" y="30" width="88" height="20" rx="10" fill="#e6bd62"/>
+      <text x="794" y="44" text-anchor="middle" fill="#15140f" class="body" font-size="10" font-weight="800">COMPOSE</text>
+      <text class="body muted" x="865" y="44" font-size="11">Presets</text>
+    </g>
+
+    <!-- Left stack panel -->
+    <g transform="translate(22 160)">
+      <rect width="350" height="352" rx="12" fill="#0e171a" stroke="#344247"/>
+      <text class="mono muted" x="18" y="27" font-size="10" font-weight="700" letter-spacing="1.8">LAYERS · FRONT TO BACK</text>
+      <text class="body muted" x="297" y="27" font-size="10">4 active</text>
+
+      <path d="M41 67V252" stroke="#5e7779" stroke-width="2"/>
+      <path d="M41 67V203" stroke="#e6bd62" stroke-width="3"/>
+
+      <!-- Row 1 -->
+      <rect x="18" y="48" width="314" height="52" rx="8" fill="#1e2926" stroke="#e6bd62"/>
+      <circle cx="41" cy="74" r="13" fill="#e6bd62"/>
+      <text x="41" y="78" text-anchor="middle" class="mono" fill="#121512" font-size="10" font-weight="800">01</text>
+      <text class="body white" x="66" y="71" font-size="13" font-weight="750">Aurora Drift</text>
+      <text class="body muted" x="66" y="87" font-size="10">Theme light · 62%</text>
+      <circle cx="293" cy="74" r="5" fill="#74d393"/>
+      <text class="mono muted" x="313" y="79" font-size="13">↕</text>
+
+      <!-- Row 2 -->
+      <rect x="18" y="107" width="314" height="52" rx="8" fill="#121d20" stroke="#344247"/>
+      <circle cx="41" cy="133" r="13" fill="#26363a" stroke="#668085"/>
+      <text x="41" y="137" text-anchor="middle" class="mono soft" font-size="10" font-weight="800">02</text>
+      <text class="body white" x="66" y="130" font-size="13" font-weight="700">God Rays</text>
+      <text class="body muted" x="66" y="146" font-size="10">Soft shimmer · 38%</text>
+      <circle cx="293" cy="133" r="5" fill="#74d393"/>
+      <text class="mono muted" x="313" y="138" font-size="13">↕</text>
+
+      <!-- Row 3 -->
+      <rect x="18" y="166" width="314" height="52" rx="8" fill="#121d20" stroke="#344247"/>
+      <circle cx="41" cy="192" r="13" fill="#26363a" stroke="#668085"/>
+      <text x="41" y="196" text-anchor="middle" class="mono soft" font-size="10" font-weight="800">03</text>
+      <text class="body white" x="66" y="189" font-size="13" font-weight="700">Film Grain</text>
+      <text class="body muted" x="66" y="205" font-size="10">Fine texture · 14%</text>
+      <circle cx="293" cy="192" r="5" fill="#74d393"/>
+      <text class="mono muted" x="313" y="197" font-size="13">↕</text>
+
+      <!-- Row 4 -->
+      <rect x="18" y="225" width="314" height="52" rx="8" fill="#10191c" stroke="#2c393d"/>
+      <circle cx="41" cy="251" r="13" fill="#202c30" stroke="#52676b"/>
+      <text x="41" y="255" text-anchor="middle" class="mono muted" font-size="10" font-weight="800">04</text>
+      <text class="body soft" x="66" y="248" font-size="13" font-weight="650">Background Vignette</text>
+      <text class="body muted" x="66" y="264" font-size="10">Edge treatment</text>
+      <circle cx="293" cy="251" r="5" fill="#74d393"/>
+
+      <rect x="18" y="293" width="314" height="40" rx="8" fill="#152226" stroke="#587074" stroke-dasharray="4 4"/>
+      <text class="body teal" x="175" y="318" text-anchor="middle" font-size="12" font-weight="700">＋ Add effect</text>
+    </g>
+
+    <!-- Right detail panel -->
+    <g transform="translate(390 160)">
+      <rect width="598" height="352" rx="12" fill="#0f181b" stroke="#344247"/>
+      <rect x="18" y="20" width="4" height="48" rx="2" fill="#e6bd62"/>
+      <text class="display white" x="36" y="42" font-size="19" font-weight="650">Aurora Drift</text>
+      <text class="body muted" x="36" y="61" font-size="11">Visible in stack · Position 1 · Changes save automatically</text>
+      <rect x="457" y="27" width="118" height="30" rx="7" fill="#172327" stroke="#52666a"/>
+      <text class="body soft" x="516" y="47" text-anchor="middle" font-size="11" font-weight="650">Effect presets…</text>
+
+      <!-- Control 1 -->
+      <g transform="translate(18 88)">
+        <rect width="562" height="68" rx="9" fill="#121e21" stroke="#2d3c40"/>
+        <text class="body white" x="14" y="24" font-size="12" font-weight="700">Intensity</text>
+        <text class="mono gold" x="548" y="24" text-anchor="end" font-size="11" font-weight="800">62%</text>
+        <text class="body muted" x="14" y="42" font-size="10">Sets the effect’s overall visibility.</text>
+        <rect x="14" y="53" width="534" height="4" rx="2" fill="#314145"/>
+        <rect x="14" y="53" width="331" height="4" rx="2" fill="#dcb664"/>
+        <circle cx="345" cy="55" r="6" fill="#f0d28c"/>
+      </g>
+
+      <!-- Control 2 -->
+      <g transform="translate(18 166)">
+        <rect width="562" height="68" rx="9" fill="#121e21" stroke="#2d3c40"/>
+        <text class="body white" x="14" y="24" font-size="12" font-weight="700">Speed</text>
+        <text class="mono teal" x="548" y="24" text-anchor="end" font-size="11" font-weight="800">GENTLE</text>
+        <text class="body muted" x="14" y="42" font-size="10">Slow enough for Reduced motion.</text>
+        <rect x="14" y="53" width="534" height="4" rx="2" fill="#314145"/>
+        <rect x="14" y="53" width="207" height="4" rx="2" fill="#6bc9c0"/>
+        <circle cx="221" cy="55" r="6" fill="#a0ded8"/>
+      </g>
+
+      <!-- Control 3 -->
+      <g transform="translate(18 244)">
+        <rect width="270" height="54" rx="9" fill="#121e21" stroke="#2d3c40"/>
+        <text class="body white" x="14" y="23" font-size="12" font-weight="700">Accent tint</text>
+        <text class="body muted" x="14" y="40" font-size="10">Follows the active theme</text>
+        <circle cx="244" cy="27" r="9" fill="#6bc9c0"/>
+      </g>
+      <g transform="translate(310 244)">
+        <rect width="270" height="54" rx="9" fill="#1d2825" stroke="#d7ad52"/>
+        <text class="body white" x="14" y="23" font-size="12" font-weight="700">Built-in vignette</text>
+        <text class="body muted" x="14" y="40" font-size="10">Soft edge falloff</text>
+        <rect x="224" y="17" width="32" height="18" rx="9" fill="#e6bd62"/>
+        <circle cx="247" cy="26" r="7" fill="#fff1c5"/>
+      </g>
+
+      <text class="body teal" x="18" y="327" font-size="11" font-weight="650">Northern Veil applied and saved</text>
+      <text class="body gold" x="206" y="327" font-size="11" font-weight="750">Undo</text>
+      <text class="body muted" x="575" y="327" text-anchor="end" font-size="10">Reset effect</text>
+    </g>
+  </g>
+
+  <!-- Right strategy panel -->
+  <g transform="translate(1110 355)">
+    <rect width="426" height="535" rx="18" fill="#101719" stroke="#3b484c"/>
+    <text class="mono gold" x="28" y="35" font-size="11" font-weight="750" letter-spacing="2">WHAT MAKES IT FLAGSHIP</text>
+    <text class="display white" x="28" y="72" font-size="30" font-weight="650">Immediate.</text>
+    <text class="display white" x="28" y="105" font-size="30" font-weight="650">Comfortable.</text>
+    <text class="display white" x="28" y="138" font-size="30" font-weight="650">Trustworthy.</text>
+
+    <g transform="translate(28 177)">
+      <rect width="370" height="74" rx="11" fill="#132224" stroke="#3e6c69"/>
+      <circle cx="28" cy="37" r="16" fill="#6bc9c0"/>
+      <text x="28" y="42" text-anchor="middle" class="mono" fill="#0d191a" font-size="11" font-weight="900">30s</text>
+      <text class="body white" x="56" y="30" font-size="13" font-weight="750">Beautiful before technical</text>
+      <text class="body muted" x="56" y="49" font-size="11">Start from an authored atmosphere.</text>
+    </g>
+
+    <g transform="translate(28 263)">
+      <rect width="370" height="74" rx="11" fill="#171d25" stroke="#52677e"/>
+      <circle cx="28" cy="37" r="16" fill="#98b7d5"/>
+      <text x="28" y="42" text-anchor="middle" class="mono" fill="#10151b" font-size="12" font-weight="900">A11Y</text>
+      <text class="body white" x="56" y="30" font-size="13" font-weight="750">Comfort is a real contract</text>
+      <text class="body muted" x="56" y="49" font-size="11">Keyboard · Reduced · Still</text>
+    </g>
+
+    <g transform="translate(28 349)">
+      <rect width="370" height="74" rx="11" fill="#221c18" stroke="#725547"/>
+      <circle cx="28" cy="37" r="16" fill="#d7856f"/>
+      <text x="28" y="42" text-anchor="middle" class="mono" fill="#1a0f0c" font-size="11" font-weight="900">60</text>
+      <text class="body white" x="56" y="30" font-size="13" font-weight="750">Measured, not assumed</text>
+      <text class="body muted" x="56" y="49" font-size="11">Frame pacing · Idle means idle</text>
+    </g>
+
+    <g transform="translate(28 449)">
+      <path d="M0 0H370" stroke="#344145"/>
+      <text class="mono muted" y="30" font-size="9" letter-spacing="1.5">MARKETPLACE PROMISE</text>
+      <text class="body white" y="55" font-size="14" font-weight="650">Show the atmosphere first.</text>
+      <text class="body muted" y="75" font-size="11">Current media · benefit-led copy · verified commit</text>
+    </g>
+  </g>
+
+  <!-- Footer -->
+  <g transform="translate(64 936)">
+    <rect width="1472" height="1" fill="#334044"/>
+    <text class="mono muted" y="31" font-size="10" letter-spacing="1.5">NORTH STAR</text>
+    <text class="body soft" x="108" y="31" font-size="12">A new user reaches a comfortable, beautiful composition in under 30 seconds—and can refine every layer without losing trust or control.</text>
+    <text class="mono gold" x="1472" y="31" text-anchor="end" font-size="10" font-weight="750" letter-spacing="1.4">FLAGSHIP 1.0</text>
+  </g>
+</svg>

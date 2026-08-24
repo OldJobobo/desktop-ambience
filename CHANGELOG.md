@@ -4,6 +4,16 @@ All notable changes are recorded here. This project follows [Semantic Versioning
 
 ## [Unreleased]
 
+### Added
+
+- Added Drip as a theme-aware ordered effect with bar-aware downward and upward travel, explicit direction overrides, screen-edge fallbacks, and a quiet reduced-motion state.
+- Added solid opaque teardrops that emerge from behind the bar with matching shadows, curved reflections, live-retimed motion controls, and bounded detail at high populations.
+- Added effect-level reset and a session-only Pause Preview control that stops renderer work without changing persisted enablement.
+
+### Changed
+
+- Replaced raw enum IDs in dropdowns with human-readable labels while retaining stable persisted values.
+
 ## [0.7.0] - 2026-08-20
 
 ### Added

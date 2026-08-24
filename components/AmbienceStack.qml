@@ -7,6 +7,7 @@ Item {
   property var targetScreen: null
   property var settings: null
   property var theme: null
+  property var barState: null
   property var cursorTracker: null
   property var activeEffects: settings && settings.activeEffects ? settings.activeEffects : []
   property bool foregroundOverlay: false
@@ -21,6 +22,7 @@ Item {
     "cinematicLight",
     "crt",
     "dustMotes",
+    "drip",
     "filmGrain",
     "godRays",
     "rainfall",
@@ -37,6 +39,7 @@ Item {
     cinematicLightLoader,
     crtLoader,
     dustMotesLoader,
+    dripLoader,
     filmGrainLoader,
     godRaysLoader,
     rainfallLoader,
@@ -111,6 +114,7 @@ Item {
       cinematicLight: cinematicLightLoader,
       crt: crtLoader,
       dustMotes: dustMotesLoader,
+      drip: dripLoader,
       filmGrain: filmGrainLoader,
       godRays: godRaysLoader,
       rainfall: rainfallLoader,
@@ -173,6 +177,20 @@ Item {
       globalOpacity: root.settings ? root.settings.opacity : 1
       reducedMotion: root.settings ? root.settings.reduceMotion : false
       theme: root.theme
+      runtimeEnabled: root.rendererPaintEnabled && root.productionEffectsEnabled
+    }
+  }
+
+  Component {
+    id: dripComponent
+    DripEffect {
+      objectName: "dripEffect"
+      anchors.fill: parent
+      effectSettings: root.settingsFor("drip")
+      globalOpacity: root.settings ? root.settings.opacity : 1
+      reducedMotion: root.settings ? root.settings.reduceMotion : false
+      theme: root.theme
+      barState: root.barState
       runtimeEnabled: root.rendererPaintEnabled && root.productionEffectsEnabled
     }
   }
@@ -301,6 +319,14 @@ Item {
     active: root.productionEffectActive("dustMotes")
     sourceComponent: dustMotesComponent
     z: root.zForEffect("dustMotes")
+  }
+
+  Loader {
+    id: dripLoader
+    anchors.fill: parent
+    active: root.productionEffectActive("drip")
+    sourceComponent: dripComponent
+    z: root.zForEffect("drip")
   }
 
   Loader {

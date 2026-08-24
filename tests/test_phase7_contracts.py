@@ -18,7 +18,7 @@ def test_cursor_sampling_has_one_panel_owned_runtime_owner():
     node_mesh = read("effects/NodeMeshEffect.qml")
 
     assert panel.count("CursorTracker {") == 1
-    assert "active: root.cursorTrackingRequested && root.paintAllowedSurfaceCount > 0" in panel
+    assert "active: !root.previewPaused && root.cursorTrackingRequested && root.paintAllowedSurfaceCount > 0" in panel
     assert "tacticalGridRequested || nodeMeshRequested" in panel
     assert panel.count("        cursorTracker: sharedCursorTracker\n") == 1
     assert "property var cursorTracker: null" in stack
@@ -91,6 +91,46 @@ def test_tactical_grid_uses_bounded_primitives_and_injected_pointer_state():
     assert "Canvas" not in tactical
 
 
+def test_drip_uses_bounded_delegates_and_injected_bar_state():
+    drip = read("effects/DripEffect.qml")
+    assert drip.count("Repeater {") == 1
+    assert "property var barState: null" in drip
+    assert "usableBarGeometry" in drip
+    assert "effectiveDirection" in drip
+    assert "sourceEdge" in drip
+    assert "cycleGeneration" in drip
+    assert "animationsRunning: effectVisible && !reducedMotion" in drip
+    assert "function retimeActivePhase()" in drip
+    assert 'phase === "travel"' in drip
+    assert "onSpeedChanged: timingGeneration += 1" in drip
+    assert "ShapePath" in drip
+    assert drip.count("PathCubic {") == 13
+    assert "shadowColor" in drip
+    assert "id: dropShadow\n          readonly property" in drip
+    assert "z: 1" in drip
+    assert "width: droplet.diameter" in drip
+    assert "height: droplet.diameter * 2.05" in drip
+    assert "readonly property real signedOffset: offset" in drip
+    assert "id: dropReflection\n          z: 3" in drip
+    assert "id: dropShape\n          z: 2" in drip
+    assert "reflectionColor" in drip
+    assert "rotation: 38" in drip
+    assert "decorationsEnabled: dropletCount <= 40" in drip
+    assert "readonly property real visualY: -visualHeight * 0.5" in drip
+    assert "xScale: droplet.formationScale" in drip
+    assert "yScale: droplet.visualYScale" in drip
+    assert "baseDropletColor" in drip
+    assert "bloodMode: overlaySettings.bloodMode === true" in drip
+    assert 'bloodBaseColor: "#4a1014"' in drip
+    assert "id: barOcclusionViewport" in drip
+    assert "clip: root.usingBarGeometry" in drip
+    assert "parent: barOcclusionViewport" in drip
+    assert "FrameAnimation" not in drip
+    assert "Process {" not in drip
+    assert "FileView" not in drip
+    assert "Canvas" not in drip
+
+
 def test_renderers_wait_for_stable_geometry_before_first_animation_cycle():
     stack = read("components/AmbienceStack.qml")
     assert "property bool animationGeometryReady: false" in stack
@@ -98,7 +138,7 @@ def test_renderers_wait_for_stable_geometry_before_first_animation_cycle():
     assert "onWidthChanged: scheduleGeometryReady()" in stack
     assert "onHeightChanged: scheduleGeometryReady()" in stack
     assert "interval: 80" in stack
-    assert stack.count("runtimeEnabled: root.rendererPaintEnabled && root.productionEffectsEnabled") == 11
+    assert stack.count("runtimeEnabled: root.rendererPaintEnabled && root.productionEffectsEnabled") == 12
 
 
 def test_aurora_secondary_glows_start_at_their_animated_floor():
@@ -148,7 +188,7 @@ def test_rainfall_seeds_full_length_loops_at_distributed_startup_phases():
     assert "rainSheet.startupComplete ? -rainSheet.sheetLength : rainSheet.initialY" in rain
     assert "foregroundDrop.startupComplete ? -foregroundDrop.dropLength : foregroundDrop.initialY" in rain
     visual = read("tests/live_phase6_visual.py")
-    assert 'item.reducedMotion = caseId !== "rainfall" && caseId !== "tacticalGrid"' in visual
+    assert 'item.reducedMotion = caseId !== "rainfall" && caseId !== "tacticalGrid" && caseId !== "drip"' in visual
     assert '"rainfallStartupCoverage"' in visual
     assert "rainfall_top <= 0.01 or rainfall_bottom <= 0.01" in visual
 
@@ -170,7 +210,7 @@ def test_phase7_performance_matrix_is_isolated_repeatable_and_revision_aware():
     assert 'parser.add_argument("--target-root"' in source
     assert 'parser.add_argument("--repetitions"' in source
     for case_id in (
-        "auroraDrift", "cinematicLight", "crt", "dustMotes", "filmGrain",
+        "auroraDrift", "cinematicLight", "crt", "dustMotes", "drip", "dripMax", "dripReduced", "filmGrain",
         "godRays", "rainfall", "tacticalGrid", "trackingLines", "bokeh", "nodeMesh", "backgroundVignette",
         "threeEffectStack",
     ):

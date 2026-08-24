@@ -78,8 +78,8 @@ def test_release_docs_keep_one_rainfall_renderer_and_explain_compatible_count_ke
     changelog = read("CHANGELOG.md")
     todo = read("TODO.md")
     plan = read("docs/precipitation-styles-plan.md")
-    assert "Eleven ordered renderers" in readme
-    assert "production renderer count stays at eleven" in readme
+    assert "Twelve ordered renderers" in readme
+    assert "production renderer count stays at twelve" in readme
     assert "`effects.rainfall.dropCount`" in readme
     assert "**Precipitation Count**" in readme
     assert "selectable rain and snow precipitation styles" in changelog

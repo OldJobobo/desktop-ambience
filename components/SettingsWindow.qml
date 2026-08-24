@@ -20,17 +20,35 @@ Item {
   property bool closeReportingReady: false
   property string selectedEffectId: "trackingLines"
   property bool resetArmed: false
+  property bool previewPaused: false
   readonly property bool opened: window.visible
   readonly property var windowObject: window
   readonly property var contentObject: focusScope
   readonly property var activeOrder: settings && settings.data && Array.isArray(settings.data.activeEffects)
     ? settings.data.activeEffects : []
   readonly property var effectDefinitions: EffectRegistry.orderedDefinitions()
+  readonly property int availableEffectCount: Math.max(0, effectDefinitions.length - activeOrder.length)
   readonly property var launcherIcons: LauncherIcons.definitions()
   readonly property string barIconId: barIconFromShell()
   readonly property color muted: Qt.rgba(Color.foreground.r, Color.foreground.g, Color.foreground.b, 0.58)
   readonly property color faint: Qt.rgba(Color.foreground.r, Color.foreground.g, Color.foreground.b, 0.09)
-  readonly property color accentWash: Qt.rgba(Color.accent.r, Color.accent.g, Color.accent.b, 0.14)
+  readonly property var bloodModePhrases: [
+    "There Will Be Blood",
+    "Blood for the Blood God!",
+    "Fangs Out!",
+    "If It Bleeds, We Can Kill It!",
+    "The Blood Is the Life",
+    "Paint It Red",
+    "Let It Bleed",
+    "Tonight, We Feast",
+    "Fresh Meat",
+    "A Feast of Blood",
+    "Red Right Hand",
+    "Bleed for Me",
+    "The Crimson Calls"
+  ]
+  property int bloodModePhraseIndex: 0
+  readonly property string bloodModeLabel: bloodModePhrases[bloodModePhraseIndex] || "Blood Mode"
 
   readonly property QtObject controlPalette: QtObject {
     readonly property color foreground: Color.foreground
@@ -42,6 +60,7 @@ Item {
     try { payload = JSON.parse(String(payloadJson || "{}")) || {} } catch (error) {}
     if (EffectRegistry.isOrderedId(payload.effect)) selectedEffectId = String(payload.effect)
     ensureSelection()
+    refreshBloodModeLabel()
     window.visible = true
     Qt.callLater(function() { focusScope.forceActiveFocus() })
   }
@@ -51,6 +70,7 @@ Item {
     window.visible = false
     closingFromHost = false
     resetArmed = false
+    previewPaused = false
   }
 
   function requestClose() {
@@ -103,6 +123,14 @@ Item {
     if (!next) return false
     next.reduceMotion = value === true
     return commit(next)
+  }
+
+  function setPreviewPaused(value) {
+    previewPaused = value === true
+  }
+
+  function togglePreviewPaused() {
+    setPreviewPaused(!previewPaused)
   }
 
   function barEntryId(entry) {
@@ -221,6 +249,25 @@ Item {
     return definition ? definition.label : String(effectId || "")
   }
 
+  function refreshBloodModeLabel() {
+    var count = bloodModePhrases.length
+    if (count < 2) return bloodModeLabel
+    var next = Math.floor(Math.random() * (count - 1))
+    if (next >= bloodModePhraseIndex) next += 1
+    bloodModePhraseIndex = next
+    return bloodModeLabel
+  }
+
+  function fieldLabelFor(effectId, field) {
+    return String(effectId || "") === "drip" && field && field.key === "bloodMode"
+      ? bloodModeLabel : (field ? field.label : "")
+  }
+
+  function fieldHintFor(effectId, field) {
+    return String(effectId || "") === "drip" && field && field.key === "bloodMode"
+      ? "" : (field ? field.hint : "")
+  }
+
   function addEffect(effectId) {
     var id = String(effectId || "")
     if (!EffectRegistry.isOrderedId(id)) return false
@@ -230,6 +277,15 @@ Item {
     next.effects[id].enabled = true
     next.enabled = true
     selectedEffectId = id
+    return commit(next)
+  }
+
+  function resetEffect(effectId) {
+    var id = String(effectId || "")
+    if (!EffectRegistry.isOrderedId(id)) return false
+    var next = normalizedDocument()
+    if (!next) return false
+    next.effects[id] = EffectRegistry.defaultsFor(id)
     return commit(next)
   }
 
@@ -261,6 +317,7 @@ Item {
     var known = false
     for (var i = 0; i < fields.length; i++) if (fields[i].key === key) known = true
     if (!known) return false
+    if (id === "drip" && key === "bloodMode") refreshBloodModeLabel()
     var next = normalizedDocument()
     if (!next) return false
     next.effects[id][key] = value
@@ -347,11 +404,12 @@ Item {
     visible: false
     title: "Desktop Ambience"
     color: Color.background
-    implicitWidth: 920
-    implicitHeight: 760
-    minimumSize: Qt.size(720, 560)
+    implicitWidth: 1040
+    implicitHeight: 780
+    minimumSize: Qt.size(820, 620)
 
     onVisibleChanged: {
+      if (!visible) root.previewPaused = false
       if (!visible && root.closeReportingReady && !root.closingFromHost
           && root.shell && typeof root.shell.hide === "function")
         root.shell.hide(root.pluginId)
@@ -366,90 +424,117 @@ Item {
       Column {
         id: windowLayout
         anchors.fill: parent
-        anchors.margins: Style.space(18)
-        spacing: Style.space(14)
+        anchors.margins: Style.space(20)
+        spacing: Style.space(12)
 
         Item {
           width: parent.width
-          height: Style.space(58)
+          height: Style.space(64)
 
           Column {
             anchors.left: parent.left
+            anchors.right: headerActions.left
+            anchors.rightMargin: Style.space(18)
             anchors.verticalCenter: parent.verticalCenter
             spacing: Style.space(3)
 
             Text {
+              width: parent.width
               text: root.pluginVersion !== ""
-                ? "DESKTOP AMBIENCE · V" + root.pluginVersion.toUpperCase()
+                ? "DESKTOP AMBIENCE  /  V" + root.pluginVersion.toUpperCase()
                 : "DESKTOP AMBIENCE"
               color: Color.accent
               font.family: Style.font.family
               font.pixelSize: Style.font.caption
               font.bold: true
-              font.letterSpacing: 1.8
+              font.letterSpacing: 1.6
+              elide: Text.ElideRight
             }
 
             Text {
+              width: parent.width
               text: "Compose the atmosphere"
               color: Color.foreground
               font.family: Style.font.family
               font.pixelSize: Style.font.heading
               font.bold: true
+              elide: Text.ElideRight
             }
           }
 
           Row {
-            anchors.right: donateButton.left
-            anchors.rightMargin: Style.space(10)
+            id: headerActions
+            anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             spacing: Style.space(8)
 
-            Rectangle {
+            BorderSurface {
               anchors.verticalCenter: parent.verticalCenter
-              width: Style.space(7)
-              height: width
-              radius: width / 2
-              color: root.persistenceColor()
-              opacity: root.settings && root.settings.persistenceState === "saved" ? 0.65 : 1
-            }
+              implicitWidth: statusRow.implicitWidth + Style.space(20)
+              implicitHeight: Math.max(statusRow.implicitHeight + Style.space(14), Style.space(34))
+              radius: Style.cornerRadius
+              color: Style.normalFillFor(Color.foreground, Color.accent)
+              borderSpec: Border.controlSpec("normal", Color.foreground, Color.accent)
 
-            Text {
-              anchors.verticalCenter: parent.verticalCenter
-              text: root.persistenceName()
-              color: root.muted
-              font.family: Style.font.family
-              font.pixelSize: Style.font.bodySmall
+              Row {
+                id: statusRow
+                anchors.centerIn: parent
+                spacing: Style.space(7)
+
+                Rectangle {
+                  anchors.verticalCenter: parent.verticalCenter
+                  width: Style.space(7)
+                  height: width
+                  radius: width / 2
+                  color: root.persistenceColor()
+                  opacity: root.settings && root.settings.persistenceState === "saved" ? 0.65 : 1
+                }
+
+                Text {
+                  anchors.verticalCenter: parent.verticalCenter
+                  text: root.persistenceName()
+                  color: root.muted
+                  font.family: Style.font.family
+                  font.pixelSize: Style.font.bodySmall
+                }
+
+                Button {
+                  visible: root.settings && root.settings.retryAvailable
+                  text: "Retry"
+                  bordered: false
+                  focusable: true
+                  onClicked: root.retryPersistence()
+                }
+              }
             }
 
             Button {
-              visible: root.settings && root.settings.retryAvailable
-              text: "Retry"
+              id: previewButton
+              text: root.previewPaused ? "Resume preview" : "Pause preview"
+              tooltipText: root.previewPaused
+                ? "Resume the live ambience preview" : "Temporarily stop rendering without changing saved settings"
               bordered: true
               focusable: true
-              onClicked: root.retryPersistence()
+              selected: root.previewPaused
+              onClicked: root.togglePreviewPaused()
             }
-          }
 
-          Button {
-            id: donateButton
-            anchors.right: closeButton.left
-            anchors.rightMargin: Style.space(8)
-            anchors.verticalCenter: parent.verticalCenter
-            text: "Donate"
-            tooltipText: "Support OldJobobo on Ko-fi"
-            bordered: true
-            focusable: true
-            onClicked: root.openDonation()
-          }
+            Button {
+              id: donateButton
+              text: "Donate"
+              tooltipText: "Support OldJobobo on Ko-fi"
+              bordered: true
+              focusable: true
+              onClicked: root.openDonation()
+            }
 
-          Button {
-            id: closeButton
-            anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
-            text: "Close"
-            bordered: true
-            focusable: true
-            onClicked: root.requestClose()
+            Button {
+              id: closeButton
+              text: "Close"
+              bordered: true
+              focusable: true
+              onClicked: root.requestClose()
+            }
           }
         }
 
@@ -462,10 +547,10 @@ Item {
 
           BorderSurface {
             id: compositionPanel
-            width: Math.max(260, Math.min(310, parent.width * 0.34))
+            width: Math.max(292, Math.min(324, parent.width * 0.34))
             height: parent.height
             radius: Style.cornerRadius
-            color: Qt.rgba(Color.foreground.r, Color.foreground.g, Color.foreground.b, 0.035)
+            color: Qt.rgba(Color.foreground.r, Color.foreground.g, Color.foreground.b, 0.025)
             borderSpec: Border.controlSpec("normal", Color.foreground, Color.accent)
 
             Flickable {
@@ -552,7 +637,7 @@ Item {
                 }
 
                 Rectangle { width: parent.width; height: 1; color: root.faint }
-                PanelSectionHeader { text: "ACTIVE STACK · FRONT TO BACK" }
+                PanelSectionHeader { text: "ACTIVE STACK · FRONT TO BACK  /  " + root.activeOrder.length }
 
                 Text {
                   visible: root.activeOrder.length === 0
@@ -583,8 +668,22 @@ Item {
                   }
                 }
 
-                Rectangle { width: parent.width; height: 1; color: root.faint }
-                PanelSectionHeader { text: "ADD EFFECT" }
+                Rectangle {
+                  visible: root.availableEffectCount > 0
+                  width: parent.width
+                  height: visible ? 1 : 0
+                  color: root.faint
+                }
+                PanelSectionHeader {
+                  visible: root.availableEffectCount > 0
+                  text: "AVAILABLE  " + root.availableEffectCount
+                }
+
+                Item {
+                  visible: root.availableEffectCount > 0
+                  width: 1
+                  height: visible ? Style.space(5) : 0
+                }
 
                 Repeater {
                   model: root.effectDefinitions
@@ -597,6 +696,7 @@ Item {
                     leftAlign: true
                     bordered: true
                     focusable: true
+                    selected: root.selectedEffectId === modelData.id
                     onClicked: root.addEffect(modelData.id)
                   }
                 }
@@ -644,13 +744,101 @@ Item {
             width: parent.width - compositionPanel.width - parent.spacing
             height: parent.height
             radius: Style.cornerRadius
-            color: Qt.rgba(Color.foreground.r, Color.foreground.g, Color.foreground.b, 0.025)
+            color: Qt.rgba(Color.foreground.r, Color.foreground.g, Color.foreground.b, 0.018)
             borderSpec: Border.controlSpec("normal", Color.foreground, Color.accent)
+
+            Item {
+              id: detailHeader
+              anchors.left: parent.left
+              anchors.right: parent.right
+              anchors.top: parent.top
+              height: Style.space(86)
+
+              Rectangle {
+                anchors.left: parent.left
+                anchors.leftMargin: Style.space(18)
+                anchors.top: parent.top
+                anchors.topMargin: Style.space(18)
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: Style.space(18)
+                width: Style.space(3)
+                radius: width / 2
+                color: Color.accent
+              }
+
+              Column {
+                anchors.left: parent.left
+                anchors.leftMargin: Style.space(34)
+                anchors.right: effectActions.left
+                anchors.rightMargin: Style.space(16)
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: Style.space(4)
+
+                Text {
+                  width: parent.width
+                  text: root.effectLabel(root.selectedEffectId)
+                  color: Color.foreground
+                  font.family: Style.font.family
+                  font.pixelSize: Style.font.title
+                  font.bold: true
+                  elide: Text.ElideRight
+                }
+
+                Text {
+                  width: parent.width
+                  text: root.effectIsActive(root.selectedEffectId)
+                    ? "In stack  /  Changes save automatically"
+                    : "Available  /  Add it to include it in the composition"
+                  color: root.muted
+                  font.family: Style.font.family
+                  font.pixelSize: Style.font.bodySmall
+                  elide: Text.ElideRight
+                }
+              }
+
+              Row {
+                id: effectActions
+                anchors.right: parent.right
+                anchors.rightMargin: Style.space(18)
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: Style.space(8)
+
+                Button {
+                  text: "Reset effect"
+                  tooltipText: "Restore this effect's default controls"
+                  bordered: true
+                  focusable: true
+                  onClicked: root.resetEffect(root.selectedEffectId)
+                }
+
+                Button {
+                  text: root.effectIsActive(root.selectedEffectId) ? "Remove" : "Add to stack"
+                  bordered: true
+                  focusable: true
+                  onClicked: root.effectIsActive(root.selectedEffectId)
+                    ? root.removeEffect(root.selectedEffectId) : root.addEffect(root.selectedEffectId)
+                }
+              }
+
+              Rectangle {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                height: 1
+                color: root.faint
+              }
+            }
 
             Flickable {
               id: detailFlickable
-              anchors.fill: parent
-              anchors.margins: Style.space(18)
+              anchors.left: parent.left
+              anchors.right: parent.right
+              anchors.top: detailHeader.bottom
+              anchors.bottom: parent.bottom
+              anchors.leftMargin: Style.space(18)
+              anchors.rightMargin: Style.space(18)
+              anchors.topMargin: Style.space(12)
+              anchors.bottomMargin: Style.space(18)
               contentWidth: width
               contentHeight: detailColumn.implicitHeight
               clip: true
@@ -661,52 +849,6 @@ Item {
                 id: detailColumn
                 width: parent.width - Style.space(8)
                 spacing: Style.space(10)
-
-                Item {
-                  width: parent.width
-                  height: Style.space(64)
-
-                  Rectangle {
-                    width: Style.space(4)
-                    height: parent.height
-                    radius: width / 2
-                    color: Color.accent
-                  }
-
-                  Column {
-                    anchors.left: parent.left
-                    anchors.leftMargin: Style.space(16)
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: Style.space(3)
-
-                    Text {
-                      text: root.effectLabel(root.selectedEffectId)
-                      color: Color.foreground
-                      font.family: Style.font.family
-                      font.pixelSize: Style.font.title
-                      font.bold: true
-                    }
-
-                    Text {
-                      text: root.effectIsActive(root.selectedEffectId)
-                        ? "In stack · Changes save automatically"
-                        : "Not in stack"
-                      color: root.muted
-                      font.family: Style.font.family
-                      font.pixelSize: Style.font.bodySmall
-                    }
-                  }
-
-                  Button {
-                    anchors.right: parent.right
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: root.effectIsActive(root.selectedEffectId) ? "Remove" : "Add to stack"
-                    bordered: true
-                    focusable: true
-                    onClicked: root.effectIsActive(root.selectedEffectId)
-                      ? root.removeEffect(root.selectedEffectId) : root.addEffect(root.selectedEffectId)
-                  }
-                }
 
                 Repeater {
                   model: EffectRegistry.fieldDefinitions(root.selectedEffectId)
@@ -723,8 +865,8 @@ Item {
                       id: boolFieldComponent
                       ToggleSetting {
                         width: parent.width
-                        label: parent.modelData.label
-                        hint: parent.modelData.hint
+                        label: root.fieldLabelFor(root.selectedEffectId, parent.modelData)
+                        hint: root.fieldHintFor(root.selectedEffectId, parent.modelData)
                         checked: root.effectValue(root.selectedEffectId, parent.modelData.key) === true
                         onToggledTo: function(value) {
                           root.setEffectField(root.selectedEffectId, parent.modelData.key, value)
@@ -757,7 +899,7 @@ Item {
                         width: parent.width
                         label: parent.modelData.label
                         hint: parent.modelData.hint
-                        options: parent.modelData.values
+                        options: parent.modelData.options || parent.modelData.values
                         value: String(root.effectValue(root.selectedEffectId, parent.modelData.key) || "")
                         onCommitted: function(value) {
                           root.setEffectField(root.selectedEffectId, parent.modelData.key, value)
@@ -769,14 +911,7 @@ Item {
 
                 Rectangle { width: parent.width; height: 1; color: root.faint }
 
-                Text {
-                  text: "DEDICATED VIGNETTE"
-                  color: Color.accent
-                  font.family: Style.font.family
-                  font.pixelSize: Style.font.caption
-                  font.bold: true
-                  font.letterSpacing: 1.4
-                }
+                PanelSectionHeader { text: "DEDICATED VIGNETTE" }
 
                 Text {
                   width: parent.width
@@ -859,9 +994,11 @@ Item {
     property bool checked: false
     signal toggledTo(bool value)
 
-    implicitHeight: Style.space(62)
+    implicitHeight: Style.space(58)
     radius: Style.cornerRadius
-    color: checked ? root.accentWash : "transparent"
+    color: checked
+      ? Style.selectedFillFor(Color.foreground, Color.accent)
+      : Style.normalFillFor(Color.foreground, Color.accent)
     borderSpec: Border.controlSpec(checked ? "selected" : "normal", Color.foreground, Color.accent)
 
     Column {
@@ -885,6 +1022,7 @@ Item {
       Text {
         width: parent.width
         text: toggleRow.hint
+        visible: text !== ""
         color: root.muted
         font.family: Style.font.family
         font.pixelSize: Style.font.caption
@@ -926,9 +1064,9 @@ Item {
         Math.min(maximumContentY, scrollTarget.contentY - delta))
     }
 
-    implicitHeight: Style.space(82)
+    implicitHeight: Style.space(78)
     radius: Style.cornerRadius
-    color: "transparent"
+    color: Style.normalFillFor(Color.foreground, Color.accent)
     borderSpec: Border.controlSpec("normal", Color.foreground, Color.accent)
 
     Text {
@@ -997,9 +1135,9 @@ Item {
     property var options: []
     signal committed(string value)
 
-    implicitHeight: Style.space(74)
+    implicitHeight: Style.space(70)
     radius: Style.cornerRadius
-    color: "transparent"
+    color: Style.normalFillFor(Color.foreground, Color.accent)
     borderSpec: Border.controlSpec("normal", Color.foreground, Color.accent)
 
     Column {
@@ -1087,11 +1225,11 @@ Item {
     signal moveDown()
     signal remove()
 
-    implicitHeight: Style.space(50)
+    implicitHeight: Style.space(48)
     radius: Style.cornerRadius
-    color: selected ? root.accentWash
+    color: selected ? Style.selectedFillFor(Color.foreground, Color.accent)
       : rowHover.hovered ? Style.hoverFillFor(Color.foreground, Color.accent)
-      : "transparent"
+      : Style.normalFillFor(Color.foreground, Color.accent)
     borderSpec: Border.controlSpec(selected ? "selected" : rowHover.hovered ? "hover-cursor" : "normal",
       Color.foreground, Color.accent)
 
@@ -1114,7 +1252,9 @@ Item {
         anchors.rightMargin: Style.space(8)
         anchors.verticalCenter: parent.verticalCenter
         text: String(stackRow.position + 1).padStart(2, "0") + "  " + stackRow.label
-        color: stackRow.selected ? Color.accent : Color.foreground
+        color: stackRow.selected
+          ? Style.selectedStateColor(Color.foreground, Color.accent)
+          : Color.foreground
         font.family: Style.font.family
         font.pixelSize: Style.font.body
         font.bold: stackRow.selected

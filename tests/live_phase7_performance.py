@@ -36,6 +36,9 @@ CASES = [
     ("cinematicLight", "effects/CinematicLightEffect.qml"),
     ("crt", "effects/CrtEffect.qml"),
     ("dustMotes", "effects/DustMotesEffect.qml"),
+    ("drip", "effects/DripEffect.qml"),
+    ("dripMax", "effects/DripEffect.qml"),
+    ("dripReduced", "effects/DripEffect.qml"),
     ("filmGrain", "effects/FilmGrainEffect.qml"),
     ("godRays", "effects/GodRaysEffect.qml"),
     ("rainfall", "effects/RainfallEffect.qml"),
@@ -195,6 +198,7 @@ ShellRoot {{
   property real frameTotalMs: 0
   property real frameMaxMs: 0
   property int framesOver20Ms: 0
+  property int allocatedDelegateCount: 0
   property var loadedItems: []
   property int nodeMeshBaselineUpdates: 0
   property int nodeMeshBaselinePaints: 0
@@ -376,7 +380,8 @@ ShellRoot {{
       bokeh: root.bokehMetrics(),
       nodeMesh: nodeMetrics,
       precipitation: root.precipitationCase ? root.precipitationBeforeShutdown : ({{}}),
-      precipitationAfterShutdown: root.precipitationCase ? root.precipitationMetrics() : ({{}})
+      precipitationAfterShutdown: root.precipitationCase ? root.precipitationMetrics() : ({{}}),
+      allocatedDelegateCount: root.allocatedDelegateCount
     }}))
     Qt.quit()
   }}
@@ -401,9 +406,11 @@ ShellRoot {{
     }} else {{
       var registryId = caseId.indexOf("bokeh") === 0 ? "bokeh"
         : (caseId.indexOf("nodeMesh") === 0 ? "nodeMesh"
-          : (root.precipitationCase ? "rainfall" : caseId))
+          : (caseId.indexOf("drip") === 0 ? "drip"
+            : (root.precipitationCase ? "rainfall" : caseId)))
       var effectSettings = EffectRegistry.defaultsFor(registryId)
-      if (caseId === "bokehMaximumPopulation") effectSettings.lightCount = 72
+      if (caseId === "dripMax") effectSettings.dropletCount = 72
+      else if (caseId === "bokehMaximumPopulation") effectSettings.lightCount = 72
       else if (caseId === "bokehMaximumSoftness") {{
         effectSettings.lightSize = 240
         effectSettings.blurSoftness = 1
@@ -441,15 +448,17 @@ ShellRoot {{
       item.effectSettings = effectSettings
       item.globalOpacity = (caseId === "bokehHidden" || caseId === "nodeMeshHidden"
         || caseId === "rainHidden" || caseId === "snowHidden") ? 0 : 1
-      item.reducedMotion = caseId === "bokehReducedMotion" || caseId === "nodeMeshStatic"
-        || caseId === "rainReducedMotion" || caseId === "snowReducedMotion"
+      item.reducedMotion = caseId === "dripReduced" || caseId === "bokehReducedMotion"
+        || caseId === "nodeMeshStatic" || caseId === "rainReducedMotion" || caseId === "snowReducedMotion"
       if (caseId === "bokehFullscreenSuppressed" || caseId === "nodeMeshFullscreenSuppressed"
           || caseId === "rainFullscreenSuppressed" || caseId === "snowFullscreenSuppressed")
         item.runtimeEnabled = false
       if ("theme" in item) item.theme = theme
+      if ("barState" in item) item.barState = {{available: true, position: "top", size: 28, hidden: false, color: "#101315"}}
       {tracker_assign}
     }}
     if ("targetScreen" in item) item.targetScreen = renderScreen(outputName)
+    if ("allocatedDropletCount" in item) allocatedDelegateCount += Number(item.allocatedDropletCount)
     loadedItems = loadedItems.concat([item])
     loadedCount += 1
     if (loadedCount === {len(output_names)}) warmup.start()

@@ -1,7 +1,7 @@
 # Desktop Ambience
 
 A standalone Omarchy Shell plugin for composing animated desktop atmosphere.
-Eleven ordered renderers share one persistent surface per output, while a
+Twelve ordered renderers share one persistent surface per output, while a
 separate vignette can sit above or below the stack. The plugin owns its settings,
 theme adaptation, settings window, and runtime status endpoint.
 
@@ -13,20 +13,21 @@ theme adaptation, settings window, and runtime status endpoint.
 2. Cinematic Light
 3. CRT
 4. Dust Motes
-5. Film Grain
-6. God Rays
-7. Rainfall
-8. Tactical Grid
-9. VHS (`trackingLines` in the settings file)
-10. Bokeh (opt-in)
-11. Node Mesh (opt-in)
-12. Dedicated background vignette
+5. Drip — including an opt-in cinematic blood mode with randomized cult-style toggle labels
+6. Film Grain
+7. God Rays
+8. Rainfall
+9. Tactical Grid
+10. VHS (`trackingLines` in the settings file)
+11. Bokeh (opt-in)
+12. Node Mesh (opt-in)
+13. Dedicated background vignette
 
 The ordered list is front-to-back: position 1 is topmost. The dedicated vignette
 is intentionally outside that list. Rainfall now selects between the compatible
 layered rain renderer and a bounded snow renderer with configurable flake size,
 flutter, slant, and soft/crystal detail. This remains one ordered `rainfall`
-effect, so the production renderer count stays at eleven. Node Mesh renders a
+effect, so the production renderer count stays at twelve. Node Mesh renders a
 bounded deterministic field with nearby connections, selectable theme roles,
 reduced-motion static output, and optional pointer attraction or repulsion
 through the shared cursor tracker.
@@ -92,7 +93,9 @@ omarchy-shell shell summon jobo.desktop-ambience '{}'
 
 The window shows the installed plugin version and controls global enable,
 background/foreground presentation, opacity, reduced motion, stack membership
-and order, every effect setting, the dedicated vignette, save retry, and reset.
+and order, every effect setting, effect-level reset, the dedicated vignette,
+save retry, and full reset. **Pause preview** temporarily stops all rendering
+and cursor sampling while the window is open without changing saved settings.
 The **Donate** button opens [OldJobobo's Ko-fi](https://ko-fi.com/oldjobobo).
 
 Inspect runtime state without opening the window:

@@ -47,6 +47,7 @@ CASES = [
     ("cinematicLight", "effects/CinematicLightEffect.qml"),
     ("crt", "effects/CrtEffect.qml"),
     ("dustMotes", "effects/DustMotesEffect.qml"),
+    ("drip", "effects/DripEffect.qml"),
     ("filmGrain", "effects/FilmGrainEffect.qml"),
     ("godRays", "effects/GodRaysEffect.qml"),
     ("rainfall", "effects/RainfallEffect.qml"),
@@ -315,12 +316,13 @@ ShellRoot {{
       }}
       item.effectSettings = settings
       item.globalOpacity = 1
-      item.reducedMotion = caseId !== "rainfall" && caseId !== "tacticalGrid"
+      item.reducedMotion = caseId !== "rainfall" && caseId !== "tacticalGrid" && caseId !== "drip"
       if (precipitationCase) item.reducedMotion = caseId === "rainExtractionParity"
         || caseId === "rainReducedMotion" || caseId === "snowReducedMotion"
       if (caseId.indexOf("bokeh") === 0) item.reducedMotion = caseId === "bokehReducedMotion"
       if (caseId.indexOf("nodeMesh") === 0) item.reducedMotion = caseId === "nodeMeshReducedMotion"
       if ("theme" in item) item.theme = theme
+      if ("barState" in item) item.barState = {{available: true, position: "top", size: 28, hidden: false, color: "#7895a1"}}
       if ("cursorTracker" in item) item.cursorTracker = tracker
     }}
     if ("targetScreen" in item) item.targetScreen = root.renderScreen
@@ -409,6 +411,7 @@ ShellRoot {{
       anchors.fill: parent
       onLoaded: {{
         root.configure(item, root.cases[root.caseIndex].id)
+        settle.interval = root.cases[root.caseIndex].id === "drip" ? 4600 : 650
         settle.restart()
       }}
     }}

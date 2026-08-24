@@ -8,7 +8,7 @@ from qml_harness import HAVE_SESSION, parse_behave, qml_url, require_no_qml_erro
 
 @unittest.skipUnless(HAVE_SESSION, "needs a quickshell binary and a Wayland session")
 class QmlLoadSmokeTests(unittest.TestCase):
-    def test_all_eleven_effect_files_load_with_complete_normalized_settings(self):
+    def test_all_twelve_effect_files_load_with_complete_normalized_settings(self):
         qml = f'''
 import Quickshell
 import QtQuick
@@ -16,7 +16,7 @@ ShellRoot {{
   Loader {{ id: settingsLoader; source: "{qml_url('services/AmbienceSettings.qml')}" }}
   QtObject {{
     id: state
-    property var activeEffects: ["auroraDrift", "cinematicLight", "crt", "dustMotes", "filmGrain", "godRays", "rainfall", "tacticalGrid", "trackingLines", "bokeh", "nodeMesh"]
+    property var activeEffects: ["auroraDrift", "cinematicLight", "crt", "dustMotes", "drip", "filmGrain", "godRays", "rainfall", "tacticalGrid", "trackingLines", "bokeh", "nodeMesh"]
     property real opacity: 1
     property bool reduceMotion: true
     property var effects: settingsLoader.item ? settingsLoader.item.effects : ({{}})
@@ -39,7 +39,7 @@ ShellRoot {{
     onTriggered: {{
       attempts += 1
       if (!settingsLoader.item || !settingsLoader.item.hasLoaded || !stackLoader.item
-          || stackLoader.item.activeProductionEffectCount !== 11) {{
+          || stackLoader.item.activeProductionEffectCount !== 12) {{
         if (attempts > 30) {{
           var status = {{count: stackLoader.item ? stackLoader.item.activeProductionEffectCount : -1, ids: []}}
           if (stackLoader.item) for (var j = 0; j < stackLoader.item.supportedEffects.length; j++) {{
@@ -64,10 +64,10 @@ ShellRoot {{
             output = run_quickshell(qml, config_home=Path(config_home), timeout=15)
         require_no_qml_errors(output)
         row = parse_behave(output)[-1]
-        self.assertEqual(row["count"], 11, output[-2000:])
+        self.assertEqual(row["count"], 12, output[-2000:])
         self.assertEqual(
             row["ids"],
-            ["auroraDrift", "cinematicLight", "crt", "dustMotes", "filmGrain", "godRays", "rainfall", "tacticalGrid", "trackingLines", "bokeh", "nodeMesh"],
+            ["auroraDrift", "cinematicLight", "crt", "dustMotes", "drip", "filmGrain", "godRays", "rainfall", "tacticalGrid", "trackingLines", "bokeh", "nodeMesh"],
         )
 
     def test_panel_root_loads_inert_from_temp_disabled_config(self):

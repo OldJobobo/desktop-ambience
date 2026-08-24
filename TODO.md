@@ -1,9 +1,13 @@
 # TODO
 
+## Future experience
+
+- [ ] Add built-in and user-saved **Stack presets** plus per-animation **Effect presets**, with isolated preset-library persistence, explicit apply scope, one-step runtime undo, and a dedicated keyboard-accessible Presets workspace. See [`docs/presets-plan.md`](docs/presets-plan.md).
+
 ## Future effects
 
 - [ ] Add more configurable ambience animations and weather styles:
-  - **Drip** — animate droplets slowly forming along the bar-facing screen edge. When the bar is at the top, droplets should gather beneath it and fall downward. When the bar is at the bottom, support an option for droplets to gather above it and drip upward. Fall back to the corresponding screen edge when bar geometry is unavailable. Expose droplet count, size, formation time, fall speed, direction, and theme-color blending.
+  - [x] **Drip** — animate droplets slowly forming along the bar-facing screen edge. When the bar is at the top, droplets should gather beneath it and fall downward. When the bar is at the bottom, support an option for droplets to gather above it and drip upward. Fall back to the corresponding screen edge when bar geometry is unavailable. Expose droplet count, size, formation time, fall speed, direction, theme-color blending, and the opt-in blood-mode easter egg. See [`docs/drip-plan.md`](docs/drip-plan.md).
   - [x] **Tactical Grid** — draw a screen-wide grid with optional subtle parallax and adjustable mouse influence. Add horizontal and vertical guide lines that intersect at the pointer, plus customizable targeting-reticle styles, size, color, opacity, and animation. See [`docs/tactical-grid-plan.md`](docs/tactical-grid-plan.md).
   - [x] **Bokeh** — render softly animated bokeh lights with configurable population, size, blur, drift, speed, twinkle, and colors derived from two selectable theme palette roles. See [`docs/bokeh-plan.md`](docs/bokeh-plan.md).
   - [x] **Node Mesh** — animate a bounded field of drifting nodes that connects nearby points into a responsive mesh, with configurable density, distance, line treatment, speed, theme roles, and optional pointer attraction or repulsion. See [`docs/node-mesh-plan.md`](docs/node-mesh-plan.md).

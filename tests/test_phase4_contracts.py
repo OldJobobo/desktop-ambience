@@ -24,6 +24,21 @@ def test_settings_window_contains_only_standalone_animations_scope():
     assert 'text: "Layout"' not in window
 
 
+def test_blood_mode_uses_randomized_non_repeating_toggle_copy():
+    registry = read("services/EffectRegistry.js")
+    window = read("components/SettingsWindow.qml")
+    assert 'bloodMode: boolField(false)' in registry
+    assert '"There Will Be Blood"' in window
+    assert '"Blood for the Blood God!"' in window
+    assert '"Fangs Out!"' in window
+    assert '"If It Bleeds, We Can Kill It!"' in window
+    assert "function refreshBloodModeLabel()" in window
+    assert 'key === "bloodMode"' in window
+    assert "fieldLabelFor(root.selectedEffectId, parent.modelData)" in window
+    assert "fieldHintFor(root.selectedEffectId, parent.modelData)" in window
+    assert 'visible: text !== ""' in window
+
+
 def test_header_shows_manifest_version_and_offers_verified_support_link():
     panel = read("Panel.qml")
     window = read("components/SettingsWindow.qml")
@@ -41,17 +56,19 @@ def test_global_stack_vignette_and_persistence_actions_are_owned_by_window():
     window = read("components/SettingsWindow.qml")
     for function_name in (
         "setEnabled", "setPresentation", "setOpacity", "setReduceMotion",
-        "addEffect", "removeEffect", "moveEffect", "setEffectField",
-        "setVignetteField", "retryPersistence", "resetAll",
+        "addEffect", "removeEffect", "moveEffect", "setEffectField", "resetEffect",
+        "setVignetteField", "setPreviewPaused", "retryPersistence", "resetAll",
     ):
         assert f"function {function_name}(" in window
     assert "settings.normalize(settings.data)" in window
     assert "settings.save(next)" in window
     assert "settings.retryPersistence()" in window
+    assert 'text: "Reset effect"' in window
+    assert 'text: root.previewPaused ? "Resume preview" : "Pause preview"' in window
     assert 'if (key === "intensity") next.backgroundVignette.enabled = true' in window
     assert "commit(settings.defaultData())" in window
     assert "ACTIVE STACK · FRONT TO BACK" in window
-    assert "ADD EFFECT" in window
+    assert 'text: "AVAILABLE  " + root.availableEffectCount' in window
     assert "DEDICATED VIGNETTE" in window
     assert "Place Behind Animations" in window
     assert "Confirm reset" in window
@@ -71,6 +88,15 @@ def test_every_effect_setting_has_a_specific_description():
         "Adjusts the source renderer setting.",
     ):
         assert vague not in hints
+
+
+def test_enum_metadata_separates_persisted_values_from_labels():
+    registry = read("services/EffectRegistry.js")
+    window = read("components/SettingsWindow.qml")
+    assert "function enumOptionLabel(value)" in registry
+    assert "field.options = enumOptions(field)" in registry
+    assert 'lightLeak: "Light leak"' in registry
+    assert "options: parent.modelData.options || parent.modelData.values" in window
 
 
 def test_effect_editor_is_driven_by_registry_metadata_for_every_field_type():
@@ -123,6 +149,12 @@ def test_reset_and_controls_never_target_unrelated_configuration():
     assert "Reset restores ambience and launcher defaults." in window
 
 
+def test_selected_available_effect_uses_the_button_selection_color():
+    window = read("components/SettingsWindow.qml")
+    available_effects = window.split('text: "AVAILABLE  " + root.availableEffectCount', 1)[1].split("id: iconFooter", 1)[0]
+    assert "selected: root.selectedEffectId === modelData.id" in available_effects
+
+
 def test_selected_stack_row_uses_one_outer_selection_surface():
     window = read("components/SettingsWindow.qml")
     stack_row = window.split("component EffectStackRow:", 1)[1]
@@ -130,7 +162,7 @@ def test_selected_stack_row_uses_one_outer_selection_surface():
     assert "rowHover.hovered ? Style.hoverFillFor" in stack_row
     assert "Behavior on color { ColorAnimation { duration: 120 } }" in stack_row
     assert "selected: stackRow.selected" not in stack_row
-    assert "color: stackRow.selected ? Color.accent : Color.foreground" in stack_row
+    assert "Style.selectedStateColor(Color.foreground, Color.accent)" in stack_row
     assert "onClicked: stackRow.selectedEffect()" in stack_row
     assert "component StackAction: Item" in window
     assert "StackAction {" in stack_row
